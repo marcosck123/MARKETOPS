@@ -79,3 +79,20 @@ model StockEntry {
   responsible String?
   createdAt   DateTime       @default(now())
 }
+
+enum CashRegisterStatus {
+  open
+  closed
+}
+
+model CashRegister {
+  id             String             @id @default(cuid())
+  name           String
+  status         CashRegisterStatus @default(closed)
+  openedAt       DateTime?
+  closedAt       DateTime?
+  openingBalance Float              @default(0)
+  closingBalance Float?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}

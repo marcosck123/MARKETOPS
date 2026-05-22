@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-009
+- What was implemented: CashRegisterStatus enum (open|closed) + CashRegister model adicionados ao schema. src/lib/actions/cash-registers.ts com getCashRegisters, openCashRegister (valida not open), closeCashRegister (valida not closed). Seed atualizado com 4 caixas iniciais.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/actions/cash-registers.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - CashRegister usa @default(cuid()) para IDs pois registros de caixa não precisam de slugs legíveis
+  - skipDuplicates: false no seed de CashRegister — cuid garante IDs únicos, não há conflito
+  - openedAt/closedAt/closingBalance são nullable (DateTime? / Float?) para estado inicial fechado
+  - openCashRegister reseta closedAt e closingBalance para null ao reabrir
+
 ## 2026-05-22 - US-008
 - What was implemented: estoque/page.tsx virou async server component. StockContent migrado para props + adjustStock + router.refresh(). StockEntry estendido com reason? e responsible? para preservar layout completo do UI. Tipos de movimento simplificados para 3 (entrada|saida|ajuste). Histórico de movimentações vem de db.stockEntry.
 - Files changed: src/app/estoque/page.tsx, src/components/stock/stock-content.tsx, prisma/schema.prisma, src/lib/actions/stock.ts

@@ -156,6 +156,16 @@ async function main() {
     skipDuplicates: true,
   });
 
+  await prisma.cashRegister.createMany({
+    data: [
+      { name: "Caixa frente 1", status: "closed", openingBalance: 0 },
+      { name: "Caixa frente 2", status: "closed", openingBalance: 0 },
+      { name: "Caixa atacado", status: "closed", openingBalance: 0 },
+      { name: "Caixa reserva", status: "closed", openingBalance: 0 },
+    ],
+    skipDuplicates: false,
+  });
+
   console.log("Seed completed.");
 }
 
