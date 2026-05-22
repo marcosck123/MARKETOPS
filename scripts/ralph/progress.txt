@@ -17,6 +17,17 @@
 
 ## Iteration Logs
 
+## 2026-05-22 - US-002 (MVP 3 Fase 1)
+- What was implemented: Middleware reescrito com ROLE_ROUTES map por role. isAllowed() verifica role + startsWith para prefixos. admin bypassa verificação. Role não autorizado redireciona para /. Unauthenticated redireciona para /login. Authenticated em /login redireciona para /.
+- Files changed: src/middleware.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - req.auth?.user?.role retorna string — fallback para "operator" garante que role undefined não acesse rotas indevidas
+  - startsWith(prefix + "/") evita que /admin/produtosOutros seja permitido quando só /admin/produtos está na lista
+  - isAllowed verifica pathname === prefix (rota exata) OU startsWith(prefix + "/") para subrotas
+
 ## 2026-05-22 - US-001 (MVP 3 Fase 1)
 - What was implemented: UserRole enum expandido com supervisor, estoque, financeiro. Campo active Boolean @default(true) adicionado ao model User. auth.ts authorize() rejeita user com active === false. Seed atualizado com active: true no upsert do admin.
 - Files changed: prisma/schema.prisma, src/lib/auth.ts, prisma/seed.ts

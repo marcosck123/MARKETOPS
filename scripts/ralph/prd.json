@@ -37,7 +37,7 @@
         "Lint passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["security-review", "route-audit", "code-review"],
       "notes": "Depends on US-001. Use startsWith() for path matching. admin bypasses role check entirely. Do not break /api/auth routes."
     },
