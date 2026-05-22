@@ -13,13 +13,14 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { cn } from "@/lib/utils";
 import type { ActiveSession } from "@/lib/actions/cash-sessions";
-import { initialCashRegisters, initialCashSessions } from "@/lib/cash-data";
-import { type Product, initialProducts } from "@/lib/product-data";
+import { persistFinishedSale } from "@/lib/actions/sales";
+import { type Product } from "@/lib/product-data";
 import {
   addSaleItem,
   addSalePayment,
@@ -37,29 +38,29 @@ import {
   type Sale,
   type SalePriceMode,
   paymentMethodLabels,
-  salePriceModeLabels,
 } from "@/lib/sale-data";
 
 type PosFormState = {
   query: string;
   quantity: string;
   priceMode: SalePriceMode;
-  cashSessionId: string;
   paymentMethod: PaymentMethod;
   paymentAmount: string;
   discount: string;
 };
 
-const openSession = initialCashSessions.find((s) => s.status === "open");
-
 const defaultFormState: PosFormState = {
   query: "",
   quantity: "1",
   priceMode: "retail",
-  cashSessionId: openSession?.id ?? "",
   paymentMethod: "pix",
   paymentAmount: "",
   discount: "",
+};
+
+type Props = {
+  products: Product[];
+  cashSession: ActiveSession;
 };
 
 function parseNumber(value: string) {
@@ -75,13 +76,12 @@ function formatTime() {
   return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function createPosSale(sequence: number, cashSessionId: string): Sale {
-  const session = initialCashSessions.find((s) => s.id === cashSessionId);
+function createPosSale(sequence: number, cashSession: ActiveSession): Sale {
   return createSale({
     sequence,
     customerId: "",
-    cashSessionId,
-    operator: session?.operator ?? "Operador PDV",
+    cashSessionId: cashSession.id,
+    operator: cashSession.operatorName,
     notes: "Venda registrada no PDV.",
     createdAt: new Date().toLocaleString("pt-BR"),
   });
@@ -101,18 +101,16 @@ function findProductByQuery(products: Product[], query: string) {
   );
 }
 
-export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
-  const initCashSessionId = cashSession?.id ?? openSession?.id ?? "";
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [formState, setFormState] = useState<PosFormState>({
-    ...defaultFormState,
-    cashSessionId: initCashSessionId,
-  });
+export function PosContent({ products: propProducts, cashSession }: Props) {
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>(propProducts);
+  const [formState, setFormState] = useState<PosFormState>(defaultFormState);
   const [saleSequence, setSaleSequence] = useState(3001);
-  const [sale, setSale] = useState<Sale>(() => createPosSale(3001, initCashSessionId));
+  const [sale, setSale] = useState<Sale>(() => createPosSale(3001, cashSession));
   const [errors, setErrors] = useState<string[]>([]);
   const [lastFinishedSale, setLastFinishedSale] = useState<Sale | null>(null);
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
+  const [persistLoading, setPersistLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(formatTime);
 
   useEffect(() => {
@@ -145,21 +143,6 @@ export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
 
   const paidAmount = getPaidAmount(sale.payments);
   const balance = getSaleBalance(sale);
-
-  const sessionInfo = useMemo(() => {
-    if (cashSession) {
-      return {
-        registerName: cashSession.cashRegisterName,
-        operatorName: cashSession.operatorName,
-      };
-    }
-    const mockSession = initialCashSessions.find((s) => s.id === formState.cashSessionId);
-    const mockRegister = initialCashRegisters.find((r) => r.id === mockSession?.registerId);
-    return {
-      registerName: mockRegister?.code ?? "Caixa",
-      operatorName: mockSession?.operator ?? "Operador",
-    };
-  }, [cashSession, formState.cashSessionId]);
 
   function updateForm<K extends keyof PosFormState>(key: K, value: PosFormState[K]) {
     setFormState((c) => ({ ...c, [key]: value }));
@@ -208,23 +191,39 @@ export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
     setErrors([]);
   }
 
-  function handleFinishSale() {
-    const result = finishSale({ sale, products, finishedAt: new Date().toLocaleString("pt-BR") });
+  async function handleFinishSale() {
+    const result = finishSale({
+      sale,
+      products,
+      finishedAt: new Date().toLocaleString("pt-BR"),
+    });
     if (!result.ok) {
       setErrors(result.errors);
       return;
     }
+
     setProducts(result.products);
     setLastFinishedSale(result.sale);
+    setPersistLoading(true);
+
+    const persistResult = await persistFinishedSale(result.sale);
+    setPersistLoading(false);
+
+    if (!persistResult.success) {
+      setErrors([persistResult.error]);
+      return;
+    }
+
     const nextSequence = saleSequence + 1;
     setSaleSequence(nextSequence);
-    setSale(createPosSale(nextSequence, formState.cashSessionId));
+    setSale(createPosSale(nextSequence, cashSession));
     setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
     setErrors([]);
+    router.refresh();
   }
 
   function handleClearSale() {
-    setSale(createPosSale(saleSequence, formState.cashSessionId));
+    setSale(createPosSale(saleSequence, cashSession));
     setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
     setErrors([]);
   }
@@ -239,7 +238,7 @@ export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
           <div>
             <p className="text-sm font-semibold leading-none">MARKETOPS PDV</p>
             <p className="mt-0.5 text-xs text-slate-400">
-              {sessionInfo.registerName} | {sessionInfo.operatorName}
+              {cashSession.cashRegisterName} | {cashSession.operatorName}
             </p>
           </div>
         </div>
@@ -436,7 +435,13 @@ export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
                   className="h-9 w-full rounded-md border border-slate-200 bg-slate-50 pl-8 pr-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-200"
                 />
               </div>
-              <Button type="button" variant="outline" size="sm" className="h-9" onClick={handleApplyDiscount}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={handleApplyDiscount}
+              >
                 Aplicar
               </Button>
             </div>
@@ -553,11 +558,12 @@ export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
             )}
             <Button
               type="button"
-              onClick={handleFinishSale}
-              className="h-14 w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              disabled={persistLoading}
+              onClick={() => void handleFinishSale()}
+              className="h-14 w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-70"
             >
               <CheckCircle2 className="size-5" aria-hidden="true" />
-              Finalizar venda
+              {persistLoading ? "Salvando..." : "Finalizar venda"}
             </Button>
           </div>
         </aside>

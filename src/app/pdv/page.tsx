@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getOperatorActiveSession } from "@/lib/actions/cash-sessions";
 import { SessionGate } from "@/components/pos/session-gate";
 import { PosContent } from "@/components/pos/pos-content";
+import type { Product } from "@/lib/product-data";
 
 export default async function PosPage() {
   const session = await auth();
@@ -25,5 +26,30 @@ export default async function PosPage() {
     );
   }
 
-  return <PosContent cashSession={activeSession} />;
+  const dbProducts = await db.product.findMany({
+    where: { status: "active" },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      barcode: true,
+      sku: true,
+      sectionId: true,
+      categoryId: true,
+      unit: true,
+      costPrice: true,
+      salePrice: true,
+      wholesalePrice: true,
+      currentStock: true,
+      minimumStock: true,
+      status: true,
+    },
+  });
+
+  return (
+    <PosContent
+      products={dbProducts as unknown as Product[]}
+      cashSession={activeSession}
+    />
+  );
 }

@@ -105,7 +105,7 @@
         "Lint passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "code-review"],
       "notes": "Depends on US-008 and US-010. Keep sale-engine.ts pure — do not add DB calls inside it. Server action is called AFTER sale-engine validation succeeds. Products are refreshed after sale to reflect updated stock from StockEntry records."
     }

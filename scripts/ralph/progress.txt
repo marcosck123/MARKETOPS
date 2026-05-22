@@ -292,3 +292,15 @@ Append logs below using this format:
   - router.refresh() from client component after server action causes Next.js server component to re-run → new session found → PDV renders
   - has-[:checked]:border-emerald-500 Tailwind pseudo-class for styling radio label when input is checked
   - ActiveSession type from cash-sessions.ts is shared between page.tsx and pos-content.tsx
+
+## 2026-05-22 - US-011 (MVP 3 Fase 2)
+- What was implemented: pdv/page.tsx updated to also fetch db.product.findMany (active only, ordered by name). PosContent rewritten to accept required props products: Product[] and cashSession: ActiveSession. Removed all imports of initialProducts, initialCashSessions, initialCashRegisters, salePriceModeLabels. handleFinishSale now async: calls finishSale (engine validation) then persistFinishedSale server action; on success calls router.refresh() to reload DB products with updated stock; on error shows persistResult.error. persistLoading state disables Finalizar button and shows "Salvando..." during server action. createPosSale now takes cashSession directly instead of cashSessionId+mock lookup.
+- Files changed: src/app/pdv/page.tsx, src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - DB Prisma enums (ProductUnit, Status) are structurally compatible with mock string unions but require `as unknown as Product[]` cast in TypeScript
+  - void handleFinishSale() on onClick — void operator discards the Promise from async function without floating promise lint error
+  - Products from props → local state: useState(propProducts) — needed for optimistic stock update after finishSale
+  - router.refresh() after persistFinishedSale causes server component to re-run and pass fresh DB products to PosContent
