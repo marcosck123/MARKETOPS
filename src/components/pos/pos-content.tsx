@@ -17,6 +17,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { cn } from "@/lib/utils";
+import type { ActiveSession } from "@/lib/actions/cash-sessions";
 import { initialCashRegisters, initialCashSessions } from "@/lib/cash-data";
 import { type Product, initialProducts } from "@/lib/product-data";
 import {
@@ -100,11 +101,15 @@ function findProductByQuery(products: Product[], query: string) {
   );
 }
 
-export function PosContent() {
+export function PosContent({ cashSession }: { cashSession?: ActiveSession }) {
+  const initCashSessionId = cashSession?.id ?? openSession?.id ?? "";
   const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [formState, setFormState] = useState<PosFormState>(defaultFormState);
+  const [formState, setFormState] = useState<PosFormState>({
+    ...defaultFormState,
+    cashSessionId: initCashSessionId,
+  });
   const [saleSequence, setSaleSequence] = useState(3001);
-  const [sale, setSale] = useState<Sale>(() => createPosSale(3001, defaultFormState.cashSessionId));
+  const [sale, setSale] = useState<Sale>(() => createPosSale(3001, initCashSessionId));
   const [errors, setErrors] = useState<string[]>([]);
   const [lastFinishedSale, setLastFinishedSale] = useState<Sale | null>(null);
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
@@ -142,13 +147,19 @@ export function PosContent() {
   const balance = getSaleBalance(sale);
 
   const sessionInfo = useMemo(() => {
-    const session = initialCashSessions.find((s) => s.id === formState.cashSessionId);
-    const register = initialCashRegisters.find((r) => r.id === session?.registerId);
+    if (cashSession) {
+      return {
+        registerName: cashSession.cashRegisterName,
+        operatorName: cashSession.operatorName,
+      };
+    }
+    const mockSession = initialCashSessions.find((s) => s.id === formState.cashSessionId);
+    const mockRegister = initialCashRegisters.find((r) => r.id === mockSession?.registerId);
     return {
-      registerName: register?.code ?? "Caixa",
-      operatorName: session?.operator ?? "Operador",
+      registerName: mockRegister?.code ?? "Caixa",
+      operatorName: mockSession?.operator ?? "Operador",
     };
-  }, [formState.cashSessionId]);
+  }, [cashSession, formState.cashSessionId]);
 
   function updateForm<K extends keyof PosFormState>(key: K, value: PosFormState[K]) {
     setFormState((c) => ({ ...c, [key]: value }));

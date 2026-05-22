@@ -281,3 +281,14 @@ Append logs below using this format:
   - lastAddedItemId state + setTimeout 600ms = brief row highlight without CSS keyframes
   - setLastAddedItemId called synchronously after setSale (not inside setSale callback) to avoid nested setState issues
   - useEffect with setInterval for live clock (30s refresh, cleanup on unmount)
+
+## 2026-05-22 - US-010 (MVP 3 Fase 2)
+- What was implemented: pdv/page.tsx converted to async server component — calls auth() + getOperatorActiveSession + db.cashRegister.findMany. If no active session: renders SessionGate client component (full-screen dark overlay, radio list of DB cash registers, opening balance input, calls openCashSession server action, router.refresh() on success). If active session: renders PosContent with cashSession prop. PosContent updated to accept optional cashSession?: ActiveSession prop — uses real register/operator name in header when prop is provided, falls back to mock for dev mode.
+- Files changed: src/app/pdv/page.tsx, src/components/pos/session-gate.tsx (novo), src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - router.refresh() from client component after server action causes Next.js server component to re-run → new session found → PDV renders
+  - has-[:checked]:border-emerald-500 Tailwind pseudo-class for styling radio label when input is checked
+  - ActiveSession type from cash-sessions.ts is shared between page.tsx and pos-content.tsx

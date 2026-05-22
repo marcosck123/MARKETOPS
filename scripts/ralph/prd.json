@@ -85,7 +85,7 @@
         "Lint passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-007. pdv/page.tsx becomes async server component. Gate logic runs server-side. CashSession opening happens via server action called from a client gate component."
     },
