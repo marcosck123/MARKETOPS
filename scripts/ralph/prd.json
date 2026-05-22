@@ -238,7 +238,7 @@
         "Lint passes"
       ],
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
       "notes": "Depends on US-011. AppSidebar is a client component ('use client') so useSession() from next-auth/react can be used directly."
     }

@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-013
+- What was implemented: AppSidebar atualizado com useSession() mostrando nome/role do usuário logado + botão de logout (LogOut icon, signOut callbackUrl /login). MVP label atualizado de "MVP 1" para "MVP 2" com nova descrição. SessionProvider adicionado via src/components/providers.tsx wrappando o layout.
+- Files changed: src/components/layout/app-sidebar.tsx, src/components/providers.tsx (novo), src/app/layout.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - SessionProvider precisa estar no layout raiz (client component) para useSession() funcionar em qualquer client component abaixo
+  - useSession() retorna { data: session, status } — user só existe quando status === "authenticated"
+  - signOut({ callbackUrl: "/login" }) redireciona para /login após logout — não precisa de redirect manual
+  - user.role vem do JWT callback configurado em auth.ts — não está no tipo padrão de NextAuth.User sem o declare module
+
 ## 2026-05-22 - US-012
 - What was implemented: src/middleware.ts usando auth() do next-auth v5 como handler de middleware. Redireciona não-autenticados para /login, redireciona autenticados do /login para /. Matcher exclui _next/static, _next/image, favicon.ico e api/auth de proteção.
 - Files changed: src/middleware.ts (novo)

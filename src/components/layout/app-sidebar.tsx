@@ -10,6 +10,7 @@ import {
   CreditCard,
   FileBarChart2,
   Landmark,
+  LogOut,
   Monitor,
   Package,
   Printer,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const navigationItems = [
   { label: "Dashboard", icon: BarChart3, href: "/" },
@@ -50,8 +52,19 @@ const navigationItems = [
   { label: "Configuracoes", icon: Settings },
 ];
 
+const roleLabels: Record<string, string> = {
+  admin: "Administrador",
+  operator: "Operador",
+};
+
 export function AppSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const userInitial =
+    user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U";
+  const userName = user?.name ?? user?.email ?? "Usuario";
+  const userRole = user?.role ? (roleLabels[user.role] ?? user.role) : null;
 
   return (
     <aside className="hidden min-h-screen border-r border-slate-800 bg-slate-950 text-white lg:flex lg:flex-col">
@@ -111,11 +124,36 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-slate-800 p-4 space-y-3">
+        {user && (
+          <div className="flex items-center gap-3 rounded-lg bg-slate-900 px-3 py-2.5">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-sm font-bold text-slate-950">
+              {userInitial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {userName}
+              </p>
+              {userRole && (
+                <p className="text-xs text-slate-400">{userRole}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => void signOut({ callbackUrl: "/login" })}
+              className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              title="Sair"
+            >
+              <LogOut className="size-4" aria-hidden="true" />
+              <span className="sr-only">Sair</span>
+            </button>
+          </div>
+        )}
+
         <div className="rounded-lg bg-slate-900 p-4">
-          <p className="text-sm font-medium text-white">MVP 1</p>
+          <p className="text-sm font-medium text-white">MVP 2</p>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Base administrativa, produtos, estoque e caixas.
+            Persistencia real com Prisma, autenticacao e controle de acesso.
           </p>
         </div>
       </div>
