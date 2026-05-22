@@ -31,6 +31,17 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-005
+- What was implemented: Server actions para Produtos — createProduct, updateProduct, toggleProductStatus
+- Files changed: src/lib/actions/products.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - validateProductForm centraliza validação de campos numéricos — reutilizar padrão em outras actions com múltiplos campos
+  - Promise.all para verificar FKs em paralelo — mais eficiente que queries sequenciais
+  - Barcode e SKU únicos no schema — catch do Prisma captura UniqueConstraintViolation automaticamente
+
 ## 2026-05-22 - US-004
 - What was implemented: page.tsx virou async server component buscando seções e categorias do Prisma. SectionsCategoriesContent migrado de useState para props + server actions + router.refresh().
 - Files changed: src/app/secoes-categorias/page.tsx, src/components/catalog/sections-categories-content.tsx
