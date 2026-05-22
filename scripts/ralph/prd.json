@@ -127,7 +127,7 @@
         "Lint passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on US-001. Stock level = sum of StockEntry.quantity per product (positive = entrada, negative = saida)."
     },

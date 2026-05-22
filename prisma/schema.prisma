@@ -43,21 +43,37 @@ model Category {
   updatedAt DateTime  @updatedAt
 }
 
+enum StockEntryType {
+  entrada
+  saida
+  ajuste
+}
+
 model Product {
-  id             String      @id
+  id             String       @id
   name           String
-  barcode        String      @unique
-  sku            String      @unique
+  barcode        String       @unique
+  sku            String       @unique
   sectionId      String
   categoryId     String
-  category       Category    @relation(fields: [categoryId], references: [id])
+  category       Category     @relation(fields: [categoryId], references: [id])
   unit           ProductUnit
   costPrice      Float
   salePrice      Float
   wholesalePrice Float
-  currentStock   Int         @default(0)
-  minimumStock   Int         @default(0)
-  status         Status      @default(active)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  currentStock   Int          @default(0)
+  minimumStock   Int          @default(0)
+  status         Status       @default(active)
+  stockEntries   StockEntry[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model StockEntry {
+  id        String         @id @default(cuid())
+  productId String
+  product   Product        @relation(fields: [productId], references: [id])
+  quantity  Int
+  type      StockEntryType
+  createdAt DateTime       @default(now())
 }

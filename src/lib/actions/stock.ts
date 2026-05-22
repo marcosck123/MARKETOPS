@@ -1,0 +1,81 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { db } from "@/lib/db";
+
+type ActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+export type StockSummaryItem = {
+  productId: string;
+  productName: string;
+  productSku: string;
+  sectionId: string;
+  categoryId: string;
+  costPrice: number;
+  currentStock: number;
+  minimumStock: number;
+  status: "active" | "inactive";
+};
+
+export async function getStockSummary(): Promise<
+  ActionResult<StockSummaryItem[]>
+> {
+  const [products, grouped] = await Promise.all([
+    db.product.findMany({ orderBy: { name: "asc" } }),
+    db.stockEntry.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+    }),
+  ]);
+
+  const stockMap = new Map(
+    grouped.map((g) => [g.productId, g._sum.quantity ?? 0]),
+  );
+
+  return {
+    success: true,
+    data: products.map((p) => ({
+      productId: p.id,
+      productName: p.name,
+      productSku: p.sku,
+      sectionId: p.sectionId,
+      categoryId: p.categoryId,
+      costPrice: p.costPrice,
+      currentStock: stockMap.get(p.id) ?? p.currentStock,
+      minimumStock: p.minimumStock,
+      status: p.status as "active" | "inactive",
+    })),
+  };
+}
+
+export async function adjustStock(data: {
+  productId: string;
+  quantity: number;
+  type: "entrada" | "saida" | "ajuste";
+}): Promise<ActionResult> {
+  if (!data.productId) return { success: false, error: "Produto obrigatório." };
+  if (data.quantity === 0)
+    return { success: false, error: "Quantidade não pode ser zero." };
+
+  const product = await db.product.findUnique({
+    where: { id: data.productId },
+  });
+  if (!product) return { success: false, error: "Produto não encontrado." };
+
+  try {
+    await db.stockEntry.create({
+      data: {
+        productId: data.productId,
+        quantity: data.quantity,
+        type: data.type,
+      },
+    });
+    revalidatePath("/estoque");
+    return { success: true, data: undefined };
+  } catch {
+    return { success: false, error: "Erro ao registrar movimentação." };
+  }
+}

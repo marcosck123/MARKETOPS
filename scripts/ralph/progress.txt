@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-007
+- What was implemented: StockEntryType enum (entrada|saida|ajuste) + StockEntry model adicionados ao schema. src/lib/actions/stock.ts com getStockSummary (groupBy + produto fallback) e adjustStock (validateProductId + create).
+- Files changed: prisma/schema.prisma, src/lib/actions/stock.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - getStockSummary usa fallback p.currentStock quando produto ainda não tem StockEntry — preserva dados legados do seed
+  - quantity é signed: positivo para entrada/ajuste positivo, negativo para saida/ajuste negativo
+  - groupBy _sum retorna null se não há entradas — usar ?? 0 ou ?? p.currentStock
+  - StockEntry.id usa @default(cuid()) pois IDs não precisam ser slugs legíveis (diferente de Product/Section/Category)
+
 ## 2026-05-22 - US-006
 - What was implemented: produtos/page.tsx virou async server component buscando products, sections, categories do Prisma. ProductsContent migrado de useState/mock para props + server actions + router.refresh().
 - Files changed: src/app/produtos/page.tsx, src/components/products/products-content.tsx
