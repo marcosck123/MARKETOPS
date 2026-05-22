@@ -220,7 +220,7 @@
         "Lint passes"
       ],
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["security-review", "route-audit", "code-review"],
       "notes": "Depends on US-011. Use the withAuth helper from next-auth/middleware or implement manual token check via getToken."
     },

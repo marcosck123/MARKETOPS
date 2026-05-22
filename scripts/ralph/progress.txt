@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-012
+- What was implemented: src/middleware.ts usando auth() do next-auth v5 como handler de middleware. Redireciona não-autenticados para /login, redireciona autenticados do /login para /. Matcher exclui _next/static, _next/image, favicon.ico e api/auth de proteção.
+- Files changed: src/middleware.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - next-auth v5: middleware usa `auth` como handler diretamente: `export default auth((req) => { ... })`
+  - req.auth é null/undefined se não autenticado, objeto session se autenticado
+  - Matcher usa regex negativo para excluir assets estáticos — mais eficiente que listar rotas protegidas
+  - next-auth v4 tinha withAuth() do next-auth/middleware — v5 usa auth() diretamente
+
 ## 2026-05-22 - US-011
 - What was implemented: next-auth@5-beta + @auth/prisma-adapter + bcryptjs adicionados ao package.json. Schema Prisma atualizado com UserRole enum + User model + Account/Session/VerificationToken (requeridos pelo PrismaAdapter). src/lib/auth.ts com NextAuth CredentialsProvider + JWT strategy + callbacks jwt/session para propagar role. API route em src/app/api/auth/[...nextauth]/route.ts. Login page em /login com visual slate-950/emerald. Seed atualizado com admin@marketops.local/admin123.
 - Files changed: prisma/schema.prisma, prisma/seed.ts, package.json, src/lib/auth.ts (novo), src/app/api/auth/[...nextauth]/route.ts (novo), src/app/login/page.tsx (novo), .env.example
