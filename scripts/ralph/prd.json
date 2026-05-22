@@ -170,7 +170,7 @@
         "Lint passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-012 and US-013. Web Audio AudioContext must be created after first user interaction (browser policy). Create context lazily on first alarm trigger. Polling clears on component unmount. HelpRequestRow type: { id, cashRegisterName, operatorName, createdAt: Date, expiresAt: Date }."
     }

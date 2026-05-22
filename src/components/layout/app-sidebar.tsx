@@ -41,7 +41,7 @@ const navigationItems: NavItem[] = [
   { label: "PDV", icon: Monitor, href: "/pdv", roles: ["admin", "operator"] },
   { label: "Caixas", icon: BadgeDollarSign, href: "/caixas", roles: ["admin", "operator"] },
   { label: "Vendas", icon: ShoppingCart, href: "/vendas", roles: ["admin", "operator", "financeiro"] },
-  { label: "Fila NF / Chamados", icon: ClipboardList, roles: ["admin", "supervisor"] },
+  { label: "Fila NF / Chamados", icon: ClipboardList, href: "/supervisor", roles: ["admin", "supervisor"] },
   { label: "Clientes (NF)", icon: Users, roles: ["admin", "supervisor"] },
   { label: "Produtos", icon: Package, href: "/admin/produtos", roles: ["admin", "estoque"] },
   { label: "Secoes e categorias", icon: Tags, href: "/admin/secoes-categorias", roles: ["admin", "estoque"] },
@@ -74,11 +74,10 @@ export function AppSidebar() {
   const userInitial =
     user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U";
   const userName = user?.name ?? user?.email ?? "Usuario";
-  const userRole = user?.role ? (roleLabels[user.role] ?? user.role) : null;
-
-  const userRole = user?.role ?? "operator";
+  const userRoleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : null;
+  const roleKey = user?.role ?? "operator";
   const visibleItems = navigationItems.filter((item) =>
-    item.roles.includes(userRole),
+    item.roles.includes(roleKey),
   );
 
   return (
@@ -149,8 +148,8 @@ export function AppSidebar() {
               <p className="truncate text-sm font-medium text-white">
                 {userName}
               </p>
-              {userRole && (
-                <p className="text-xs text-slate-400">{userRole}</p>
+              {userRoleLabel && (
+                <p className="text-xs text-slate-400">{userRoleLabel}</p>
               )}
             </div>
             <button

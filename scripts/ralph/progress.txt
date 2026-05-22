@@ -328,3 +328,17 @@ Append logs below using this format:
   - void handleCallSupervisor() on onClick — discards Promise without floating-promise lint error
   - cn() merges the amber classes when countdown > 0 — hover:bg-amber-950 repeated to override the base hover
   - cashSession.cashRegisterId, operatorId, operatorName, cashRegisterName all available from ActiveSession type
+
+## 2026-05-22 - US-014 (MVP 3 Fase 3)
+- What was implemented: src/app/supervisor/page.tsx (async server component, fetches initial requests). src/components/supervisor/supervisor-content.tsx (client component) with: 4s polling via setInterval calling getActiveHelpRequests, 1s ticker for progress bar updates, Web Audio API alarm (440Hz oscillator, 200ms burst, every 5s while requests.length > 0 — AudioContext created lazily on first alarm), document.title badge '(N) Supervisor — MARKETOPS', cards with amber/red progress bar based on remaining time. Atender button calls attendHelpRequest optimistically. Empty state with CheckCircle2 icon. Fixed duplicate userRole declaration in app-sidebar.tsx. Added href '/supervisor' to 'Fila NF / Chamados' sidebar item.
+- Files changed: src/app/supervisor/page.tsx (novo), src/components/supervisor/supervisor-content.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - hasRequests (boolean) as useEffect dep is cleaner than requests.length — effect only triggers on alarm start/stop transitions, not on count changes
+  - AudioContext must be created lazily (after user interaction) — browser security policy blocks autoplay
+  - playBeep defined outside component (pure function taking AudioContext) avoids it being a dependency in useEffect
+  - new Date(expiresAt) in getRemainingSeconds handles both Date objects and ISO strings — defensive pattern for RSC serialization
+  - Optimistic UI in handleAttend: setRequests(prev => prev.filter(...)) gives instant feedback; 4s poll confirms server state
+  - Sidebar bug: two const userRole declarations cause TS error — renamed to userRoleLabel (display) and roleKey (filter)
