@@ -75,7 +75,7 @@
         "Lint passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
       "notes": "Depends on US-003. Supervisor items point to /supervisor/* — mark as disabled (no href) since those routes are built in Phase 3."
     },

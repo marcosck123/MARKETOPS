@@ -17,6 +17,17 @@
 
 ## Iteration Logs
 
+## 2026-05-22 - US-004 (MVP 3 Fase 1)
+- What was implemented: navigationItems recebeu campo roles: string[]. NavItem type criado. visibleItems filtra por userRole antes de renderizar. Todos os hrefs atualizados para /admin/*. Itens supervisor (Fila NF, Clientes NF) adicionados como disabled (sem href). import React adicionado para tipagem do componente.
+- Files changed: src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - React.ComponentType usado para tipar icon field do NavItem — necessário pois lucide-react exporta componentes como function components
+  - user?.role ?? "operator" garante que role undefined não quebre o filtro
+  - Itens sem href (supervisor, configuracoes) renderizam como span disabled — comportamento existente preservado
+
 ## 2026-05-22 - US-003 (MVP 3 Fase 1)
 - What was implemented: src/app/admin/layout.tsx criado (passthrough). 16 páginas criadas sob /admin/*: produtos, secoes-categorias, estoque (com data fetching), compras, fornecedores, clientes, pagamentos, financeiro, relatorios, auditoria, seguranca, self-checkout, impressao, integracoes, testes, deploy. next.config.ts atualizado com redirects permanentes das rotas antigas para /admin/*.
 - Files changed: src/app/admin/layout.tsx (novo), src/app/admin/*/page.tsx x16 (novos), next.config.ts

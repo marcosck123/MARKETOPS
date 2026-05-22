@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import {
   BadgeDollarSign,
   BarChart3,
@@ -28,28 +29,37 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
-const navigationItems = [
-  { label: "Dashboard", icon: BarChart3, href: "/" },
-  { label: "Secoes e categorias", icon: Tags, href: "/secoes-categorias" },
-  { label: "Produtos", icon: Package, href: "/produtos" },
-  { label: "Estoque", icon: Warehouse, href: "/estoque" },
-  { label: "Compras", icon: Boxes, href: "/compras" },
-  { label: "Vendas", icon: ShoppingCart, href: "/vendas" },
-  { label: "PDV", icon: Monitor, href: "/pdv" },
-  { label: "Pagamentos", icon: CreditCard, href: "/pagamentos" },
-  { label: "Caixas", icon: BadgeDollarSign, href: "/caixas" },
-  { label: "Clientes", icon: Users, href: "/clientes" },
-  { label: "Fornecedores", icon: Truck, href: "/fornecedores" },
-  { label: "Financeiro", icon: Landmark, href: "/financeiro" },
-  { label: "Relatorios", icon: FileBarChart2, href: "/relatorios" },
-  { label: "Auditoria", icon: ClipboardList, href: "/auditoria" },
-  { label: "Seguranca", icon: ShieldCheck, href: "/seguranca" },
-  { label: "Self-checkout", icon: QrCode, href: "/self-checkout" },
-  { label: "Impressao", icon: Printer, href: "/impressao" },
-  { label: "Integracoes", icon: Cable, href: "/integracoes" },
-  { label: "Testes", icon: ClipboardCheck, href: "/testes" },
-  { label: "Deploy", icon: Rocket, href: "/deploy" },
-  { label: "Configuracoes", icon: Settings },
+type NavItem = {
+  label: string;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  href?: string;
+  roles: string[];
+};
+
+const navigationItems: NavItem[] = [
+  { label: "Dashboard", icon: BarChart3, href: "/", roles: ["admin", "operator", "supervisor", "estoque", "financeiro"] },
+  { label: "PDV", icon: Monitor, href: "/pdv", roles: ["admin", "operator"] },
+  { label: "Caixas", icon: BadgeDollarSign, href: "/caixas", roles: ["admin", "operator"] },
+  { label: "Vendas", icon: ShoppingCart, href: "/vendas", roles: ["admin", "operator", "financeiro"] },
+  { label: "Fila NF / Chamados", icon: ClipboardList, roles: ["admin", "supervisor"] },
+  { label: "Clientes (NF)", icon: Users, roles: ["admin", "supervisor"] },
+  { label: "Produtos", icon: Package, href: "/admin/produtos", roles: ["admin", "estoque"] },
+  { label: "Secoes e categorias", icon: Tags, href: "/admin/secoes-categorias", roles: ["admin", "estoque"] },
+  { label: "Estoque", icon: Warehouse, href: "/admin/estoque", roles: ["admin", "estoque"] },
+  { label: "Compras", icon: Boxes, href: "/admin/compras", roles: ["admin", "estoque", "financeiro"] },
+  { label: "Fornecedores", icon: Truck, href: "/admin/fornecedores", roles: ["admin", "estoque"] },
+  { label: "Financeiro", icon: Landmark, href: "/admin/financeiro", roles: ["admin", "financeiro"] },
+  { label: "Pagamentos", icon: CreditCard, href: "/admin/pagamentos", roles: ["admin", "financeiro"] },
+  { label: "Relatorios", icon: FileBarChart2, href: "/admin/relatorios", roles: ["admin", "financeiro"] },
+  { label: "Auditoria", icon: ClipboardList, href: "/admin/auditoria", roles: ["admin", "financeiro"] },
+  { label: "Usuarios", icon: Users, href: "/admin/usuarios", roles: ["admin"] },
+  { label: "Seguranca", icon: ShieldCheck, href: "/admin/seguranca", roles: ["admin"] },
+  { label: "Self-checkout", icon: QrCode, href: "/admin/self-checkout", roles: ["admin"] },
+  { label: "Impressao", icon: Printer, href: "/admin/impressao", roles: ["admin"] },
+  { label: "Integracoes", icon: Cable, href: "/admin/integracoes", roles: ["admin"] },
+  { label: "Testes", icon: ClipboardCheck, href: "/admin/testes", roles: ["admin"] },
+  { label: "Deploy", icon: Rocket, href: "/admin/deploy", roles: ["admin"] },
+  { label: "Configuracoes", icon: Settings, roles: ["admin"] },
 ];
 
 const roleLabels: Record<string, string> = {
@@ -66,6 +76,11 @@ export function AppSidebar() {
   const userName = user?.name ?? user?.email ?? "Usuario";
   const userRole = user?.role ? (roleLabels[user.role] ?? user.role) : null;
 
+  const userRole = user?.role ?? "operator";
+  const visibleItems = navigationItems.filter((item) =>
+    item.roles.includes(userRole),
+  );
+
   return (
     <aside className="hidden min-h-screen border-r border-slate-800 bg-slate-950 text-white lg:flex lg:flex-col">
       <div className="border-b border-slate-800 px-6 py-6">
@@ -81,7 +96,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-5">
-        {navigationItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.href === pathname;
           const content = (
