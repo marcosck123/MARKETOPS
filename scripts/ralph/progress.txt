@@ -316,3 +316,15 @@ Append logs below using this format:
   - expiresAt = new Date(Date.now() + 60_000) — simpler than adding seconds to a Date object
   - HelpRequest stores cashRegisterName as snapshot (same pattern as operatorName in CashSession)
   - attendHelpRequest validates status === 'active' before updating — prevents double-attend race condition
+
+## 2026-05-22 - US-013 (MVP 3 Fase 3)
+- What was implemented: Bell icon button 'Chamar Supervisor' added to PDV header. On click: calls createHelpRequest server action with cashSession data. On success: helpCountdown state set to 60. useEffect with setTimeout (not setInterval) decrements countdown every second. Button shows amber 'Aguardando... (Xs)' while countdown > 0 and is disabled. On error: shows in existing errors list. Countdown reaches 0: button resets automatically.
+- Files changed: src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - setTimeout + useEffect dependency on helpCountdown is cleaner than setInterval for countdown — each tick reschedules itself, no multiple-interval bugs
+  - void handleCallSupervisor() on onClick — discards Promise without floating-promise lint error
+  - cn() merges the amber classes when countdown > 0 — hover:bg-amber-950 repeated to override the base hover
+  - cashSession.cashRegisterId, operatorId, operatorName, cashRegisterName all available from ActiveSession type

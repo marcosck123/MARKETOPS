@@ -4,6 +4,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
   BadgeDollarSign,
   Barcode,
+  Bell,
   CheckCircle2,
   Monitor,
   Percent,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { cn } from "@/lib/utils";
 import type { ActiveSession } from "@/lib/actions/cash-sessions";
+import { createHelpRequest } from "@/lib/actions/help-requests";
 import { persistFinishedSale } from "@/lib/actions/sales";
 import { type Product } from "@/lib/product-data";
 import {
@@ -112,11 +114,19 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
   const [persistLoading, setPersistLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(formatTime);
+  const [helpCountdown, setHelpCountdown] = useState(0);
+  const [helpLoading, setHelpLoading] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(formatTime()), 30_000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (helpCountdown <= 0) return;
+    const timer = setTimeout(() => setHelpCountdown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [helpCountdown]);
 
   const activeProducts = useMemo(
     () => products.filter((p) => p.status === "active"),
@@ -228,6 +238,22 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
     setErrors([]);
   }
 
+  async function handleCallSupervisor() {
+    setHelpLoading(true);
+    const result = await createHelpRequest({
+      cashRegisterId: cashSession.cashRegisterId,
+      operatorId: cashSession.operatorId,
+      operatorName: cashSession.operatorName,
+      cashRegisterName: cashSession.cashRegisterName,
+    });
+    setHelpLoading(false);
+    if (!result.success) {
+      setErrors([result.error]);
+      return;
+    }
+    setHelpCountdown(60);
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
       <header className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-3 text-white">
@@ -244,6 +270,23 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         </div>
         <div className="flex items-center gap-4">
           <p className="tabular-nums text-sm text-slate-300">{currentTime}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={helpCountdown > 0 || helpLoading}
+            onClick={() => void handleCallSupervisor()}
+            className={cn(
+              "border-slate-700 bg-slate-900 text-white hover:bg-slate-800",
+              helpCountdown > 0 && "border-amber-600 bg-amber-950 text-amber-400 hover:bg-amber-950",
+            )}
+          >
+            <Bell className="size-4" aria-hidden="true" />
+            {helpLoading
+              ? "Chamando..."
+              : helpCountdown > 0
+                ? `Aguardando... (${helpCountdown}s)`
+                : "Chamar Supervisor"}
+          </Button>
           <Button
             asChild
             variant="outline"

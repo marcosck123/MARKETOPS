@@ -147,7 +147,7 @@
         "Lint passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
       "notes": "Depends on US-012. Only changes pos-content.tsx. Countdown uses local state (number) + setInterval. Clear interval on unmount or when countdown reaches 0. Purely client-side countdown — no polling."
     },
