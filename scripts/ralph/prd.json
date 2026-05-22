@@ -94,7 +94,7 @@
         "Lint passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["security-review", "code-review"],
       "notes": "Depends on US-001. Use ActionResult<T> pattern from existing actions. Never expose passwordHash to client."
     },

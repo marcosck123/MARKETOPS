@@ -17,6 +17,17 @@
 
 ## Iteration Logs
 
+## 2026-05-22 - US-005 (MVP 3 Fase 1)
+- What was implemented: src/lib/actions/users.ts com getUsers, createUser, updateUser, toggleUserActive. getUsers usa select para nunca retornar passwordHash. createUser valida email único, senha mínima 6 chars, role válida, hash bcrypt saltRounds=12. updateUser altera apenas name e role. toggleUserActive verifica sessão atual para impedir auto-desativação.
+- Files changed: src/lib/actions/users.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - auth() em server action retorna a sessão do usuário logado — usar para verificar self-deactivation
+  - select no findMany garante que passwordHash nunca vaze — mais seguro que omitir depois
+  - VALID_ROLES como const array + tipo derivado evita divergência entre validação e tipo TypeScript
+
 ## 2026-05-22 - US-004 (MVP 3 Fase 1)
 - What was implemented: navigationItems recebeu campo roles: string[]. NavItem type criado. visibleItems filtra por userRole antes de renderizar. Todos os hrefs atualizados para /admin/*. Itens supervisor (Fila NF, Clientes NF) adicionados como disabled (sem href). import React adicionado para tipagem do componente.
 - Files changed: src/components/layout/app-sidebar.tsx
