@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-010
+- What was implemented: caixas/page.tsx virou async server component buscando CashRegister do Prisma. CashRegistersContent reescrito para receber props (registers: CashRegisterData[]) e usar openCashRegister/closeCashRegister + router.refresh(). UI adaptada ao modelo simplificado (CashRegister = sessão combinada). Removidos CashSession e CashMovement sections (não existem no schema).
+- Files changed: src/app/caixas/page.tsx, src/components/cash-registers/cash-registers-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - CashRegister do MVP combina conceito de register + session — UI de "sessões" mostra os próprios registros como linhas
+  - Mock data tinha status active/inactive (register activation) + session open/closed — DB model simplificou para um único status open/closed
+  - Operações de "supply" e "withdrawal" foram removidas do UI por não existirem no schema — serão adicionadas em iterações futuras com CashMovement model
+  - Tabela de "movimentos recentes" removida por não ter dados no schema ainda
+
 ## 2026-05-22 - US-009
 - What was implemented: CashRegisterStatus enum (open|closed) + CashRegister model adicionados ao schema. src/lib/actions/cash-registers.ts com getCashRegisters, openCashRegister (valida not open), closeCashRegister (valida not closed). Seed atualizado com 4 caixas iniciais.
 - Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/actions/cash-registers.ts (novo)
