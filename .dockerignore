@@ -1,0 +1,10 @@
+.next
+node_modules
+npm-debug.log*
+Dockerfile
+compose.yaml
+.git
+.gitignore
+.env*
+README.md
+Market.MD
