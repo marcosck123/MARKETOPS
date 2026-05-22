@@ -202,7 +202,7 @@
         "Lint passes"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["security-review", "full-stack-planner", "design-ux-ui", "code-review"],
       "notes": "Depends on US-001. Critical: never store plaintext passwords. NEXTAUTH_SECRET must be at least 32 characters. Add NEXTAUTH_SECRET and NEXTAUTH_URL to .env.example."
     },

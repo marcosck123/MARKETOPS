@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -164,6 +165,18 @@ async function main() {
       { name: "Caixa reserva", status: "closed", openingBalance: 0 },
     ],
     skipDuplicates: false,
+  });
+
+  const adminPasswordHash = await bcrypt.hash("admin123", 12);
+  await prisma.user.upsert({
+    where: { email: "admin@marketops.local" },
+    update: {},
+    create: {
+      email: "admin@marketops.local",
+      name: "Admin MARKETOPS",
+      passwordHash: adminPasswordHash,
+      role: "admin",
+    },
   });
 
   console.log("Seed completed.");

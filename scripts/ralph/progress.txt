@@ -31,6 +31,19 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-011
+- What was implemented: next-auth@5-beta + @auth/prisma-adapter + bcryptjs adicionados ao package.json. Schema Prisma atualizado com UserRole enum + User model + Account/Session/VerificationToken (requeridos pelo PrismaAdapter). src/lib/auth.ts com NextAuth CredentialsProvider + JWT strategy + callbacks jwt/session para propagar role. API route em src/app/api/auth/[...nextauth]/route.ts. Login page em /login com visual slate-950/emerald. Seed atualizado com admin@marketops.local/admin123.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, package.json, src/lib/auth.ts (novo), src/app/api/auth/[...nextauth]/route.ts (novo), src/app/login/page.tsx (novo), .env.example
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - @auth/prisma-adapter (v5) requer Account/Session/VerificationToken no schema mesmo com JWT strategy — sem esses models o adapter falha em runtime
+  - email no User model é String? (nullable) para compatibilidade com PrismaAdapter padrão (OAuth users sem email)
+  - bcrypt.hash com saltRounds=12 — padrão seguro para senhas admin
+  - next-auth v5 exporta { handlers, signIn, signOut, auth } ao invés do default export do v4
+  - NEXTAUTH_SECRET deve ter no mínimo 32 chars — colocar no compose.yaml antes de rodar
+
 ## 2026-05-22 - US-010
 - What was implemented: caixas/page.tsx virou async server component buscando CashRegister do Prisma. CashRegistersContent reescrito para receber props (registers: CashRegisterData[]) e usar openCashRegister/closeCashRegister + router.refresh(). UI adaptada ao modelo simplificado (CashRegister = sessão combinada). Removidos CashSession e CashMovement sections (não existem no schema).
 - Files changed: src/app/caixas/page.tsx, src/components/cash-registers/cash-registers-content.tsx
