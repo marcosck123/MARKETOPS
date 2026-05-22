@@ -31,6 +31,16 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-003
+- What was implemented: Server actions para Categorias — createCategory, updateCategory, toggleCategoryStatus
+- Files changed: src/lib/actions/categories.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - sectionId validado com findUnique antes de create/update — padrão FK-safe a reutilizar em products.ts
+  - Mesmo ActionResult<T> de sections.ts — padrão estabelecido para todas as actions
+
 ## 2026-05-22 - US-002
 - What was implemented: Server actions para Seções — createSection, updateSection, toggleSectionStatus
 - Files changed: src/lib/actions/sections.ts (novo)
