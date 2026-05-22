@@ -269,3 +269,15 @@ Append logs below using this format:
   - Sale.code computed in same $transaction: create sale → compute code from sequence → update sale — all atomic
   - StockEntry.quantity is Int; SaleItem.quantity is Float — Math.round() converts Float to Int for StockEntry
   - auth() called inside server action to get operatorId — never trust client-side operatorId
+
+## 2026-05-22 - US-009 (MVP 3 Fase 2)
+- What was implemented: PDV redesign — compact product list rows (name + SKU + price + stock badge), amber left border for low stock, dimmed/disabled for zero stock, current time in header, session info placeholder, Percent icon for discount, h-14 Finalizar button, brief green highlight on cart row when product added (lastAddedItemId state + 600ms timeout), customer select removed, session select removed. All sale-engine logic preserved.
+- Files changed: src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - cn() from @/lib/utils for conditional class merging with Tailwind
+  - lastAddedItemId state + setTimeout 600ms = brief row highlight without CSS keyframes
+  - setLastAddedItemId called synchronously after setSale (not inside setSale callback) to avoid nested setState issues
+  - useEffect with setInterval for live clock (30s refresh, cleanup on unmount)

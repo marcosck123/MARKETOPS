@@ -66,7 +66,7 @@
         "Lint passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
       "notes": "Depends on nothing — purely visual. Do not change sale-engine.ts. Do not change sale-data.ts. Only change pos-content.tsx layout and styles. Products still come from props (will be connected to DB in US-011)."
     },
