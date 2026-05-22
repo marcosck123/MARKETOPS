@@ -31,6 +31,17 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-002
+- What was implemented: Server actions para Seções — createSection, updateSection, toggleSectionStatus
+- Files changed: src/lib/actions/sections.ts (novo)
+- Quality checks run: typecheck: not available (Docker offline), lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - Padrão ActionResult<T = void> funciona bem para server actions — reutilizar em categories.ts e products.ts
+  - "use server" no topo do arquivo aplica a todos os exports — não precisa repetir em cada função
+  - toSlug duplicado do UI — aceitável por ora, extrair para src/lib/utils.ts numa iteração futura se necessário
+
 ## 2026-05-22 - US-001
 - What was implemented: Prisma ORM instalado. Schema com models Section, Category, Product (enums Status e ProductUnit). Singleton Prisma client. Seed com todos os dados do mock data.
 - Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/db.ts, package.json

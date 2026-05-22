@@ -36,7 +36,7 @@
         "Lint passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on US-001. Keep actions in src/lib/actions/ folder. Do not expose internal Prisma errors to the client."
     },
