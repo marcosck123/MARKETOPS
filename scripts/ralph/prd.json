@@ -108,6 +108,71 @@
       "passes": true,
       "skillsRequired": ["full-stack-planner", "code-review"],
       "notes": "Depends on US-008 and US-010. Keep sale-engine.ts pure — do not add DB calls inside it. Server action is called AFTER sale-engine validation succeeds. Products are refreshed after sale to reflect updated stock from StockEntry records."
+    },
+    {
+      "id": "US-012",
+      "title": "HelpRequest schema + server actions",
+      "description": "As a developer, I want a HelpRequest model that links a cash register to a help call, so that operators can request supervisor assistance from the PDV.",
+      "acceptanceCriteria": [
+        "HelpRequestStatus enum: active | attended | expired",
+        "HelpRequest model: id, cashRegisterId (FK), operatorId, operatorName, cashRegisterName, status (default active), expiresAt (createdAt + 60s), attendedBy?, attendedAt?, createdAt",
+        "CashRegister model gets helpRequests HelpRequest[] relation",
+        "src/lib/actions/help-requests.ts exports createHelpRequest, attendHelpRequest, getActiveHelpRequests",
+        "createHelpRequest validates no active request already exists for the same cashRegisterId",
+        "createHelpRequest sets expiresAt = new Date(Date.now() + 60_000)",
+        "attendHelpRequest validates status === 'active', updates to attended with attendedBy + attendedAt = now",
+        "getActiveHelpRequests calls expireOldRequests first (updates active+expired to expired), then returns all still active ordered by createdAt asc",
+        "Each mutation calls revalidatePath('/supervisor') and revalidatePath('/pdv')",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on existing CashRegister model. operatorName and cashRegisterName stored as snapshots. getActiveHelpRequests auto-expires stale requests before returning results."
+    },
+    {
+      "id": "US-013",
+      "title": "PDV — Botao Chamar Supervisor com contagem regressiva",
+      "description": "As an operator, I want a 'Chamar Supervisor' button in the PDV header so that I can request assistance and see a countdown until my call expires.",
+      "acceptanceCriteria": [
+        "Header PDV: Bell icon button 'Chamar Supervisor' in top-right area next to current time",
+        "On click: calls createHelpRequest server action with cashSession.cashRegisterId, cashSession.operatorId, cashSession.operatorName, cashSession.cashRegisterName",
+        "After successful call: button shows amber 'Aguardando... (60s)' with countdown ticking every second via setInterval",
+        "When countdown reaches 0: button resets to default 'Chamar Supervisor' state",
+        "While countdown active: button is disabled (no second call possible)",
+        "If createHelpRequest returns error (e.g. already active): show error in existing errors list",
+        "cashSession prop provides all needed identifiers",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "code-review"],
+      "notes": "Depends on US-012. Only changes pos-content.tsx. Countdown uses local state (number) + setInterval. Clear interval on unmount or when countdown reaches 0. Purely client-side countdown — no polling."
+    },
+    {
+      "id": "US-014",
+      "title": "Tela /supervisor — polling 4s, alarme sonoro, badge na aba",
+      "description": "As a supervisor, I want a real-time screen showing active help requests with an audible alarm and browser tab badge, so I can respond quickly.",
+      "acceptanceCriteria": [
+        "Route /supervisor: async server component renders SupervisorContent with initialRequests from getActiveHelpRequests()",
+        "SupervisorContent is a client component with setInterval 4s polling getActiveHelpRequests server action",
+        "Each active request shown as a card: cashRegisterName, operatorName, time remaining (progress bar 0-60s), 'Atender' button",
+        "Progress bar color: amber when > 20s remaining, red when <= 20s",
+        "Atender button calls attendHelpRequest(id, supervisorName) — supervisorName from useSession().data?.user?.name",
+        "Empty state when no active requests: 'Nenhum chamado ativo' centered in slate-800 card",
+        "Alarm: Web Audio API oscillator at 440Hz, 200ms burst, repeated every 5s while requests.length > 0; stops when empty",
+        "Tab title: document.title set to '(N) Supervisor — MARKETOPS' when N > 0, 'Supervisor — MARKETOPS' when empty",
+        "Page header shows 'Supervisor' title + 'Fila de chamados' subtitle",
+        "Sidebar link /supervisor already exists for supervisor role (middleware already configured)",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-012 and US-013. Web Audio AudioContext must be created after first user interaction (browser policy). Create context lazily on first alarm trigger. Polling clears on component unmount. HelpRequestRow type: { id, cashRegisterName, operatorName, createdAt: Date, expiresAt: Date }."
     }
   ]
 }

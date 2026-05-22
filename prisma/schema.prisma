@@ -156,6 +156,7 @@ model CashRegister {
   openingBalance Float              @default(0)
   closingBalance Float?
   cashSessions   CashSession[]
+  helpRequests   HelpRequest[]
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 }
@@ -232,4 +233,24 @@ model SalePayment {
   sale   Sale          @relation(fields: [saleId], references: [id])
   method PaymentMethod
   amount Float
+}
+
+enum HelpRequestStatus {
+  active
+  attended
+  expired
+}
+
+model HelpRequest {
+  id               String            @id @default(cuid())
+  cashRegisterId   String
+  cashRegister     CashRegister      @relation(fields: [cashRegisterId], references: [id])
+  operatorId       String
+  operatorName     String
+  cashRegisterName String
+  status           HelpRequestStatus @default(active)
+  expiresAt        DateTime
+  attendedBy       String?
+  attendedAt       DateTime?
+  createdAt        DateTime          @default(now())
 }

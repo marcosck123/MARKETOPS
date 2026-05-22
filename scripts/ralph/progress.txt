@@ -304,3 +304,15 @@ Append logs below using this format:
   - void handleFinishSale() on onClick — void operator discards the Promise from async function without floating promise lint error
   - Products from props → local state: useState(propProducts) — needed for optimistic stock update after finishSale
   - router.refresh() after persistFinishedSale causes server component to re-run and pass fresh DB products to PosContent
+
+## 2026-05-22 - US-012 (MVP 3 Fase 3)
+- What was implemented: HelpRequestStatus enum (active | attended | expired) and HelpRequest model added to prisma/schema.prisma. CashRegister gets helpRequests HelpRequest[] relation. src/lib/actions/help-requests.ts created with createHelpRequest (validates no active request for same cashRegister, sets expiresAt = now+60s), attendHelpRequest (validates status active, marks attended), getActiveHelpRequests (auto-expires stale records via expireOldRequests(), returns active ordered by createdAt). Both mutations revalidate /supervisor and /pdv.
+- Files changed: prisma/schema.prisma, src/lib/actions/help-requests.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - expireOldRequests is called inside getActiveHelpRequests before the SELECT — clean pattern: no cron job needed, stale records expire on next poll
+  - expiresAt = new Date(Date.now() + 60_000) — simpler than adding seconds to a Date object
+  - HelpRequest stores cashRegisterName as snapshot (same pattern as operatorName in CashSession)
+  - attendHelpRequest validates status === 'active' before updating — prevents double-attend race condition
