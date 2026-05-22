@@ -1,6 +1,6 @@
 {
   "project": "MARKETOPS",
-  "branchName": "ralph/mvp-2",
+  "branchName": "main",
   "prdSource": "tasks/prd-mvp-2.md",
   "userStories": [
     {
