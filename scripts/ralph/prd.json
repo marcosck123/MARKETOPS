@@ -18,7 +18,7 @@
         "Lint passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "DATABASE_URL is already set in compose.yaml and .env.example as postgresql://marketops:marketops@db:5432/marketops. Seed must match the IDs used in catalog-data.ts and product-data.ts to avoid breaking existing UI references."
     },

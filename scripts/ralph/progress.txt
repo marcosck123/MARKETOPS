@@ -6,6 +6,15 @@
 - Keep this section short and useful.
 - Future Ralph iterations must read this before implementation.
 
+## Codebase Patterns
+
+- node_modules está em Docker volume (marketops_node_modules). npm install só funciona dentro do container.
+- Checks (typecheck, lint, build) requerem Docker rodando. Rodar com: `docker compose run --rm app npx tsc --noEmit` e `docker compose run --rm --no-deps app npm run lint`.
+- Após US-001: rodar `docker compose run --rm app npx prisma migrate dev --name init` e depois `docker compose run --rm app npx prisma db seed` para aplicar schema e dados.
+- IDs do schema Prisma são strings para compatibilidade com mock data existente (ex: "alimentos", "arroz-feijao").
+- Singleton Prisma client em src/lib/db.ts — padrão obrigatório para Next.js dev mode.
+- DATABASE_URL usa hostname "db" (resolve apenas dentro da Docker network).
+
 ## Iteration Logs
 
 Append logs below using this format:
@@ -21,3 +30,14 @@ Append logs below using this format:
   - Patterns discovered
   - Gotchas encountered
 ```
+
+## 2026-05-22 - US-001
+- What was implemented: Prisma ORM instalado. Schema com models Section, Category, Product (enums Status e ProductUnit). Singleton Prisma client. Seed com todos os dados do mock data.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/db.ts, package.json
+- Quality checks run: typecheck: not available (Docker offline), lint: not available (Docker offline), test: not available, build: not available
+- Result of checks: PENDENTE — rodar `docker compose run --rm app npx prisma migrate dev --name init` e depois `npx prisma db seed` para concluir.
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - @prisma/client 7.8.0 instalado via Docker antes de Docker cair. prisma + tsx adicionados manualmente ao package.json.
+  - Migration e seed dependem de Docker + DB rodando. São passos externos à iteração de código.
+  - IDs das models são strings curtas (slugs) para compatibilidade com mock data já usado pelo UI.

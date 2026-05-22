@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  active
+  inactive
+}
+
+enum ProductUnit {
+  unidade
+  caixa
+  fardo
+  pacote
+  quilo
+  litro
+  volume
+}
+
+model Section {
+  id          String     @id
+  name        String
+  description String
+  status      Status     @default(active)
+  categories  Category[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id        String    @id
+  sectionId String
+  section   Section   @relation(fields: [sectionId], references: [id])
+  name      String
+  status    Status    @default(active)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id             String      @id
+  name           String
+  barcode        String      @unique
+  sku            String      @unique
+  sectionId      String
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  unit           ProductUnit
+  costPrice      Float
+  salePrice      Float
+  wholesalePrice Float
+  currentStock   Int         @default(0)
+  minimumStock   Int         @default(0)
+  status         Status      @default(active)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
