@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Barcode,
   Edit3,
@@ -16,13 +17,15 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { initialCategories, initialSections } from "@/lib/catalog-data";
 import {
-  type Product,
-  type ProductUnit,
-  initialProducts,
-  productUnits,
-} from "@/lib/product-data";
+  createProduct,
+  toggleProductStatus,
+  updateProduct,
+} from "@/lib/actions/products";
+import { type Product, type ProductUnit, productUnits } from "@/lib/product-data";
+
+type SectionData = { id: string; name: string };
+type CategoryData = { id: string; name: string; sectionId: string };
 
 type ProductFormState = {
   name: string;
@@ -38,28 +41,23 @@ type ProductFormState = {
   minimumStock: string;
 };
 
-const defaultFormState: ProductFormState = {
-  name: "",
-  barcode: "",
-  sku: "",
-  sectionId: initialSections[0]?.id ?? "",
-  categoryId: initialCategories[0]?.id ?? "",
-  unit: "unidade",
-  costPrice: "",
-  salePrice: "",
-  wholesalePrice: "",
-  currentStock: "",
-  minimumStock: "",
-};
-
-function normalizeId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+function makeDefaultFormState(
+  sections: SectionData[],
+  categories: CategoryData[],
+): ProductFormState {
+  return {
+    name: "",
+    barcode: "",
+    sku: "",
+    sectionId: sections[0]?.id ?? "",
+    categoryId: categories[0]?.id ?? "",
+    unit: "unidade",
+    costPrice: "",
+    salePrice: "",
+    wholesalePrice: "",
+    currentStock: "",
+    minimumStock: "",
+  };
 }
 
 function parseNumber(value: string) {
@@ -92,9 +90,20 @@ function productToForm(product: Product): ProductFormState {
   };
 }
 
-export function ProductsContent() {
+export function ProductsContent({
+  products: initialProducts,
+  sections,
+  categories,
+}: {
+  products: Product[];
+  sections: SectionData[];
+  categories: CategoryData[];
+}) {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [formState, setFormState] = useState<ProductFormState>(defaultFormState);
+  const [formState, setFormState] = useState<ProductFormState>(() =>
+    makeDefaultFormState(sections, categories),
+  );
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,29 +112,29 @@ export function ProductsContent() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const sectionById = useMemo(
-    () => new Map(initialSections.map((section) => [section.id, section])),
-    [],
+    () => new Map(sections.map((section) => [section.id, section])),
+    [sections],
   );
   const categoryById = useMemo(
-    () => new Map(initialCategories.map((category) => [category.id, category])),
-    [],
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
   );
 
   const categoriesForForm = useMemo(() => {
-    return initialCategories.filter(
+    return categories.filter(
       (category) => category.sectionId === formState.sectionId,
     );
-  }, [formState.sectionId]);
+  }, [formState.sectionId, categories]);
 
   const categoriesForFilter = useMemo(() => {
     if (sectionFilter === "all") {
-      return initialCategories;
+      return categories;
     }
 
-    return initialCategories.filter(
+    return categories.filter(
       (category) => category.sectionId === sectionFilter,
     );
-  }, [sectionFilter]);
+  }, [sectionFilter, categories]);
 
   const filteredProducts = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -184,8 +193,8 @@ export function ProductsContent() {
 
   function handleSectionChange(sectionId: string) {
     const firstCategory =
-      initialCategories.find((category) => category.sectionId === sectionId)
-        ?.id ?? "";
+      categories.find((category) => category.sectionId === sectionId)?.id ??
+      "";
 
     setFormState((current) => ({
       ...current,
@@ -200,18 +209,18 @@ export function ProductsContent() {
   }
 
   function openNewProductModal() {
-    setFormState(defaultFormState);
+    setFormState(makeDefaultFormState(sections, categories));
     setEditingProductId(null);
     setIsProductModalOpen(true);
   }
 
   function closeProductModal() {
-    setFormState(defaultFormState);
+    setFormState(makeDefaultFormState(sections, categories));
     setEditingProductId(null);
     setIsProductModalOpen(false);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = formState.name.trim();
     const sku = formState.sku.trim();
@@ -235,31 +244,19 @@ export function ProductsContent() {
     };
 
     if (editingProductId) {
-      setProducts((current) =>
-        current.map((product) =>
-          product.id === editingProductId
-            ? { ...product, ...productPayload }
-            : product,
-        ),
-      );
-      closeProductModal();
+      const result = await updateProduct(editingProductId, productPayload);
+      if (result.success) {
+        router.refresh();
+        closeProductModal();
+      }
       return;
     }
 
-    const baseId = normalizeId(name) || "produto";
-    const id = products.some((product) => product.id === baseId)
-      ? `${baseId}-${Date.now()}`
-      : baseId;
-
-    setProducts((current) => [
-      ...current,
-      {
-        id,
-        ...productPayload,
-        status: "active",
-      },
-    ]);
-    closeProductModal();
+    const result = await createProduct(productPayload);
+    if (result.success) {
+      router.refresh();
+      closeProductModal();
+    }
   }
 
   function handleEditProduct(product: Product) {
@@ -269,16 +266,7 @@ export function ProductsContent() {
   }
 
   function handleToggleProduct(productId: string) {
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === productId
-          ? {
-              ...product,
-              status: product.status === "active" ? "inactive" : "active",
-            }
-          : product,
-      ),
-    );
+    void toggleProductStatus(productId).then(() => router.refresh());
   }
 
   return (
@@ -289,7 +277,7 @@ export function ProductsContent() {
         description="Cadastre mercadorias com SKU, codigo de barras, precos, unidade de venda, estoque atual e estoque minimo."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge label="Mock local" tone="info" />
+            <StatusBadge label="Banco real" tone="info" />
             <Button
               type="button"
               onClick={openNewProductModal}
@@ -306,6 +294,7 @@ export function ProductsContent() {
         isOpen={isProductModalOpen}
         isEditing={Boolean(editingProductId)}
         formState={formState}
+        sections={sections}
         categoriesForForm={categoriesForForm}
         onClose={closeProductModal}
         onSubmit={handleSubmit}
@@ -368,7 +357,7 @@ export function ProductsContent() {
               className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
             >
               <option value="all">Todas as secoes</option>
-              {initialSections.map((section) => (
+              {sections.map((section) => (
                 <option key={section.id} value={section.id}>
                   {section.name}
                 </option>
@@ -492,6 +481,7 @@ function ProductFormModal({
   isOpen,
   isEditing,
   formState,
+  sections,
   categoriesForForm,
   onClose,
   onSubmit,
@@ -501,7 +491,8 @@ function ProductFormModal({
   isOpen: boolean;
   isEditing: boolean;
   formState: ProductFormState;
-  categoriesForForm: typeof initialCategories;
+  sections: SectionData[];
+  categoriesForForm: CategoryData[];
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onUpdateForm: <K extends keyof ProductFormState>(
@@ -588,7 +579,7 @@ function ProductFormModal({
                   onChange={(event) => onSectionChange(event.target.value)}
                   className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
                 >
-                  {initialSections.map((section) => (
+                  {sections.map((section) => (
                     <option key={section.id} value={section.id}>
                       {section.name}
                     </option>

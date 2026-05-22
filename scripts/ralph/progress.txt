@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-006
+- What was implemented: produtos/page.tsx virou async server component buscando products, sections, categories do Prisma. ProductsContent migrado de useState/mock para props + server actions + router.refresh().
+- Files changed: src/app/produtos/page.tsx, src/components/products/products-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - ProductFormModal.categoriesForForm type mudou de `typeof initialCategories` para `CategoryData[]` — necessário ao remover dependência do mock
+  - defaultFormState virou função makeDefaultFormState(sections, categories) — necessário pois sections/categories chegam como props, não são constantes de módulo
+  - Mesmo padrão de US-004: props do server component + router.refresh() após mutação
+  - sections prop adicionada ao ProductFormModal para popular o select de seção no formulário
+
 ## 2026-05-22 - US-005
 - What was implemented: Server actions para Produtos — createProduct, updateProduct, toggleProductStatus
 - Files changed: src/lib/actions/products.ts (novo)
