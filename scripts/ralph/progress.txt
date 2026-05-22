@@ -31,6 +31,17 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-004
+- What was implemented: page.tsx virou async server component buscando seções e categorias do Prisma. SectionsCategoriesContent migrado de useState para props + server actions + router.refresh().
+- Files changed: src/app/secoes-categorias/page.tsx, src/components/catalog/sections-categories-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - Padrão para client component com server actions: props do server component + router.refresh() após mutação
+  - Prisma _count.products adaptado para interface local na page antes de passar ao componente — desacopla componente de tipos Prisma
+  - void action().then(() => router.refresh()) funciona bem para handlers síncronos que disparam async
+
 ## 2026-05-22 - US-003
 - What was implemented: Server actions para Categorias — createCategory, updateCategory, toggleCategoryStatus
 - Files changed: src/lib/actions/categories.ts (novo)
