@@ -1,0 +1,23 @@
+# Ralph Progress Log
+
+## Codebase Patterns
+
+- Add patterns discovered by the agent here.
+- Keep this section short and useful.
+- Future Ralph iterations must read this before implementation.
+
+## Iteration Logs
+
+Append logs below using this format:
+
+```txt
+## [Date/Time] - [Story ID]
+- What was implemented
+- Files changed
+- Quality checks run
+- Result of checks
+- Commit hash
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Gotchas encountered
+```

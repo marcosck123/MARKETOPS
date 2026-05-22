@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(ConvertTo-Json)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\\\\\", \"\"\\) } | Sort-Object)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\security-guardian",
+      "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\agents",
+      "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\route-audit"
+    ]
+  }
+}

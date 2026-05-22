@@ -1,0 +1,246 @@
+{
+  "project": "MARKETOPS",
+  "branchName": "ralph/mvp-2",
+  "prdSource": "tasks/prd-mvp-2.md",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Setup Prisma + schema inicial (Section, Category, Product)",
+      "description": "As a developer, I want Prisma ORM configured with PostgreSQL and the initial schema for Section, Category, and Product, so that the application has a real persistence layer.",
+      "acceptanceCriteria": [
+        "prisma and @prisma/client are added to dependencies",
+        "prisma/schema.prisma defines models Section, Category, Product with correct field types, relations, and constraints",
+        "prisma migrate dev creates the initial migration",
+        "prisma/seed.ts seeds initial data from lib/catalog-data.ts and lib/product-data.ts",
+        "DATABASE_URL is read from environment variable (never hardcoded)",
+        "src/lib/db.ts exports a singleton Prisma client",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "DATABASE_URL is already set in compose.yaml and .env.example as postgresql://marketops:marketops@db:5432/marketops. Seed must match the IDs used in catalog-data.ts and product-data.ts to avoid breaking existing UI references."
+    },
+    {
+      "id": "US-002",
+      "title": "Server actions para Secoes (criar, editar, ativar/desativar)",
+      "description": "As a developer, I want Next.js server actions for sections CRUD, so that the sections-categories UI can persist section changes to the database.",
+      "acceptanceCriteria": [
+        "src/lib/actions/sections.ts exports createSection, updateSection, toggleSectionStatus",
+        "Each action uses the Prisma client from src/lib/db.ts",
+        "Each action uses the 'use server' directive",
+        "Input is validated (name is required, non-empty) before writing",
+        "Each mutation calls revalidatePath('/secoes-categorias')",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-001. Keep actions in src/lib/actions/ folder. Do not expose internal Prisma errors to the client."
+    },
+    {
+      "id": "US-003",
+      "title": "Server actions para Categorias (criar, editar, ativar/desativar)",
+      "description": "As a developer, I want Next.js server actions for categories CRUD, so that the sections-categories UI can persist category changes to the database.",
+      "acceptanceCriteria": [
+        "src/lib/actions/categories.ts exports createCategory, updateCategory, toggleCategoryStatus",
+        "Each action uses the Prisma client from src/lib/db.ts",
+        "Each action uses the 'use server' directive",
+        "sectionId is validated against existing sections before insert or update",
+        "Each mutation calls revalidatePath('/secoes-categorias')",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-001 and US-002."
+    },
+    {
+      "id": "US-004",
+      "title": "Conectar tela de Secoes e Categorias aos server actions",
+      "description": "As an admin, I want the sections-categories screen to persist changes to the database, so that data is not lost on page refresh.",
+      "acceptanceCriteria": [
+        "secoes-categorias/page.tsx becomes an async server component that fetches sections and categories from Prisma",
+        "SectionsCategoriesContent receives sections and categories as props instead of using initialSections/initialCategories from mock data",
+        "Form submissions call the server actions from US-002 and US-003",
+        "List updates after mutation without full client-side state management",
+        "Existing UI layout and visual design is preserved exactly",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "route-audit", "code-review"],
+      "notes": "Depends on US-002, US-003. Do not redesign the UI. The SectionsCategoriesContent component already has the correct visual structure."
+    },
+    {
+      "id": "US-005",
+      "title": "Server actions para Produtos (criar, editar, ativar/desativar)",
+      "description": "As a developer, I want Next.js server actions for products CRUD, so that the products UI can persist product changes to the database.",
+      "acceptanceCriteria": [
+        "src/lib/actions/products.ts exports createProduct, updateProduct, toggleProductStatus",
+        "Each action uses the Prisma client from src/lib/db.ts",
+        "Each action uses the 'use server' directive",
+        "barcode and sku uniqueness is validated before insert",
+        "sectionId and categoryId are validated against existing records before write",
+        "Each mutation calls revalidatePath('/produtos')",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-001. Product fields match the Product type in src/lib/product-data.ts."
+    },
+    {
+      "id": "US-006",
+      "title": "Conectar tela de Produtos aos server actions",
+      "description": "As an admin, I want the products screen to persist changes to the database, so that product data is not lost on page refresh.",
+      "acceptanceCriteria": [
+        "produtos/page.tsx becomes an async server component that fetches products, sections, and categories from Prisma",
+        "ProductsContent receives data as props instead of using initialProducts from mock data",
+        "Form submissions call the server actions from US-005",
+        "List updates after mutation",
+        "Existing UI layout and visual design is preserved exactly",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-005. Do not redesign the UI."
+    },
+    {
+      "id": "US-007",
+      "title": "Schema de Estoque + server actions (leitura e ajuste)",
+      "description": "As a developer, I want a StockEntry model in Prisma and server actions for reading and adjusting stock levels, so that the stock screen shows real data.",
+      "acceptanceCriteria": [
+        "prisma/schema.prisma adds StockEntry model with fields: id, productId (FK), quantity, type (entrada | saida | ajuste), createdAt",
+        "src/lib/actions/stock.ts exports getStockSummary and adjustStock",
+        "getStockSummary returns aggregated stock per product (sum of all entries)",
+        "adjustStock validates that productId exists before writing",
+        "Migration file is updated via prisma migrate dev",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-001. Stock level = sum of StockEntry.quantity per product (positive = entrada, negative = saida)."
+    },
+    {
+      "id": "US-008",
+      "title": "Conectar tela de Estoque aos server actions",
+      "description": "As an admin, I want the stock screen to show real stock levels from the database, so that inventory reflects actual data.",
+      "acceptanceCriteria": [
+        "estoque/page.tsx becomes an async server component that fetches stock summary from Prisma",
+        "StockContent receives real data as props instead of using mock stock-data.ts",
+        "Low-stock alert is based on product.minimumStock compared to real aggregated stock",
+        "Existing UI layout and visual design is preserved exactly",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-007. Do not redesign the UI."
+    },
+    {
+      "id": "US-009",
+      "title": "Schema de Caixas + server actions (abrir, fechar, visualizar)",
+      "description": "As a developer, I want a CashRegister model in Prisma and server actions for managing cash registers, so that the caixas screen shows real data.",
+      "acceptanceCriteria": [
+        "prisma/schema.prisma adds CashRegister model with fields: id, name, status (open | closed), openedAt, closedAt, openingBalance, closingBalance",
+        "src/lib/actions/cash-registers.ts exports getCashRegisters, openCashRegister, closeCashRegister",
+        "openCashRegister validates that the register is not already open before writing",
+        "closeCashRegister validates that the register is currently open before writing",
+        "Each mutation calls revalidatePath('/caixas')",
+        "Migration file is updated via prisma migrate dev",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-001."
+    },
+    {
+      "id": "US-010",
+      "title": "Conectar tela de Caixas aos server actions",
+      "description": "As an admin, I want the cash registers screen to show real data from the database and allow opening and closing registers.",
+      "acceptanceCriteria": [
+        "caixas/page.tsx becomes an async server component that fetches cash registers from Prisma",
+        "CashRegistersContent receives real data as props instead of using mock cash-data.ts",
+        "Open and close actions persist to the database and revalidate the page",
+        "Existing UI layout and visual design is preserved exactly",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-009. Do not redesign the UI."
+    },
+    {
+      "id": "US-011",
+      "title": "Setup NextAuth com credentials provider + model User no Prisma",
+      "description": "As an admin, I want to log in to the system with email and password, so that only authorized users can access the admin panel.",
+      "acceptanceCriteria": [
+        "next-auth and @auth/prisma-adapter are added to dependencies",
+        "bcryptjs is added to dependencies for password hashing",
+        "prisma/schema.prisma adds User model with fields: id, email (unique), passwordHash, role (admin | operator), createdAt",
+        "src/lib/auth.ts configures NextAuth with CredentialsProvider, JWT strategy, and PrismaAdapter",
+        "Login page at /login with email and password fields, matching existing visual style (slate-950 background, emerald accent)",
+        "Passwords are hashed with bcryptjs before storage (never stored in plaintext)",
+        "NEXTAUTH_SECRET is read from environment variable (must be set in .env.example)",
+        "prisma/seed.ts creates one default admin user (email: admin@marketops.local, password: admin123)",
+        "Migration file is updated via prisma migrate dev",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "skillsRequired": ["security-review", "full-stack-planner", "design-ux-ui", "code-review"],
+      "notes": "Depends on US-001. Critical: never store plaintext passwords. NEXTAUTH_SECRET must be at least 32 characters. Add NEXTAUTH_SECRET and NEXTAUTH_URL to .env.example."
+    },
+    {
+      "id": "US-012",
+      "title": "Middleware de protecao de rotas autenticadas",
+      "description": "As an admin, I want all admin routes to require authentication, so that unauthenticated users are redirected to the login page.",
+      "acceptanceCriteria": [
+        "src/middleware.ts protects all routes except /login and /api/auth/*",
+        "Unauthenticated requests to protected routes are redirected to /login",
+        "Authenticated requests to /login are redirected to /",
+        "Static assets (/_next/*, /favicon.ico) are not blocked by middleware",
+        "Middleware matcher is explicitly configured to avoid performance issues",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "skillsRequired": ["security-review", "route-audit", "code-review"],
+      "notes": "Depends on US-011. Use the withAuth helper from next-auth/middleware or implement manual token check via getToken."
+    },
+    {
+      "id": "US-013",
+      "title": "Atualizar sidebar para MVP 2 com usuario logado",
+      "description": "As an admin, I want the sidebar to show my logged-in name and reflect that the system is now on MVP 2, so that the interface communicates the current state.",
+      "acceptanceCriteria": [
+        "Sidebar bottom section shows logged-in user name and role from session",
+        "MVP label in sidebar bottom is updated from 'MVP 1' to 'MVP 2'",
+        "Configuracoes item remains disabled with tooltip 'Modulo planejado para as proximas etapas'",
+        "All other nav items remain functional as before",
+        "Logout button or link is available in the sidebar",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "code-review"],
+      "notes": "Depends on US-011. AppSidebar is a client component ('use client') so useSession() from next-auth/react can be used directly."
+    }
+  ]
+}
