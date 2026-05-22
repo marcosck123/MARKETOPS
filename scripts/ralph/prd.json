@@ -15,7 +15,7 @@
         "Lint passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["security-review", "code-review"],
       "notes": "Depends on existing User model from MVP 2. Migration must not break existing admin user in seed. Update seed to keep admin user with active: true."
     },

@@ -81,8 +81,11 @@ model StockEntry {
 }
 
 enum UserRole {
-  admin
   operator
+  supervisor
+  estoque
+  financeiro
+  admin
 }
 
 model User {
@@ -93,6 +96,7 @@ model User {
   image         String?
   passwordHash  String?
   role          UserRole  @default(operator)
+  active        Boolean   @default(true)
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
