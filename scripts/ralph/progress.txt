@@ -247,3 +247,14 @@ Append logs below using this format:
   - @prisma/client 7.8.0 instalado via Docker antes de Docker cair. prisma + tsx adicionados manualmente ao package.json.
   - Migration e seed dependem de Docker + DB rodando. São passos externos à iteração de código.
   - IDs das models são strings curtas (slugs) para compatibilidade com mock data já usado pelo UI.
+
+## 2026-05-22 - US-007 (MVP 3 Fase 2)
+- What was implemented: CashSessionStatus enum (open | closed) and CashSession model added to prisma/schema.prisma. CashRegister model updated with cashSessions relation. src/lib/actions/cash-sessions.ts created with openCashSession, closeCashSession, getOperatorActiveSession, getOpenSessions. openCashSession validates cashRegister exists and operator has no open session. closeCashSession validates session status is open. Both mutations revalidate /caixas and /pdv.
+- Files changed: prisma/schema.prisma, src/lib/actions/cash-sessions.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CashSession.operatorName stored as snapshot (not join) — session history preserved even if user is renamed
+  - findFirst with status: "open" to check existing session before opening a new one
+  - ActiveSession type exported for use in US-010 PDV gate

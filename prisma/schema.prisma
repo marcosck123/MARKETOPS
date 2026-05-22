@@ -154,6 +154,27 @@ model CashRegister {
   closedAt       DateTime?
   openingBalance Float              @default(0)
   closingBalance Float?
+  cashSessions   CashSession[]
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+}
+
+enum CashSessionStatus {
+  open
+  closed
+}
+
+model CashSession {
+  id             String            @id @default(cuid())
+  cashRegisterId String
+  cashRegister   CashRegister      @relation(fields: [cashRegisterId], references: [id])
+  operatorId     String
+  operatorName   String
+  status         CashSessionStatus @default(open)
+  openedAt       DateTime          @default(now())
+  closedAt       DateTime?
+  openingBalance Float             @default(0)
+  closingBalance Float?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }

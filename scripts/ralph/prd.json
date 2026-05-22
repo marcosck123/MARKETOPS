@@ -21,7 +21,7 @@
         "Lint passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on existing CashRegister model. operatorName is stored as a snapshot (not a join) so session history is preserved even if user is renamed. openCashSession receives operatorId and operatorName from the caller (server action reads from auth session)."
     },
