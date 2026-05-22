@@ -43,7 +43,7 @@
         "Lint passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on US-007. Use db.$transaction for atomicity — if StockEntry creation fails, the Sale is not saved. SaleItem.quantity is Float to support fractional quantities (weight-based products). code field is computed as 'VEN-' + sequence.toString().padStart(6, '0')."
     },

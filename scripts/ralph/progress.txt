@@ -258,3 +258,14 @@ Append logs below using this format:
   - CashSession.operatorName stored as snapshot (not join) — session history preserved even if user is renamed
   - findFirst with status: "open" to check existing session before opening a new one
   - ActiveSession type exported for use in US-010 PDV gate
+
+## 2026-05-22 - US-008 (MVP 3 Fase 2)
+- What was implemented: SaleStatus enum (open | finished | cancelled), PaymentMethod enum (cash | pix | debit | credit | store_credit), Sale model (sequence autoincrement, code computed as VEN-XXXXXX), SaleItem model (quantity Float), SalePayment model. Product gets saleItems relation. CashSession gets sales relation. src/lib/actions/sales.ts with persistFinishedSale using db.$transaction — creates Sale + SaleItems + SalePayments + StockEntry (saida) per item atomically. code computed inside transaction after Sale creation.
+- Files changed: prisma/schema.prisma, src/lib/actions/sales.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Sale.code computed in same $transaction: create sale → compute code from sequence → update sale — all atomic
+  - StockEntry.quantity is Int; SaleItem.quantity is Float — Math.round() converts Float to Int for StockEntry
+  - auth() called inside server action to get operatorId — never trust client-side operatorId

@@ -65,6 +65,7 @@ model Product {
   minimumStock   Int          @default(0)
   status         Status       @default(active)
   stockEntries   StockEntry[]
+  saleItems      SaleItem[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -175,6 +176,60 @@ model CashSession {
   closedAt       DateTime?
   openingBalance Float             @default(0)
   closingBalance Float?
+  sales          Sale[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+}
+
+enum SaleStatus {
+  open
+  finished
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  pix
+  debit
+  credit
+  store_credit
+}
+
+model Sale {
+  id           String      @id @default(cuid())
+  sequence     Int         @default(autoincrement())
+  code         String      @default("")
+  cashSessionId String
+  cashSession  CashSession @relation(fields: [cashSessionId], references: [id])
+  operatorId   String
+  operatorName String
+  status       SaleStatus  @default(open)
+  subtotal     Float
+  discount     Float       @default(0)
+  total        Float
+  notes        String?
+  finishedAt   DateTime?
+  cancelledAt  DateTime?
+  items        SaleItem[]
+  payments     SalePayment[]
+  createdAt    DateTime    @default(now())
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Float
+  unitPrice Float
+  total     Float
+}
+
+model SalePayment {
+  id     String        @id @default(cuid())
+  saleId String
+  sale   Sale          @relation(fields: [saleId], references: [id])
+  method PaymentMethod
+  amount Float
 }
