@@ -17,6 +17,17 @@
 
 ## Iteration Logs
 
+## 2026-05-22 - US-006 (MVP 3 Fase 1)
+- What was implemented: src/components/users/users-content.tsx com tabela de usuários, modal de criação (name, email, password, role), modal de edição (name, role), botão toggle ativo/inativo desabilitado para conta própria. src/app/admin/usuarios/page.tsx async server component buscando users + session em paralelo. Role badges com cores distintas por role.
+- Files changed: src/components/users/users-content.tsx (novo), src/app/admin/usuarios/page.tsx (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - auth() em server component retorna sessão — usar para passar currentUserId ao client component
+  - Promise.all([getUsers(), auth()]) para buscar dados em paralelo na page
+  - void handleToggle() no onClick evita floating promise warning do TS/ESLint
+
 ## 2026-05-22 - US-005 (MVP 3 Fase 1)
 - What was implemented: src/lib/actions/users.ts com getUsers, createUser, updateUser, toggleUserActive. getUsers usa select para nunca retornar passwordHash. createUser valida email único, senha mínima 6 chars, role válida, hash bcrypt saltRounds=12. updateUser altera apenas name e role. toggleUserActive verifica sessão atual para impedir auto-desativação.
 - Files changed: src/lib/actions/users.ts (novo)

@@ -114,7 +114,7 @@
         "Lint passes"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-005. Follow server component + props + router.refresh() pattern. Password reset is out of scope."
     }
