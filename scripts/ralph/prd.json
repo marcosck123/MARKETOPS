@@ -54,7 +54,7 @@
         "Lint passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "route-audit", "code-review"],
       "notes": "Depends on US-002. Each moved page.tsx is a thin wrapper importing the same existing content component — do not rewrite components. Add redirects array to next.config.ts for old route backward compatibility."
     },

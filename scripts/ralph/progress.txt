@@ -17,6 +17,17 @@
 
 ## Iteration Logs
 
+## 2026-05-22 - US-003 (MVP 3 Fase 1)
+- What was implemented: src/app/admin/layout.tsx criado (passthrough). 16 páginas criadas sob /admin/*: produtos, secoes-categorias, estoque (com data fetching), compras, fornecedores, clientes, pagamentos, financeiro, relatorios, auditoria, seguranca, self-checkout, impressao, integracoes, testes, deploy. next.config.ts atualizado com redirects permanentes das rotas antigas para /admin/*.
+- Files changed: src/app/admin/layout.tsx (novo), src/app/admin/*/page.tsx x16 (novos), next.config.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - admin/layout.tsx é passthrough pois cada page component já inclui AdminShell — não duplicar wrapper
+  - Redirects permanentes no next.config.ts evitam manter código morto nas rotas antigas
+  - self-checkout original não tinha AdminShell — adicionado na versão /admin/ para consistência visual
+
 ## 2026-05-22 - US-002 (MVP 3 Fase 1)
 - What was implemented: Middleware reescrito com ROLE_ROUTES map por role. isAllowed() verifica role + startsWith para prefixos. admin bypassa verificação. Role não autorizado redireciona para /. Unauthenticated redireciona para /login. Authenticated em /login redireciona para /.
 - Files changed: src/middleware.ts
