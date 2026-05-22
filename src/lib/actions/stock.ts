@@ -55,6 +55,8 @@ export async function adjustStock(data: {
   productId: string;
   quantity: number;
   type: "entrada" | "saida" | "ajuste";
+  reason?: string;
+  responsible?: string;
 }): Promise<ActionResult> {
   if (!data.productId) return { success: false, error: "Produto obrigatório." };
   if (data.quantity === 0)
@@ -65,12 +67,18 @@ export async function adjustStock(data: {
   });
   if (!product) return { success: false, error: "Produto não encontrado." };
 
+  // saida reduces stock — store as negative
+  const storedQuantity =
+    data.type === "saida" ? -Math.abs(data.quantity) : data.quantity;
+
   try {
     await db.stockEntry.create({
       data: {
         productId: data.productId,
-        quantity: data.quantity,
+        quantity: storedQuantity,
         type: data.type,
+        reason: data.reason?.trim() || null,
+        responsible: data.responsible?.trim() || null,
       },
     });
     revalidatePath("/estoque");

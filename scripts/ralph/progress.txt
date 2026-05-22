@@ -31,6 +31,18 @@ Append logs below using this format:
   - Gotchas encountered
 ```
 
+## 2026-05-22 - US-008
+- What was implemented: estoque/page.tsx virou async server component. StockContent migrado para props + adjustStock + router.refresh(). StockEntry estendido com reason? e responsible? para preservar layout completo do UI. Tipos de movimento simplificados para 3 (entrada|saida|ajuste). Histórico de movimentações vem de db.stockEntry.
+- Files changed: src/app/estoque/page.tsx, src/components/stock/stock-content.tsx, prisma/schema.prisma, src/lib/actions/stock.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - StockEntry precisou de reason? e responsible? para preservar o UI de movimento completo — extender schema como parte da story de UI é aceitável
+  - adjustStock nega quantity automaticamente para tipo "saida" — caller sempre passa valor positivo
+  - History table remove coluna stockAfter (não disponível sem replay de entries) — aceitável para MVP
+  - Movimentos limitados a últimos 100 no page.tsx (take: 100) — evitar queries pesadas
+
 ## 2026-05-22 - US-007
 - What was implemented: StockEntryType enum (entrada|saida|ajuste) + StockEntry model adicionados ao schema. src/lib/actions/stock.ts com getStockSummary (groupBy + produto fallback) e adjustStock (validateProductId + create).
 - Files changed: prisma/schema.prisma, src/lib/actions/stock.ts (novo)

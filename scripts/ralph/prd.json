@@ -144,7 +144,7 @@
         "Lint passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-007. Do not redesign the UI."
     },

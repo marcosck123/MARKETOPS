@@ -70,10 +70,12 @@ model Product {
 }
 
 model StockEntry {
-  id        String         @id @default(cuid())
-  productId String
-  product   Product        @relation(fields: [productId], references: [id])
-  quantity  Int
-  type      StockEntryType
-  createdAt DateTime       @default(now())
+  id          String         @id @default(cuid())
+  productId   String
+  product     Product        @relation(fields: [productId], references: [id])
+  quantity    Int
+  type        StockEntryType
+  reason      String?
+  responsible String?
+  createdAt   DateTime       @default(now())
 }
