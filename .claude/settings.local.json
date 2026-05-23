@@ -21,7 +21,13 @@
       "Bash(git checkout *)",
       "Bash(for f *)",
       "Read(//c/Users/caixa.m1/MARKETOPS/src/app$f/**)",
-      "Bash(Get-Content \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\src\\\\app\\\\fornecedores\\\\page.tsx\")"
+      "Bash(Get-Content \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\src\\\\app\\\\fornecedores\\\\page.tsx\")",
+      "PowerShell(git add src/app/admin/compras/page.tsx src/components/purchases/purchases-content.tsx src/components/shared/status-badge.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-022\\): tela /admin/compras - nota fiscal de entrada UI\")",
+      "PowerShell(git add src/app/admin/vendas/page.tsx src/app/admin/caixas/page.tsx src/components/layout/app-sidebar.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-024\\): telas de leitura /admin/vendas e /admin/caixas para financeiro\")",
+      "PowerShell(git add src/app/admin/relatorios/page.tsx src/components/reports/reports-content.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-025\\): relatorios /admin/relatorios - tabela de vendas + exportacao CSV\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\security-guardian",
