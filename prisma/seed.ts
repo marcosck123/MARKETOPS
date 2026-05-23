@@ -187,18 +187,28 @@ async function main() {
     },
   });
 
-  const adminPasswordHash = await bcrypt.hash("admin123", 12);
-  await prisma.user.upsert({
-    where: { email: "admin@marketops.local" },
-    update: { active: true },
-    create: {
-      email: "admin@marketops.local",
-      name: "Admin MARKETOPS",
-      passwordHash: adminPasswordHash,
-      role: "admin",
-      active: true,
-    },
-  });
+  const users = [
+    { email: "admin@marketops.local",      name: "Admin",      role: "admin",      password: "admin123" },
+    { email: "operador@marketops.local",   name: "Operador",   role: "operator",   password: "operador123" },
+    { email: "supervisor@marketops.local", name: "Supervisor", role: "supervisor", password: "supervisor123" },
+    { email: "estoque@marketops.local",    name: "Estoque",    role: "estoque",    password: "estoque123" },
+    { email: "financeiro@marketops.local", name: "Financeiro", role: "financeiro", password: "financeiro123" },
+  ];
+
+  for (const u of users) {
+    const passwordHash = await bcrypt.hash(u.password, 12);
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: { active: true },
+      create: {
+        email: u.email,
+        name: u.name,
+        passwordHash,
+        role: u.role as "admin" | "operator" | "supervisor" | "estoque" | "financeiro",
+        active: true,
+      },
+    });
+  }
 
   console.log("Seed completed.");
 }
