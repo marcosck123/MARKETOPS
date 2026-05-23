@@ -379,3 +379,16 @@ Append logs below using this format:
   - getCompanySettings calls upsert({ where: {id:'default'}, update:{}, create:{id:'default'} }) — auto-creates with defaults on first call
   - nfeSequence is @default(1) but incremented in transactions — never exposed as editable in the form
   - Product ncm/cfop/cst are optional with defaults — existing products don't break
+
+## 2026-05-22 - US-018 (MVP 3 Fase 4)
+- What was implemented: FiscalRequestStatus enum (pending | processing | completed | cancelled) and FiscalRequest model (saleId as String, no FK — avoids circular dependency with Sale). src/lib/actions/fiscal-requests.ts with createFiscalRequest (validates uniqueness per saleId), completeFiscalRequest (db.$transaction: upsert CompanySettings incrementing nfeSequence + generate 44-char nfeKey + update FiscalRequest), cancelFiscalRequest, getPendingFiscalRequests.
+- Files changed: prisma/schema.prisma, src/lib/actions/fiscal-requests.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - FiscalRequest.saleId is String (no @relation) to avoid circular dependency — Sale does not get a fiscalRequests relation
+  - nfeKey = 44 random digits generated client-side (pure Math.random) — acceptable for mock, real NF-e would use key from SEFAZ
+  - completeFiscalRequest uses db.$transaction: upsert CompanySettings (increment nfeSequence) + update FiscalRequest atomically
+  - nfeNumber = serie + '-' + nfeSequence.padStart(6, '0') — e.g. '1-000001'
+  - createFiscalRequest checks for existing pending/processing/completed — blocks duplicate NF for same sale

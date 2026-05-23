@@ -255,6 +255,29 @@ model CompanySettings {
   updatedAt   DateTime @updatedAt
 }
 
+enum FiscalRequestStatus {
+  pending
+  processing
+  completed
+  cancelled
+}
+
+model FiscalRequest {
+  id           String              @id @default(cuid())
+  saleId       String
+  saleCode     String
+  customerId   String?
+  document     String
+  customerName String?
+  status       FiscalRequestStatus @default(pending)
+  nfeKey       String?
+  nfeNumber    String?
+  operatorId   String
+  supervisorId String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
 enum CustomerType {
   cpf
   cnpj

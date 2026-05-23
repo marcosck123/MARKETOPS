@@ -217,7 +217,7 @@
         "Lint passes"
       ],
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on US-017. saleId stored as string (no FK) to avoid circular dependency between Sale and FiscalRequest. nfeKey = 44-char string of random digits (mock). nfeNumber = serie + '-' + nfeSequence.toString().padStart(6, '0'). completeFiscalRequest uses db.$transaction to atomically increment nfeSequence and update FiscalRequest."
     },
