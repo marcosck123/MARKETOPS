@@ -23,7 +23,7 @@
       "priority": 1,
       "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on existing CashRegister model. operatorName is stored as a snapshot (not a join) so session history is preserved even if user is renamed. openCashSession receives operatorId and operatorName from the caller (server action reads from auth session)."
+      "notes": ""
     },
     {
       "id": "US-008",
@@ -45,7 +45,7 @@
       "priority": 2,
       "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-007. Use db.$transaction for atomicity — if StockEntry creation fails, the Sale is not saved. SaleItem.quantity is Float to support fractional quantities (weight-based products). code field is computed as 'VEN-' + sequence.toString().padStart(6, '0')."
+      "notes": ""
     },
     {
       "id": "US-009",
@@ -53,126 +53,195 @@
       "description": "As an operator, I want the PDV to have a cleaner, denser layout so that I can find products faster and see the total at a glance.",
       "acceptanceCriteria": [
         "Customer select removed from header entirely",
-        "Header shows: MARKETOPS PDV logo, session info placeholder (caixa + operador), current time, link to Vendas",
-        "Product section: compact list rows instead of large cards — each row shows name, SKU, price, stock badge",
-        "Low stock product shows amber left border + badge 'Estoque baixo'",
-        "Zero stock product is visually dimmed and cannot be added",
-        "Total panel: total value shown at the TOP in large dark box, then subtotal/discount/paid/balance below",
-        "Finalizar venda button is h-14 and always anchored to bottom of payment panel",
-        "Discount input uses Percent icon not Search icon",
-        "Visual feedback when product is added: brief highlight on cart row",
-        "Existing sale-engine logic (addSaleItem, finishSale, etc.) unchanged",
+        "Header shows: MARKETOPS PDV logo, session info, current time, link to Vendas",
+        "Product section: compact list rows",
+        "Total panel: total value shown at the TOP",
+        "Finalizar venda button is h-14",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 3,
       "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
-      "notes": "Depends on nothing — purely visual. Do not change sale-engine.ts. Do not change sale-data.ts. Only change pos-content.tsx layout and styles. Products still come from props (will be connected to DB in US-011)."
+      "notes": ""
     },
     {
       "id": "US-010",
       "title": "PDV gate de sessao — selecao ao entrar",
-      "description": "As an operator, I want to select which cash register I am operating when I open the PDV, so that my sales are linked to the correct session.",
+      "description": "As an operator, I want to select which cash register I am operating when I open the PDV.",
       "acceptanceCriteria": [
         "On /pdv load, server component checks if logged-in operator has an active CashSession",
-        "If no active session: full-screen session gate modal shown with list of available (closed) CashRegisters to open",
-        "Operator selects a register + sets opening balance + confirms to open session",
-        "If active session exists: PDV loads normally with session info in header (register name + operator name)",
-        "Session info in PDV header replaces the old cashSession select",
-        "Opening balance input in session gate defaults to 0",
+        "If no active session: full-screen session gate modal shown",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 4,
       "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
-      "notes": "Depends on US-007. pdv/page.tsx becomes async server component. Gate logic runs server-side. CashSession opening happens via server action called from a client gate component."
+      "notes": ""
     },
     {
       "id": "US-011",
       "title": "Conectar PDV ao banco — produtos, sessao e persistir venda",
-      "description": "As an operator, I want the PDV to show real products from the database and persist completed sales, so that inventory is updated and sales are recorded.",
+      "description": "As an operator, I want the PDV to show real products from the database and persist completed sales.",
       "acceptanceCriteria": [
-        "PDV loads products from db.product.findMany (active only) instead of initialProducts mock",
-        "Remove all imports of initialProducts, initialCashSessions, initialCashRegisters, initialCustomers from pos-content.tsx",
+        "PDV loads products from db.product.findMany (active only)",
         "PosContent receives products: Product[] and cashSession: ActiveSession from server component as props",
-        "handleFinishSale calls persistFinishedSale server action after sale-engine finishSale returns ok:true",
-        "On successful persist: router.refresh() reloads products with updated stock",
-        "finishSale still validates stock client-side before calling server action",
-        "Error from persistFinishedSale shown in errors list",
+        "handleFinishSale calls persistFinishedSale server action",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 5,
       "passes": true,
       "skillsRequired": ["full-stack-planner", "code-review"],
-      "notes": "Depends on US-008 and US-010. Keep sale-engine.ts pure — do not add DB calls inside it. Server action is called AFTER sale-engine validation succeeds. Products are refreshed after sale to reflect updated stock from StockEntry records."
+      "notes": ""
     },
     {
       "id": "US-012",
       "title": "HelpRequest schema + server actions",
-      "description": "As a developer, I want a HelpRequest model that links a cash register to a help call, so that operators can request supervisor assistance from the PDV.",
+      "description": "As a developer, I want a HelpRequest model that links a cash register to a help call.",
       "acceptanceCriteria": [
         "HelpRequestStatus enum: active | attended | expired",
-        "HelpRequest model: id, cashRegisterId (FK), operatorId, operatorName, cashRegisterName, status (default active), expiresAt (createdAt + 60s), attendedBy?, attendedAt?, createdAt",
-        "CashRegister model gets helpRequests HelpRequest[] relation",
+        "HelpRequest model with expiresAt = createdAt + 60s",
         "src/lib/actions/help-requests.ts exports createHelpRequest, attendHelpRequest, getActiveHelpRequests",
-        "createHelpRequest validates no active request already exists for the same cashRegisterId",
-        "createHelpRequest sets expiresAt = new Date(Date.now() + 60_000)",
-        "attendHelpRequest validates status === 'active', updates to attended with attendedBy + attendedAt = now",
-        "getActiveHelpRequests calls expireOldRequests first (updates active+expired to expired), then returns all still active ordered by createdAt asc",
-        "Each mutation calls revalidatePath('/supervisor') and revalidatePath('/pdv')",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 6,
       "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on existing CashRegister model. operatorName and cashRegisterName stored as snapshots. getActiveHelpRequests auto-expires stale requests before returning results."
+      "notes": ""
     },
     {
       "id": "US-013",
       "title": "PDV — Botao Chamar Supervisor com contagem regressiva",
-      "description": "As an operator, I want a 'Chamar Supervisor' button in the PDV header so that I can request assistance and see a countdown until my call expires.",
+      "description": "As an operator, I want a 'Chamar Supervisor' button in the PDV header.",
       "acceptanceCriteria": [
-        "Header PDV: Bell icon button 'Chamar Supervisor' in top-right area next to current time",
-        "On click: calls createHelpRequest server action with cashSession.cashRegisterId, cashSession.operatorId, cashSession.operatorName, cashSession.cashRegisterName",
-        "After successful call: button shows amber 'Aguardando... (60s)' with countdown ticking every second via setInterval",
-        "When countdown reaches 0: button resets to default 'Chamar Supervisor' state",
-        "While countdown active: button is disabled (no second call possible)",
-        "If createHelpRequest returns error (e.g. already active): show error in existing errors list",
-        "cashSession prop provides all needed identifiers",
+        "Bell icon button in header, countdown 60s after click",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 7,
       "passes": true,
       "skillsRequired": ["design-ux-ui", "code-review"],
-      "notes": "Depends on US-012. Only changes pos-content.tsx. Countdown uses local state (number) + setInterval. Clear interval on unmount or when countdown reaches 0. Purely client-side countdown — no polling."
+      "notes": ""
     },
     {
       "id": "US-014",
       "title": "Tela /supervisor — polling 4s, alarme sonoro, badge na aba",
-      "description": "As a supervisor, I want a real-time screen showing active help requests with an audible alarm and browser tab badge, so I can respond quickly.",
+      "description": "As a supervisor, I want a real-time screen showing active help requests.",
       "acceptanceCriteria": [
-        "Route /supervisor: async server component renders SupervisorContent with initialRequests from getActiveHelpRequests()",
-        "SupervisorContent is a client component with setInterval 4s polling getActiveHelpRequests server action",
-        "Each active request shown as a card: cashRegisterName, operatorName, time remaining (progress bar 0-60s), 'Atender' button",
-        "Progress bar color: amber when > 20s remaining, red when <= 20s",
-        "Atender button calls attendHelpRequest(id, supervisorName) — supervisorName from useSession().data?.user?.name",
-        "Empty state when no active requests: 'Nenhum chamado ativo' centered in slate-800 card",
-        "Alarm: Web Audio API oscillator at 440Hz, 200ms burst, repeated every 5s while requests.length > 0; stops when empty",
-        "Tab title: document.title set to '(N) Supervisor — MARKETOPS' when N > 0, 'Supervisor — MARKETOPS' when empty",
-        "Page header shows 'Supervisor' title + 'Fila de chamados' subtitle",
-        "Sidebar link /supervisor already exists for supervisor role (middleware already configured)",
+        "Polling 4s, Web Audio alarm, document.title badge, cards with progress bar",
         "Typecheck passes",
         "Lint passes"
       ],
       "priority": 8,
       "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
-      "notes": "Depends on US-012 and US-013. Web Audio AudioContext must be created after first user interaction (browser policy). Create context lazily on first alarm trigger. Polling clears on component unmount. HelpRequestRow type: { id, cashRegisterName, operatorName, createdAt: Date, expiresAt: Date }."
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Customer schema + server actions",
+      "description": "As a developer, I want a Customer model for PF/PJ registration so that fiscal requests can be linked to a customer.",
+      "acceptanceCriteria": [
+        "CustomerType enum: cpf | cnpj",
+        "Customer model: id, type CustomerType, document String @unique, name, tradeName?, email?, phone?, zipCode?, street?, number?, complement?, district?, city?, state?, ie?, active Boolean @default(true), createdAt",
+        "src/lib/actions/customers.ts exports createCustomer, updateCustomer, findCustomerByDocument, listCustomers",
+        "createCustomer validates document uniqueness before inserting",
+        "findCustomerByDocument returns Customer or null",
+        "listCustomers supports optional search string filtered on name OR document",
+        "toggleCustomerStatus sets active = !current",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Standalone — no FK dependencies on other new models. document field stores raw digits only (no mask). CPF = 11 digits, CNPJ = 14 digits — validation is caller responsibility."
+    },
+    {
+      "id": "US-016",
+      "title": "Tela /supervisor/clientes — cadastro PF/PJ",
+      "description": "As a supervisor, I want to register and manage PF/PJ customers so that I can link them to fiscal requests.",
+      "acceptanceCriteria": [
+        "Route /supervisor/clientes: async server component lists customers from listCustomers()",
+        "CustomersContent client component receives customers as props + router.refresh() after mutations",
+        "Search input filters by name or document (debounced or form submit)",
+        "Table columns: Tipo (CPF/CNPJ), Documento (masked), Nome, Status, actions",
+        "Novo cliente button opens modal: select CPF or CNPJ, document input, name, tradeName (PJ only), email?, phone?",
+        "Edit icon opens same modal pre-filled (updateCustomer)",
+        "Toggle status chip calls toggleCustomerStatus",
+        "Middleware: /supervisor/clientes already covered by /supervisor prefix in ROLE_ROUTES",
+        "Sidebar: 'Clientes (NF)' item gets href '/supervisor/clientes'",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-015. Follow same pattern as /admin/usuarios: server component + client content + modal. Document display: format CPF as XXX.XXX.XXX-XX, CNPJ as XX.XXX.XXX/XXXX-XX in the table (display only, store raw)."
+    },
+    {
+      "id": "US-017",
+      "title": "CompanySettings schema + /admin/configuracoes + Product NCM/CFOP/CST",
+      "description": "As an admin, I want company settings stored in the database and editable, and products to have NCM/CFOP/CST fields for NF-e.",
+      "acceptanceCriteria": [
+        "CompanySettings model: id @default('default'), razaoSocial, cnpj, ie?, address, number, district, city, state, zipCode, phone, nfeSerie String @default('1'), nfeSequence Int @default(1), updatedAt @updatedAt",
+        "Product model: add ncm String? @default(null), cfop String? @default('5102'), cst String? @default('400')",
+        "Seed: upsert CompanySettings with id='default' and placeholder values",
+        "src/lib/actions/company-settings.ts exports getCompanySettings, updateCompanySettings",
+        "Route /admin/configuracoes: async server component with form to update company settings (razaoSocial, cnpj, ie, address fields, nfeSerie)",
+        "Middleware: /admin/configuracoes accessible to admin only (already in ROLE_ROUTES via catch-all not needed — add it)",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "code-review"],
+      "notes": "CompanySettings uses @id with fixed value 'default' — single-row config table (upsert pattern). nfeSequence is incremented inside completeFiscalRequest in US-018."
+    },
+    {
+      "id": "US-018",
+      "title": "FiscalRequest schema + server actions",
+      "description": "As a developer, I want FiscalRequest model and server actions to create and complete mock NF-e requests.",
+      "acceptanceCriteria": [
+        "FiscalRequestStatus enum: pending | processing | completed | cancelled",
+        "FiscalRequest model: id, saleId String (not FK — avoids circular), saleCode String, customerId?, document, customerName?, status FiscalRequestStatus @default(pending), nfeKey?, nfeNumber?, operatorId, supervisorId?, createdAt, updatedAt",
+        "src/lib/actions/fiscal-requests.ts exports createFiscalRequest, completeFiscalRequest, cancelFiscalRequest, getPendingFiscalRequests",
+        "createFiscalRequest validates saleId not already linked to a pending/completed request",
+        "completeFiscalRequest: fetches CompanySettings, increments nfeSequence, generates nfeKey (44 random digits), generates nfeNumber from nfeSequence, updates FiscalRequest to completed",
+        "getPendingFiscalRequests returns all where status === 'pending' ordered by createdAt asc",
+        "Each mutation revalidatePath('/supervisor') and revalidatePath('/pdv')",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
+      "notes": "Depends on US-017. saleId stored as string (no FK) to avoid circular dependency between Sale and FiscalRequest. nfeKey = 44-char string of random digits (mock). nfeNumber = serie + '-' + nfeSequence.toString().padStart(6, '0'). completeFiscalRequest uses db.$transaction to atomically increment nfeSequence and update FiscalRequest."
+    },
+    {
+      "id": "US-019",
+      "title": "Fluxo NF no PDV — modal CPF/CNPJ + fila NF no supervisor",
+      "description": "As an operator, I want to optionally attach a CPF/CNPJ to a sale for NF-e, and as a supervisor I want to see and emit the NF-e queue.",
+      "acceptanceCriteria": [
+        "PDV: 'Emitir NF' button visible next to 'Finalizar venda' when balance === 0 (sale is payable)",
+        "Clicking 'Emitir NF' opens modal: document input (CPF or CNPJ), lookup existing customer by document, 'Sem NF' option, 'Solicitar NF-e' option",
+        "Solicitar NF-e: calls handleFinishSale then createFiscalRequest with saleId, saleCode, document, customerId? (if found), customerName?",
+        "Sem NF: closes modal — no NF created",
+        "Supervisor screen: NF queue section below help requests showing pending fiscal requests",
+        "Each NF ticket shows: saleCode, document, customerName?, total from saleCode lookup",
+        "Supervisor 'Emitir NF' button calls completeFiscalRequest, shows nfeKey + nfeNumber in success modal",
+        "Success modal has 'Imprimir DANFE' button that opens printable HTML page in new tab",
+        "cancelFiscalRequest button on each ticket",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
+      "notes": "Depends on US-018. DANFE is a printable HTML page (window.open + document.write) — no PDF library needed. NF queue in supervisor is a section below the help-request cards, same polling 4s. 'Emitir NF' in PDV is a separate button from 'Finalizar venda' — it finalizes AND creates FiscalRequest."
     }
   ]
 }
