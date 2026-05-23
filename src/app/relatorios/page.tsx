@@ -1,10 +1,5 @@
-import { AdminShell } from "@/components/layout/admin-shell";
-import { ReportsContent } from "@/components/reports/reports-content";
+import { redirect } from "next/navigation";
 
 export default function ReportsPage() {
-  return (
-    <AdminShell>
-      <ReportsContent />
-    </AdminShell>
-  );
+  redirect("/admin/relatorios");
 }

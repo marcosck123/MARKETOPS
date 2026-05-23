@@ -1,10 +1,5 @@
-import { AdminShell } from "@/components/layout/admin-shell";
-import { PurchasesContent } from "@/components/purchases/purchases-content";
+import { redirect } from "next/navigation";
 
 export default function PurchasesPage() {
-  return (
-    <AdminShell>
-      <PurchasesContent />
-    </AdminShell>
-  );
+  redirect("/admin/compras");
 }

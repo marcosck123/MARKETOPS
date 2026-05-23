@@ -1,10 +1,5 @@
-import { AdminShell } from "@/components/layout/admin-shell";
-import { CustomersContent } from "@/components/customers/customers-content";
+import { redirect } from "next/navigation";
 
 export default function CustomersPage() {
-  return (
-    <AdminShell>
-      <CustomersContent />
-    </AdminShell>
-  );
+  redirect("/admin/clientes");
 }

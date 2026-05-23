@@ -1,10 +1,5 @@
-import { AdminShell } from "@/components/layout/admin-shell";
-import { SuppliersContent } from "@/components/suppliers/suppliers-content";
+import { redirect } from "next/navigation";
 
 export default function SuppliersPage() {
-  return (
-    <AdminShell>
-      <SuppliersContent />
-    </AdminShell>
-  );
+  redirect("/admin/fornecedores");
 }

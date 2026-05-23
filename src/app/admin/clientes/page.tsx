@@ -1,10 +1,13 @@
 import { AdminShell } from "@/components/layout/admin-shell";
 import { CustomersContent } from "@/components/customers/customers-content";
+import { listCustomers } from "@/lib/actions/customers";
 
-export default function CustomersPage() {
+export default async function CustomersPage() {
+  const customers = await listCustomers();
+
   return (
     <AdminShell>
-      <CustomersContent />
+      <CustomersContent customers={customers} />
     </AdminShell>
   );
 }

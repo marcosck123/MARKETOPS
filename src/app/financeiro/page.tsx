@@ -1,10 +1,5 @@
-import { FinanceContent } from "@/components/finance/finance-content";
-import { AdminShell } from "@/components/layout/admin-shell";
+import { redirect } from "next/navigation";
 
 export default function FinancePage() {
-  return (
-    <AdminShell>
-      <FinanceContent />
-    </AdminShell>
-  );
+  redirect("/admin/financeiro");
 }
