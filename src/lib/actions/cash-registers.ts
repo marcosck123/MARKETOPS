@@ -39,7 +39,7 @@ export async function getCashRegisters(): Promise<
 
   return {
     success: true,
-    data: registers.map((r) => ({
+    data: registers.map((r: (typeof registers)[number]) => ({
       id: r.id,
       name: r.name,
       status: r.status as "open" | "closed",

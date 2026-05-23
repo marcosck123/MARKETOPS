@@ -103,7 +103,7 @@ export function AppSidebar() {
           const content = (
             <>
               <span className="flex items-center gap-3">
-                <Icon className="size-4" aria-hidden="true" />
+                <Icon className="size-4" aria-hidden={true} />
                 {item.label}
               </span>
               {isActive ? (

@@ -32,12 +32,12 @@ export async function getStockSummary(): Promise<
   ]);
 
   const stockMap = new Map(
-    grouped.map((g) => [g.productId, g._sum.quantity ?? 0]),
+    grouped.map((g: (typeof grouped)[number]) => [g.productId, g._sum.quantity ?? 0]),
   );
 
   return {
     success: true,
-    data: products.map((p) => ({
+    data: products.map((p: (typeof products)[number]) => ({
       productId: p.id,
       productName: p.name,
       productSku: p.sku,

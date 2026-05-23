@@ -78,8 +78,8 @@ export default async function AdminVendasPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {sales.map((sale: (typeof sales)[number]) => {
-                    const methods: string[] = [
-                      ...new Set(sale.payments.map((p: { method: string }) => p.method)),
+                    const methods = [
+                      ...new Set<string>(sale.payments.map((p: { method: string }) => p.method)),
                     ];
                     return (
                       <tr key={sale.id} className="text-slate-700">

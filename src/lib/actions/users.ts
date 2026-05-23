@@ -34,7 +34,7 @@ export async function getUsers(): Promise<UserRow[]> {
     },
   });
 
-  return users.map((u) => ({
+  return users.map((u: (typeof users)[number]) => ({
     ...u,
     createdAt: new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",

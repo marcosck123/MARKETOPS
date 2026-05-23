@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { type Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 
 type ActionResult<T = void> =
@@ -73,7 +74,7 @@ export async function completeFiscalRequest(
     return { success: false, error: "Solicitação não está pendente." };
   }
 
-  const result = await db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     const settings = await tx.companySettings.upsert({
       where: { id: "default" },
       update: { nfeSequence: { increment: 1 } },

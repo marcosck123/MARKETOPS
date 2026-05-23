@@ -11,12 +11,6 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    role?: string;
-  }
-}
-
 export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/login",
@@ -32,7 +26,7 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }) {
       if (token.role) {
-        session.user.role = token.role;
+        session.user.role = token.role as string;
       }
       return session;
     },

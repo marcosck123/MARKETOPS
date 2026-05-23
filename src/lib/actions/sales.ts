@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { type Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { Sale } from "@/lib/sale-data";
 
@@ -20,7 +21,7 @@ export async function persistFinishedSale(
   }
 
   try {
-    const result = await db.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const newSale = await tx.sale.create({
         data: {
           cashSessionId: sale.cashSessionId,

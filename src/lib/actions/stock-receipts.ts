@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { type Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 
 type ActionResult<T = void> =
@@ -49,7 +50,7 @@ export async function createStockReceipt(params: {
   invoiceNumber?: string;
   notes?: string;
 }): Promise<ActionResult<StockReceiptRow>> {
-  const receipt = await db.$transaction(async (tx) => {
+  const receipt = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     const newReceipt = await tx.stockReceipt.create({
       data: {
         supplierId: params.supplierId || null,
@@ -87,7 +88,7 @@ export async function addReceiptItem(params: {
   if (!product) return { success: false, error: "Produto não encontrado." };
 
   const total = params.quantity * params.unitCost;
-  const item = await db.$transaction(async (tx) => {
+  const item = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     const newItem = await tx.stockReceiptItem.create({
       data: {
         stockReceiptId: params.stockReceiptId,
@@ -101,7 +102,7 @@ export async function addReceiptItem(params: {
     const allItems = await tx.stockReceiptItem.findMany({
       where: { stockReceiptId: params.stockReceiptId },
     });
-    const newTotal = allItems.reduce((sum, i) => sum + i.total, 0);
+    const newTotal = allItems.reduce((sum: number, i: { total: number }) => sum + i.total, 0);
     await tx.stockReceipt.update({
       where: { id: params.stockReceiptId },
       data: { totalCost: newTotal },
@@ -124,12 +125,12 @@ export async function removeReceiptItem(
   if (!receipt || receipt.status !== "draft")
     return { success: false, error: "Apenas recebimentos em rascunho podem ter itens removidos." };
 
-  await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.stockReceiptItem.delete({ where: { id: itemId } });
     const remaining = await tx.stockReceiptItem.findMany({
       where: { stockReceiptId: item.stockReceiptId },
     });
-    const newTotal = remaining.reduce((sum, i) => sum + i.total, 0);
+    const newTotal = remaining.reduce((sum: number, i: { total: number }) => sum + i.total, 0);
     await tx.stockReceipt.update({
       where: { id: item.stockReceiptId },
       data: { totalCost: newTotal },
@@ -152,7 +153,7 @@ export async function confirmStockReceipt(
   if (receipt.items.length === 0)
     return { success: false, error: "Adicione ao menos um item antes de confirmar." };
 
-  await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx: Prisma.TransactionClient) => {
     for (const item of receipt.items) {
       await tx.stockEntry.create({
         data: {

@@ -99,7 +99,7 @@ export async function getOpenSessions(): Promise<OpenSessionRow[]> {
     include: { cashRegister: { select: { name: true } } },
     orderBy: { openedAt: "desc" },
   });
-  return sessions.map((s) => ({
+  return sessions.map((s: (typeof sessions)[number]) => ({
     id: s.id,
     cashRegisterName: s.cashRegister.name,
     operatorName: s.operatorName,
