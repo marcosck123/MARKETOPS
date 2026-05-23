@@ -342,3 +342,15 @@ Append logs below using this format:
   - new Date(expiresAt) in getRemainingSeconds handles both Date objects and ISO strings — defensive pattern for RSC serialization
   - Optimistic UI in handleAttend: setRequests(prev => prev.filter(...)) gives instant feedback; 4s poll confirms server state
   - Sidebar bug: two const userRole declarations cause TS error — renamed to userRoleLabel (display) and roleKey (filter)
+
+## 2026-05-22 - US-015 (MVP 3 Fase 4)
+- What was implemented: CustomerType enum (cpf | cnpj) and Customer model added to prisma/schema.prisma. src/lib/actions/customers.ts created with createCustomer (validates uniqueness, strips non-digits from document), updateCustomer, toggleCustomerStatus, findCustomerByDocument, listCustomers (optional search on name OR document). All fields trimmed. document stored as raw digits.
+- Files changed: prisma/schema.prisma, src/lib/actions/customers.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - document stored as raw digits (replace /\D/g, '') — masking is display-only concern
+  - findUnique on @unique field is fastest lookup — use for document lookup in PDV NF modal
+  - listCustomers uses insensitive mode for name search — case-insensitive on Prisma PostgreSQL
+  - CustomerRow type omits address fields to keep list queries lean — full details available via findUnique when editing

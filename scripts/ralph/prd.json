@@ -156,7 +156,7 @@
         "Lint passes"
       ],
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Standalone — no FK dependencies on other new models. document field stores raw digits only (no mask). CPF = 11 digits, CNPJ = 14 digits — validation is caller responsibility."
     },

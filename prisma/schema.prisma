@@ -235,6 +235,31 @@ model SalePayment {
   amount Float
 }
 
+enum CustomerType {
+  cpf
+  cnpj
+}
+
+model Customer {
+  id         String       @id @default(cuid())
+  type       CustomerType
+  document   String       @unique
+  name       String
+  tradeName  String?
+  email      String?
+  phone      String?
+  zipCode    String?
+  street     String?
+  number     String?
+  complement String?
+  district   String?
+  city       String?
+  state      String?
+  ie         String?
+  active     Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+}
+
 enum HelpRequestStatus {
   active
   attended
