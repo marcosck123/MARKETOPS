@@ -75,7 +75,7 @@ export default async function AdminCaixasPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {sessions.map((session) => {
+                  {sessions.map((session: (typeof sessions)[number]) => {
                     const totalSales = session.sales.reduce(
                       (sum, s) => sum + s.total,
                       0,
