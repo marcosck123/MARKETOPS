@@ -10,7 +10,7 @@ type ActionResult<T = void> =
 
 export async function persistFinishedSale(
   sale: Sale,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; code: string }>> {
   const session = await auth();
   const operatorId = session?.user?.id;
   if (!operatorId) return { success: false, error: "Não autenticado." };
@@ -70,10 +70,10 @@ export async function persistFinishedSale(
         });
       }
 
-      return newSale;
+      return { id: newSale.id, code };
     });
 
-    return { success: true, data: { id: result.id } };
+    return { success: true, data: result };
   } catch {
     return { success: false, error: "Erro ao persistir venda." };
   }

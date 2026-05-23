@@ -239,7 +239,7 @@
         "Lint passes"
       ],
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-018. DANFE is a printable HTML page (window.open + document.write) — no PDF library needed. NF queue in supervisor is a section below the help-request cards, same polling 4s. 'Emitir NF' in PDV is a separate button from 'Finalizar venda' — it finalizes AND creates FiscalRequest."
     }

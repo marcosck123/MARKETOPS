@@ -392,3 +392,17 @@ Append logs below using this format:
   - completeFiscalRequest uses db.$transaction: upsert CompanySettings (increment nfeSequence) + update FiscalRequest atomically
   - nfeNumber = serie + '-' + nfeSequence.padStart(6, '0') — e.g. '1-000001'
   - createFiscalRequest checks for existing pending/processing/completed — blocks duplicate NF for same sale
+
+## 2026-05-22 - US-019 (MVP 3 Fase 4)
+- What was implemented: PDV: 'Emitir NF' button appears when balance === 0 and sale has items (grid-cols-2 with Finalizar). 'Emitir NF' calls handleFinishWithNf (same engine+persist as handleFinishSale, but stores pendingSale={id,code} and opens NF modal). NF modal: document input + lookup button (findCustomerByDocument). 'Sem NF' = close modal + resetToNewSale(). 'Solicitar NF-e' = createFiscalRequest + close + reset. persistFinishedSale updated to return { id, code }. Supervisor: NF queue section with 'Emitir NF' (completeFiscalRequest) and 'Cancelar'. completeFiscalRequest success shows modal with nfeKey+nfeNumber+'Imprimir DANFE' (window.open + document.write printable HTML). supervisor/page.tsx updated to fetch both getActiveHelpRequests and getPendingFiscalRequests in parallel.
+- Files changed: src/lib/actions/sales.ts (return code), src/components/pos/pos-content.tsx, src/components/supervisor/supervisor-content.tsx, src/app/supervisor/page.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - persistFinishedSale now returns { id, code } — needed for FiscalRequest creation after sale is persisted
+  - handleFinishWithNf and handleFinishSale share engine+persist logic but diverge after: NF path stores pendingSale and opens modal
+  - resetToNewSale() extracted to avoid duplication between the two finish paths + handleSkipNf
+  - DANFE as printable HTML via window.open + document.write — avoids @react-pdf/renderer dependency
+  - Supervisor polling upgraded to Promise.all([getActiveHelpRequests(), getPendingFiscalRequests()]) in single interval
+  - document.title badge counts both help requests + NF queue: total = requests.length + fiscalRequests.length

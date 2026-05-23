@@ -6,9 +6,11 @@ import {
   Barcode,
   Bell,
   CheckCircle2,
+  FileText,
   Monitor,
   Percent,
   Plus,
+  Search,
   ShoppingCart,
   Trash2,
   X,
@@ -21,6 +23,8 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { cn } from "@/lib/utils";
 import type { ActiveSession } from "@/lib/actions/cash-sessions";
 import { createHelpRequest } from "@/lib/actions/help-requests";
+import { createFiscalRequest } from "@/lib/actions/fiscal-requests";
+import { findCustomerByDocument } from "@/lib/actions/customers";
 import { persistFinishedSale } from "@/lib/actions/sales";
 import { type Product } from "@/lib/product-data";
 import {
@@ -116,6 +120,12 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   const [currentTime, setCurrentTime] = useState(formatTime);
   const [helpCountdown, setHelpCountdown] = useState(0);
   const [helpLoading, setHelpLoading] = useState(false);
+  const [nfModalOpen, setNfModalOpen] = useState(false);
+  const [nfDocument, setNfDocument] = useState("");
+  const [nfLookupName, setNfLookupName] = useState<string | null>(null);
+  const [nfLookupId, setNfLookupId] = useState<string | null>(null);
+  const [nfLoading, setNfLoading] = useState(false);
+  const [pendingSale, setPendingSale] = useState<{ id: string; code: string } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(formatTime()), 30_000);
@@ -201,6 +211,15 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
     setErrors([]);
   }
 
+  function resetToNewSale() {
+    const nextSequence = saleSequence + 1;
+    setSaleSequence(nextSequence);
+    setSale(createPosSale(nextSequence, cashSession));
+    setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
+    setErrors([]);
+    router.refresh();
+  }
+
   async function handleFinishSale() {
     const result = finishSale({
       sale,
@@ -224,12 +243,79 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       return;
     }
 
-    const nextSequence = saleSequence + 1;
-    setSaleSequence(nextSequence);
-    setSale(createPosSale(nextSequence, cashSession));
-    setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
-    setErrors([]);
-    router.refresh();
+    resetToNewSale();
+  }
+
+  async function handleFinishWithNf() {
+    const result = finishSale({
+      sale,
+      products,
+      finishedAt: new Date().toLocaleString("pt-BR"),
+    });
+    if (!result.ok) {
+      setErrors(result.errors);
+      return;
+    }
+
+    setProducts(result.products);
+    setLastFinishedSale(result.sale);
+    setPersistLoading(true);
+
+    const persistResult = await persistFinishedSale(result.sale);
+    setPersistLoading(false);
+
+    if (!persistResult.success) {
+      setErrors([persistResult.error]);
+      return;
+    }
+
+    setPendingSale(persistResult.data);
+    setNfDocument("");
+    setNfLookupName(null);
+    setNfLookupId(null);
+    setNfModalOpen(true);
+  }
+
+  async function handleLookupCustomer() {
+    if (!nfDocument.trim()) return;
+    setNfLoading(true);
+    const found = await findCustomerByDocument(nfDocument);
+    setNfLoading(false);
+    if (found) {
+      setNfLookupName(found.name);
+      setNfLookupId(found.id);
+    } else {
+      setNfLookupName(null);
+      setNfLookupId(null);
+    }
+  }
+
+  async function handleRequestNfe() {
+    if (!pendingSale || !nfDocument.trim()) return;
+    setNfLoading(true);
+    const result = await createFiscalRequest({
+      saleId: pendingSale.id,
+      saleCode: pendingSale.code,
+      document: nfDocument,
+      customerId: nfLookupId ?? undefined,
+      customerName: nfLookupName ?? undefined,
+      operatorId: cashSession.operatorId,
+    });
+    setNfLoading(false);
+
+    if (!result.success) {
+      setErrors([result.error]);
+    }
+
+    setNfModalOpen(false);
+    setPendingSale(null);
+    resetToNewSale();
+  }
+
+  function handleSkipNf() {
+    setNfModalOpen(false);
+    setPendingSale(null);
+    resetToNewSale();
   }
 
   function handleClearSale() {
@@ -599,18 +685,98 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 <p className="text-xs text-emerald-700">{formatCurrency(lastFinishedSale.total)}</p>
               </div>
             )}
-            <Button
-              type="button"
-              disabled={persistLoading}
-              onClick={() => void handleFinishSale()}
-              className="h-14 w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-70"
-            >
-              <CheckCircle2 className="size-5" aria-hidden="true" />
-              {persistLoading ? "Salvando..." : "Finalizar venda"}
-            </Button>
+            <div className={cn("grid gap-2", balance === 0 && sale.items.length > 0 && "grid-cols-2")}>
+              {balance === 0 && sale.items.length > 0 && (
+                <Button
+                  type="button"
+                  disabled={persistLoading}
+                  onClick={() => void handleFinishWithNf()}
+                  className="h-14 w-full border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-70"
+                >
+                  <FileText className="size-5" aria-hidden="true" />
+                  {persistLoading ? "..." : "Emitir NF"}
+                </Button>
+              )}
+              <Button
+                type="button"
+                disabled={persistLoading}
+                onClick={() => void handleFinishSale()}
+                className={cn(
+                  "h-14 w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-70",
+                  balance === 0 && sale.items.length > 0 && "col-span-1",
+                )}
+              >
+                <CheckCircle2 className="size-5" aria-hidden="true" />
+                {persistLoading ? "Salvando..." : "Finalizar venda"}
+              </Button>
+            </div>
           </div>
         </aside>
       </div>
+
+      {nfModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-slate-900 p-6 shadow-xl">
+            <h2 className="text-base font-semibold text-white">Emitir NF-e</h2>
+            <p className="mt-1 text-xs text-slate-400">Venda {pendingSale?.code} finalizada</p>
+
+            <div className="mt-5 space-y-3">
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-slate-300">CPF ou CNPJ</span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={nfDocument}
+                    onChange={(e) => {
+                      setNfDocument(e.target.value);
+                      setNfLookupName(null);
+                      setNfLookupId(null);
+                    }}
+                    placeholder="000.000.000-00"
+                    className="h-10 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleLookupCustomer()}
+                    disabled={nfLoading || !nfDocument.trim()}
+                    className="rounded-lg border border-slate-700 bg-slate-800 px-3 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 disabled:opacity-50"
+                    title="Buscar cliente"
+                  >
+                    <Search className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </label>
+
+              {nfLookupName && (
+                <p className="text-xs text-emerald-400">Cliente: {nfLookupName}</p>
+              )}
+              {nfLookupName === null && nfDocument && nfLookupId === null && !nfLoading && (
+                <p className="text-xs text-slate-400">Documento não cadastrado — NF emitida sem vínculo.</p>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  onClick={handleSkipNf}
+                >
+                  Sem NF
+                </Button>
+                <Button
+                  type="button"
+                  disabled={nfLoading || !nfDocument.trim()}
+                  onClick={() => void handleRequestNfe()}
+                  className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+                >
+                  {nfLoading ? "Enviando..." : "Solicitar NF-e"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
