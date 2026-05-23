@@ -430,3 +430,15 @@ Append logs below using this format:
   - confirmStockReceipt increments product.currentStock directly via { increment: N } — avoids read-modify-write race condition
   - totalCost recalculated by summing all items after add/remove — db-authoritative approach, avoids drift
   - getReceiptItems exported separately for use in PurchasesContent detail expansion
+
+## 2026-05-22 - US-022 (MVP 3 Fase 5)
+- What was implemented: /admin/compras page async server component fetching receipts (listStockReceipts), suppliers (listSuppliers), products (db.product.findMany active). PurchasesContent rewritten: table (code, supplier, invoiceNumber, status badge, items count, totalCost, date, actions). Status badges: draft=slate/default, confirmed=emerald/success, cancelled=red/danger. StatusBadge extended with "default" tone (slate-100/slate-600). Row click toggles expansion, lazy-loads items via getReceiptItems. Expanded draft row shows: items table with Trash2 remove buttons, add-item form (product select + qty + unitCost inputs). Confirmar/Cancelar buttons in actions column call server actions optimistically. Create modal: optional supplier select, invoiceNumber, notes. Fragment key used for two-row map pattern.
+- Files changed: src/app/admin/compras/page.tsx, src/components/purchases/purchases-content.tsx (reescrito), src/components/shared/status-badge.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Two-row pattern in table map requires <Fragment key={id}> not bare <> — bare fragment can't accept key prop
+  - StatusBadge tone "default" (slate-100/slate-600) added for neutral states like "draft" — now covers success/warning/danger/info/default
+  - expandedItems: Record<string, StockReceiptItemRow[]> lazy-loaded on row click — avoids N queries on page load
+  - e.stopPropagation() on action cell td prevents row toggle from firing when clicking action buttons

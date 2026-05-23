@@ -1,16 +1,13 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { type FormEvent, Fragment, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  CalendarDays,
   CheckCircle2,
-  Edit3,
+  ChevronDown,
+  ChevronRight,
   FileText,
-  PackagePlus,
   Plus,
-  Save,
-  Search,
-  Send,
   Trash2,
   X,
 } from "lucide-react";
@@ -18,504 +15,561 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { initialProducts } from "@/lib/product-data";
 import {
-  type PurchaseOrder,
-  type PurchaseStatus,
-  initialPurchaseOrders,
-  purchaseStatusLabels,
-} from "@/lib/purchase-data";
-import { initialSuppliers } from "@/lib/supplier-data";
+  addReceiptItem,
+  cancelStockReceipt,
+  confirmStockReceipt,
+  createStockReceipt,
+  getReceiptItems,
+  removeReceiptItem,
+  type StockReceiptItemRow,
+  type StockReceiptRow,
+  type StockReceiptStatus,
+} from "@/lib/actions/stock-receipts";
+import type { SupplierRow } from "@/lib/actions/suppliers";
+import { cn } from "@/lib/utils";
 
-type PurchaseFormItem = {
-  id: string;
-  productId: string;
-  quantity: string;
-  unitCost: string;
+type ProductOption = { id: string; name: string; sku: string };
+
+type Props = {
+  initialReceipts: StockReceiptRow[];
+  suppliers: SupplierRow[];
+  products: ProductOption[];
 };
 
-type PurchaseFormState = {
-  supplierId: string;
-  status: PurchaseStatus;
-  expectedAt: string;
-  notes: string;
-  itemProductId: string;
-  itemQuantity: string;
-  itemUnitCost: string;
-  items: PurchaseFormItem[];
+const statusTone: Record<
+  StockReceiptStatus,
+  "default" | "success" | "warning" | "danger" | "info"
+> = {
+  draft: "default",
+  confirmed: "success",
+  cancelled: "danger",
 };
 
-const defaultPurchaseForm: PurchaseFormState = {
-  supplierId: initialSuppliers[0]?.id ?? "",
-  status: "draft",
-  expectedAt: "",
-  notes: "",
-  itemProductId: initialProducts[0]?.id ?? "",
-  itemQuantity: "",
-  itemUnitCost: "",
-  items: [],
+const statusLabel: Record<StockReceiptStatus, string> = {
+  draft: "Rascunho",
+  confirmed: "Confirmado",
+  cancelled: "Cancelado",
 };
 
-function parseNumber(value: string) {
-  const parsed = Number(value.replace(",", ".").trim());
-
-  return Number.isFinite(parsed) ? parsed : 0;
+function formatCurrency(value: number): string {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
+function formatDate(d: Date | string): string {
+  return new Date(d).toLocaleDateString("pt-BR");
 }
 
-function calculateTotal(order: PurchaseOrder) {
-  return order.items.reduce(
-    (total, item) => total + item.quantity * item.unitCost,
-    0,
-  );
-}
+type AddForm = { productId: string; quantity: string; unitCost: string };
+const defaultAddForm: AddForm = { productId: "", quantity: "1", unitCost: "" };
 
-function calculateReceivedItems(order: PurchaseOrder) {
-  return order.items.reduce((total, item) => total + item.receivedQuantity, 0);
-}
+export function PurchasesContent({
+  initialReceipts,
+  suppliers,
+  products,
+}: Props) {
+  const router = useRouter();
+  const [receipts, setReceipts] = useState<StockReceiptRow[]>(initialReceipts);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedItems, setExpandedItems] = useState<
+    Record<string, StockReceiptItemRow[]>
+  >({});
+  const [loadingItems, setLoadingItems] = useState<string | null>(null);
 
-function calculateOrderedItems(order: PurchaseOrder) {
-  return order.items.reduce((total, item) => total + item.quantity, 0);
-}
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    supplierId: "",
+    invoiceNumber: "",
+    notes: "",
+  });
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
-function getStatusTone(status: PurchaseStatus) {
-  if (status === "received") {
-    return "success" as const;
+  const [addForm, setAddForm] = useState<AddForm>(defaultAddForm);
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAddForm(defaultAddForm);
+    setAddError(null);
+    setActionError(null);
+  }, [expandedId]);
+
+  async function handleToggleExpand(id: string) {
+    if (expandedId === id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(id);
+    if (!expandedItems[id]) {
+      setLoadingItems(id);
+      const items = await getReceiptItems(id);
+      setExpandedItems((prev) => ({ ...prev, [id]: items }));
+      setLoadingItems(null);
+    }
   }
 
-  if (status === "canceled") {
-    return "danger" as const;
-  }
-
-  if (status === "sent" || status === "partial_received") {
-    return "warning" as const;
-  }
-
-  return "info" as const;
-}
-
-function purchaseToForm(order: PurchaseOrder): PurchaseFormState {
-  return {
-    supplierId: order.supplierId,
-    status: order.status,
-    expectedAt: order.expectedAt,
-    notes: order.notes,
-    itemProductId: initialProducts[0]?.id ?? "",
-    itemQuantity: "",
-    itemUnitCost: "",
-    items: order.items.map((item) => ({
-      id: item.id,
-      productId: item.productId,
-      quantity: String(item.quantity),
-      unitCost: String(item.unitCost),
-    })),
-  };
-}
-
-export function PurchasesContent() {
-  const [orders, setOrders] = useState<PurchaseOrder[]>(initialPurchaseOrders);
-  const [formState, setFormState] =
-    useState<PurchaseFormState>(defaultPurchaseForm);
-  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [supplierFilter, setSupplierFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | PurchaseStatus>(
-    "all",
-  );
-
-  const supplierById = useMemo(
-    () => new Map(initialSuppliers.map((supplier) => [supplier.id, supplier])),
-    [],
-  );
-  const productById = useMemo(
-    () => new Map(initialProducts.map((product) => [product.id, product])),
-    [],
-  );
-
-  const filteredOrders = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-
-    return orders.filter((order) => {
-      const supplier = supplierById.get(order.supplierId);
-      const matchesSearch =
-        !search ||
-        order.code.toLowerCase().includes(search) ||
-        supplier?.name.toLowerCase().includes(search) ||
-        order.notes.toLowerCase().includes(search);
-      const matchesSupplier =
-        supplierFilter === "all" || order.supplierId === supplierFilter;
-      const matchesStatus =
-        statusFilter === "all" || order.status === statusFilter;
-
-      return matchesSearch && matchesSupplier && matchesStatus;
+  async function handleCreate(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError(null);
+    const supplier = createForm.supplierId
+      ? suppliers.find((s) => s.id === createForm.supplierId)
+      : null;
+    const result = await createStockReceipt({
+      supplierId: supplier?.id,
+      supplierName: supplier?.name,
+      invoiceNumber: createForm.invoiceNumber.trim() || undefined,
+      notes: createForm.notes.trim() || undefined,
     });
-  }, [orders, searchTerm, statusFilter, supplierById, supplierFilter]);
-
-  const openOrders = orders.filter(
-    (order) =>
-      order.status === "draft" ||
-      order.status === "sent" ||
-      order.status === "partial_received",
-  ).length;
-  const pendingValue = orders
-    .filter((order) => order.status !== "received" && order.status !== "canceled")
-    .reduce((total, order) => total + calculateTotal(order), 0);
-  const receivedOrders = orders.filter(
-    (order) => order.status === "received",
-  ).length;
-
-  function updateForm<K extends keyof PurchaseFormState>(
-    key: K,
-    value: PurchaseFormState[K],
-  ) {
-    setFormState((current) => ({ ...current, [key]: value }));
-  }
-
-  function openNewPurchaseModal() {
-    setFormState(defaultPurchaseForm);
-    setEditingOrderId(null);
-    setIsPurchaseModalOpen(true);
-  }
-
-  function closePurchaseModal() {
-    setFormState(defaultPurchaseForm);
-    setEditingOrderId(null);
-    setIsPurchaseModalOpen(false);
-  }
-
-  function handleAddItem() {
-    const product = productById.get(formState.itemProductId);
-    const quantity = parseNumber(formState.itemQuantity);
-    const unitCost = parseNumber(
-      formState.itemUnitCost || String(product?.costPrice ?? ""),
-    );
-
-    if (!product || quantity <= 0 || unitCost <= 0) {
+    setCreating(false);
+    if (!result.success) {
+      setCreateError(result.error);
       return;
     }
-
-    setFormState((current) => ({
-      ...current,
-      itemQuantity: "",
-      itemUnitCost: "",
-      items: [
-        ...current.items,
-        {
-          id: `item-${Date.now()}`,
-          productId: product.id,
-          quantity: String(quantity),
-          unitCost: String(unitCost),
-        },
-      ],
-    }));
+    setReceipts((prev) => [result.data, ...prev]);
+    setIsCreateOpen(false);
+    setCreateForm({ supplierId: "", invoiceNumber: "", notes: "" });
+    router.refresh();
   }
 
-  function handleRemoveItem(itemId: string) {
-    setFormState((current) => ({
-      ...current,
-      items: current.items.filter((item) => item.id !== itemId),
-    }));
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!formState.supplierId || formState.items.length === 0) {
+  async function handleAddItem(receiptId: string) {
+    if (!addForm.productId || !addForm.quantity || !addForm.unitCost) return;
+    const qty = parseFloat(addForm.quantity);
+    const cost = parseFloat(addForm.unitCost);
+    if (isNaN(qty) || qty <= 0 || isNaN(cost) || cost < 0) return;
+    setAdding(true);
+    setAddError(null);
+    const result = await addReceiptItem({
+      stockReceiptId: receiptId,
+      productId: addForm.productId,
+      quantity: qty,
+      unitCost: cost,
+    });
+    setAdding(false);
+    if (!result.success) {
+      setAddError(result.error);
       return;
     }
-
-    const items = formState.items.map((item) => ({
-      id: item.id,
-      productId: item.productId,
-      quantity: parseNumber(item.quantity),
-      receivedQuantity:
-        formState.status === "received" ? parseNumber(item.quantity) : 0,
-      unitCost: parseNumber(item.unitCost),
+    setExpandedItems((prev) => ({
+      ...prev,
+      [receiptId]: [...(prev[receiptId] ?? []), result.data],
     }));
-
-    if (editingOrderId) {
-      setOrders((current) =>
-        current.map((order) =>
-          order.id === editingOrderId
-            ? {
-                ...order,
-                supplierId: formState.supplierId,
-                status: formState.status,
-                expectedAt: formState.expectedAt,
-                receivedAt:
-                  formState.status === "received"
-                    ? order.receivedAt || "20/05/2026"
-                    : "",
-                notes: formState.notes.trim(),
-                items,
-              }
-            : order,
-        ),
-      );
-      closePurchaseModal();
-      return;
-    }
-
-    const sequence = orders.length + 1001;
-    const id = `po-${sequence}`;
-
-    setOrders((current) => [
-      {
-        id,
-        code: `COMP-${sequence}`,
-        supplierId: formState.supplierId,
-        status: formState.status,
-        createdAt: "20/05/2026",
-        expectedAt: formState.expectedAt,
-        receivedAt: formState.status === "received" ? "20/05/2026" : "",
-        notes: formState.notes.trim(),
-        items,
-      },
-      ...current,
-    ]);
-    closePurchaseModal();
-  }
-
-  function handleEditOrder(order: PurchaseOrder) {
-    setEditingOrderId(order.id);
-    setFormState(purchaseToForm(order));
-    setIsPurchaseModalOpen(true);
-  }
-
-  function handleMarkSent(orderId: string) {
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === orderId && order.status === "draft"
-          ? { ...order, status: "sent" }
-          : order,
-      ),
-    );
-  }
-
-  function handleReceiveOrder(orderId: string) {
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === orderId
+    setReceipts((prev) =>
+      prev.map((r) =>
+        r.id === receiptId
           ? {
-              ...order,
-              status: "received",
-              receivedAt: "20/05/2026",
-              items: order.items.map((item) => ({
-                ...item,
-                receivedQuantity: item.quantity,
-              })),
+              ...r,
+              totalCost: r.totalCost + qty * cost,
+              _count: { items: r._count.items + 1 },
             }
-          : order,
+          : r,
       ),
     );
+    setAddForm(defaultAddForm);
+    router.refresh();
+  }
+
+  async function handleRemoveItem(
+    receiptId: string,
+    itemId: string,
+    itemTotal: number,
+  ) {
+    const result = await removeReceiptItem(itemId);
+    if (!result.success) return;
+    setExpandedItems((prev) => ({
+      ...prev,
+      [receiptId]: (prev[receiptId] ?? []).filter((i) => i.id !== itemId),
+    }));
+    setReceipts((prev) =>
+      prev.map((r) =>
+        r.id === receiptId
+          ? {
+              ...r,
+              totalCost: Math.max(0, r.totalCost - itemTotal),
+              _count: { items: Math.max(0, r._count.items - 1) },
+            }
+          : r,
+      ),
+    );
+    router.refresh();
+  }
+
+  async function handleConfirm(id: string) {
+    setActionError(null);
+    const result = await confirmStockReceipt(id);
+    if (!result.success) {
+      setActionError(result.error);
+      return;
+    }
+    setReceipts((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status: "confirmed" as StockReceiptStatus,
+              confirmedAt: new Date(),
+            }
+          : r,
+      ),
+    );
+    setExpandedId(null);
+    router.refresh();
+  }
+
+  async function handleCancel(id: string) {
+    setActionError(null);
+    const result = await cancelStockReceipt(id);
+    if (!result.success) {
+      setActionError(result.error);
+      return;
+    }
+    setReceipts((prev) =>
+      prev.map((r) =>
+        r.id === id ? { ...r, status: "cancelled" as StockReceiptStatus } : r,
+      ),
+    );
+    setExpandedId(null);
+    router.refresh();
   }
 
   return (
     <>
       <PageHeader
-        eyebrow="Operacao de compras"
-        title="Compras"
-        description="Registre pedidos de compra por fornecedor, acompanhe recebimento e prepare entradas futuras no estoque."
+        eyebrow="Gestao de estoque"
+        title="Notas Fiscais de Entrada"
+        description="Registre e confirme recebimentos de mercadorias de fornecedores."
         action={
           <Button
             type="button"
-            onClick={openNewPurchaseModal}
+            onClick={() => setIsCreateOpen(true)}
             className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
           >
             <Plus className="size-4" aria-hidden="true" />
-            Novo pedido
+            Nova NF
           </Button>
         }
       />
 
-      <PurchaseFormModal
-        isOpen={isPurchaseModalOpen}
-        isEditing={Boolean(editingOrderId)}
-        formState={formState}
-        supplierById={supplierById}
-        productById={productById}
-        onClose={closePurchaseModal}
-        onSubmit={handleSubmit}
-        onUpdateForm={updateForm}
-        onAddItem={handleAddItem}
-        onRemoveItem={handleRemoveItem}
-      />
-
-      <section className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="Pedidos abertos" value={String(openOrders)} />
-        <SummaryCard label="Recebidos" value={String(receivedOrders)} />
-        <SummaryCard label="Valor pendente" value={formatCurrency(pendingValue)} />
-        <SummaryCard label="Pedidos totais" value={String(orders.length)} />
-      </section>
-
-      <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-        <div className="flex gap-3">
-          <FileText className="mt-0.5 size-5 shrink-0 text-emerald-700" />
-          <div>
-            <h2 className="text-sm font-semibold text-emerald-900">
-              Proximo passo da integracao
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-emerald-800">
-              Ao receber um pedido, o fluxo futuro deve gerar movimentacoes de
-              entrada no estoque e contas a pagar no financeiro.
-            </p>
-          </div>
-        </div>
-      </section>
+      {isCreateOpen && (
+        <CreateModal
+          suppliers={suppliers}
+          form={createForm}
+          creating={creating}
+          error={createError}
+          onChange={(key, val) =>
+            setCreateForm((c) => ({ ...c, [key]: val }))
+          }
+          onClose={() => {
+            setIsCreateOpen(false);
+            setCreateError(null);
+          }}
+          onSubmit={handleCreate}
+        />
+      )}
 
       <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
-          <div>
-            <h2 className="text-base font-semibold text-slate-950">
-              Pedidos de compra
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Acompanhe pedidos por fornecedor, status e previsao.
-            </p>
-          </div>
-
-          <div className="grid gap-2 lg:grid-cols-[1fr_190px_170px]">
-            <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-                aria-hidden="true"
-              />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Buscar pedido"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            <select
-              value={supplierFilter}
-              onChange={(event) => setSupplierFilter(event.target.value)}
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="all">Todos fornecedores</option>
-              {initialSuppliers.map((supplier) => (
-                <option key={supplier.id} value={supplier.id}>
-                  {supplier.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as "all" | PurchaseStatus)
-              }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="all">Todos status</option>
-              {Object.entries(purchaseStatusLabels).map(([status, label]) => (
-                <option key={status} value={status}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="border-b border-slate-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-slate-950">
+            Recebimentos
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Clique em uma linha de rascunho para adicionar itens e confirmar.
+          </p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[800px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
-                <th className="px-5 py-3 font-semibold">Pedido</th>
+                <th className="px-5 py-3 font-semibold" />
+                <th className="px-5 py-3 font-semibold">Codigo</th>
                 <th className="px-5 py-3 font-semibold">Fornecedor</th>
-                <th className="px-5 py-3 font-semibold">Itens</th>
-                <th className="px-5 py-3 font-semibold">Valor</th>
-                <th className="px-5 py-3 font-semibold">Previsao</th>
+                <th className="px-5 py-3 font-semibold">Nro NF</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Itens</th>
+                <th className="px-5 py-3 font-semibold">Total</th>
+                <th className="px-5 py-3 font-semibold">Data</th>
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredOrders.map((order) => {
-                const supplier = supplierById.get(order.supplierId);
-                const orderedItems = calculateOrderedItems(order);
-                const receivedItems = calculateReceivedItems(order);
+              {receipts.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={9}
+                    className="px-5 py-10 text-center text-sm text-slate-400"
+                  >
+                    Nenhum recebimento registrado.
+                  </td>
+                </tr>
+              ) : (
+                receipts.map((receipt) => {
+                  const isDraft = receipt.status === "draft";
+                  const isExpanded = expandedId === receipt.id;
+                  const items = expandedItems[receipt.id] ?? [];
 
-                return (
-                  <tr key={order.id} className="text-slate-700">
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">{order.code}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Criado em {order.createdAt}
-                      </p>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      {supplier?.name ?? "Fornecedor removido"}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <p>
-                        {receivedItems}/{orderedItems} recebidos
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {order.items.length} linhas
-                      </p>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      {formatCurrency(calculateTotal(order))}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <p>{order.expectedAt || "Sem previsao"}</p>
-                      {order.receivedAt ? (
-                        <p className="mt-1 text-xs text-slate-500">
-                          Recebido em {order.receivedAt}
-                        </p>
-                      ) : null}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <StatusBadge
-                        label={purchaseStatusLabels[order.status]}
-                        tone={getStatusTone(order.status)}
-                      />
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => handleEditOrder(order)}
+                  return (
+                    <Fragment key={receipt.id}>
+                      <tr
+                        className={cn(
+                          "cursor-pointer text-slate-700 transition-colors",
+                          isDraft
+                            ? "hover:bg-slate-50"
+                            : "cursor-default opacity-80",
+                        )}
+                        onClick={() => void handleToggleExpand(receipt.id)}
+                      >
+                        <td className="px-3 py-4 text-slate-400">
+                          {isExpanded ? (
+                            <ChevronDown className="size-4" />
+                          ) : (
+                            <ChevronRight className="size-4" />
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-slate-900">
+                          {receipt.code}
+                        </td>
+                        <td className="px-5 py-4">
+                          {receipt.supplierName ?? (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4">
+                          {receipt.invoiceNumber ?? (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4">
+                          <StatusBadge
+                            label={statusLabel[receipt.status as StockReceiptStatus]}
+                            tone={statusTone[receipt.status as StockReceiptStatus]}
+                          />
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                          {receipt._count.items}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 font-medium">
+                          {formatCurrency(receipt.totalCost)}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                          {formatDate(receipt.createdAt)}
+                        </td>
+                        <td
+                          className="whitespace-nowrap px-5 py-4"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Edit3 className="size-4" aria-hidden="true" />
-                          Editar
-                        </Button>
-                        {order.status === "draft" ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => handleMarkSent(order.id)}
+                          {isDraft && (
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="text-red-500 hover:border-red-200 hover:text-red-600"
+                                onClick={() => void handleCancel(receipt.id)}
+                              >
+                                <X className="size-4" aria-hidden="true" />
+                                Cancelar
+                              </Button>
+                              <Button
+                                type="button"
+                                className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                                onClick={() => void handleConfirm(receipt.id)}
+                              >
+                                <CheckCircle2
+                                  className="size-4"
+                                  aria-hidden="true"
+                                />
+                                Confirmar
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+
+                      {isExpanded && (
+                        <tr>
+                          <td
+                            colSpan={9}
+                            className="bg-slate-50 px-8 py-5"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <Send className="size-4" aria-hidden="true" />
-                            Enviar
-                          </Button>
-                        ) : null}
-                        {order.status !== "received" &&
-                        order.status !== "canceled" ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => handleReceiveOrder(order.id)}
-                          >
-                            <CheckCircle2 className="size-4" aria-hidden="true" />
-                            Receber
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                            {loadingItems === receipt.id ? (
+                              <p className="text-sm text-slate-400">
+                                Carregando itens...
+                              </p>
+                            ) : (
+                              <div className="space-y-4">
+                                {actionError && (
+                                  <p className="text-sm text-red-600">
+                                    {actionError}
+                                  </p>
+                                )}
+
+                                {items.length === 0 ? (
+                                  <p className="text-sm text-slate-400">
+                                    Nenhum item adicionado.
+                                  </p>
+                                ) : (
+                                  <table className="w-full border-collapse text-sm">
+                                    <thead className="text-xs uppercase text-slate-500">
+                                      <tr>
+                                        <th className="py-1 pr-4 text-left font-semibold">
+                                          Produto
+                                        </th>
+                                        <th className="py-1 pr-4 text-right font-semibold">
+                                          Qtd
+                                        </th>
+                                        <th className="py-1 pr-4 text-right font-semibold">
+                                          Custo unit.
+                                        </th>
+                                        <th className="py-1 pr-4 text-right font-semibold">
+                                          Total
+                                        </th>
+                                        {isDraft && (
+                                          <th className="py-1 font-semibold" />
+                                        )}
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                      {items.map((item) => (
+                                        <tr key={item.id}>
+                                          <td className="py-2 pr-4 font-medium text-slate-900">
+                                            {item.productName}
+                                          </td>
+                                          <td className="py-2 pr-4 text-right tabular-nums">
+                                            {item.quantity}
+                                          </td>
+                                          <td className="py-2 pr-4 text-right tabular-nums">
+                                            {formatCurrency(item.unitCost)}
+                                          </td>
+                                          <td className="py-2 pr-4 text-right font-semibold tabular-nums">
+                                            {formatCurrency(item.total)}
+                                          </td>
+                                          {isDraft && (
+                                            <td className="py-2">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  void handleRemoveItem(
+                                                    receipt.id,
+                                                    item.id,
+                                                    item.total,
+                                                  )
+                                                }
+                                                className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                                              >
+                                                <Trash2
+                                                  className="size-4"
+                                                  aria-hidden="true"
+                                                />
+                                              </button>
+                                            </td>
+                                          )}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+
+                                {isDraft && (
+                                  <div className="flex flex-wrap items-end gap-3 border-t border-slate-200 pt-4">
+                                    <div className="min-w-[200px] flex-1">
+                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                        Produto
+                                      </label>
+                                      <select
+                                        value={addForm.productId}
+                                        onChange={(e) =>
+                                          setAddForm((f) => ({
+                                            ...f,
+                                            productId: e.target.value,
+                                          }))
+                                        }
+                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                      >
+                                        <option value="">
+                                          Selecionar produto
+                                        </option>
+                                        {products.map((p) => (
+                                          <option key={p.id} value={p.id}>
+                                            {p.name} ({p.sku})
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="w-24">
+                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                        Qtd
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0.01"
+                                        step="0.01"
+                                        value={addForm.quantity}
+                                        onChange={(e) =>
+                                          setAddForm((f) => ({
+                                            ...f,
+                                            quantity: e.target.value,
+                                          }))
+                                        }
+                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                      />
+                                    </div>
+                                    <div className="w-32">
+                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                        Custo unit. (R$)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={addForm.unitCost}
+                                        onChange={(e) =>
+                                          setAddForm((f) => ({
+                                            ...f,
+                                            unitCost: e.target.value,
+                                          }))
+                                        }
+                                        placeholder="0,00"
+                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      disabled={
+                                        adding ||
+                                        !addForm.productId ||
+                                        !addForm.unitCost
+                                      }
+                                      onClick={() =>
+                                        void handleAddItem(receipt.id)
+                                      }
+                                      className="bg-slate-800 text-white hover:bg-slate-700 disabled:opacity-50"
+                                    >
+                                      <Plus
+                                        className="size-4"
+                                        aria-hidden="true"
+                                      />
+                                      {adding ? "Adicionando..." : "Adicionar"}
+                                    </Button>
+                                    {addError && (
+                                      <p className="w-full text-xs text-red-600">
+                                        {addError}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                    </Fragment>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -524,288 +578,105 @@ export function PurchasesContent() {
   );
 }
 
-function PurchaseFormModal({
-  isOpen,
-  isEditing,
-  formState,
-  supplierById,
-  productById,
+function CreateModal({
+  suppliers,
+  form,
+  creating,
+  error,
+  onChange,
   onClose,
   onSubmit,
-  onUpdateForm,
-  onAddItem,
-  onRemoveItem,
 }: {
-  isOpen: boolean;
-  isEditing: boolean;
-  formState: PurchaseFormState;
-  supplierById: Map<string, (typeof initialSuppliers)[number]>;
-  productById: Map<string, (typeof initialProducts)[number]>;
+  suppliers: SupplierRow[];
+  form: { supplierId: string; invoiceNumber: string; notes: string };
+  creating: boolean;
+  error: string | null;
+  onChange: (key: string, val: string) => void;
   onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onUpdateForm: <K extends keyof PurchaseFormState>(
-    key: K,
-    value: PurchaseFormState[K],
-  ) => void;
-  onAddItem: () => void;
-  onRemoveItem: (itemId: string) => void;
+  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }) {
-  const draftItemProduct = productById.get(formState.itemProductId);
-  const draftItemCost =
-    formState.itemUnitCost || String(draftItemProduct?.costPrice ?? "");
-
-  if (!isOpen) {
-    return null;
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="purchase-modal-title"
     >
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+      <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <PackagePlus className="size-5 text-emerald-600" />
-            <div>
-              <h2
-                id="purchase-modal-title"
-                className="text-base font-semibold text-slate-950"
-              >
-                {isEditing ? "Editar pedido" : "Novo pedido de compra"}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Selecione fornecedor, status e itens do pedido.
-              </p>
-            </div>
+            <FileText className="size-5 text-emerald-600" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-slate-950">
+              Nova NF de entrada
+            </h2>
           </div>
           <Button type="button" variant="outline" size="icon" onClick={onClose}>
             <X className="size-4" aria-hidden="true" />
-            <span className="sr-only">Fechar modal</span>
           </Button>
         </div>
 
         <form onSubmit={onSubmit}>
-          <div className="max-h-[calc(92vh-142px)] overflow-y-auto px-5 py-5">
-            <div className="grid gap-3 md:grid-cols-3">
-              <Field label="Fornecedor" className="md:col-span-2">
-                <select
-                  value={formState.supplierId}
-                  onChange={(event) =>
-                    onUpdateForm("supplierId", event.target.value)
-                  }
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                >
-                  {initialSuppliers.map((supplier) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.name}
+          <div className="space-y-3 px-5 py-5">
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                Fornecedor (opcional)
+              </span>
+              <select
+                value={form.supplierId}
+                onChange={(e) => onChange("supplierId", e.target.value)}
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              >
+                <option value="">Sem fornecedor</option>
+                {suppliers
+                  .filter((s) => s.active)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
-                </select>
-              </Field>
+              </select>
+            </label>
 
-              <Field label="Status">
-                <select
-                  value={formState.status}
-                  onChange={(event) =>
-                    onUpdateForm("status", event.target.value as PurchaseStatus)
-                  }
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                >
-                  {Object.entries(purchaseStatusLabels).map(([status, label]) => (
-                    <option key={status} value={status}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                Numero da NF (opcional)
+              </span>
+              <input
+                value={form.invoiceNumber}
+                onChange={(e) => onChange("invoiceNumber", e.target.value)}
+                placeholder="Ex.: 001234"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              />
+            </label>
 
-              <Field label="Previsao">
-                <input
-                  value={formState.expectedAt}
-                  onChange={(event) =>
-                    onUpdateForm("expectedAt", event.target.value)
-                  }
-                  placeholder="21/05/2026"
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                />
-              </Field>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                Observacoes (opcional)
+              </span>
+              <textarea
+                value={form.notes}
+                onChange={(e) => onChange("notes", e.target.value)}
+                rows={2}
+                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              />
+            </label>
 
-              <Field label="Observacoes" className="md:col-span-2">
-                <input
-                  value={formState.notes}
-                  onChange={(event) => onUpdateForm("notes", event.target.value)}
-                  placeholder="Ex.: reposicao de bebidas"
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                />
-              </Field>
-            </div>
-
-            <div className="mt-5 rounded-lg border border-slate-200">
-              <div className="border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-950">
-                  Itens do pedido
-                </h3>
-              </div>
-
-              <div className="grid gap-3 p-4 md:grid-cols-[1fr_120px_140px_auto] md:items-end">
-                <Field label="Produto">
-                  <select
-                    value={formState.itemProductId}
-                    onChange={(event) => {
-                      const product = productById.get(event.target.value);
-                      onUpdateForm("itemProductId", event.target.value);
-                      onUpdateForm("itemUnitCost", String(product?.costPrice ?? ""));
-                    }}
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  >
-                    {initialProducts.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label="Qtd.">
-                  <input
-                    value={formState.itemQuantity}
-                    onChange={(event) =>
-                      onUpdateForm("itemQuantity", event.target.value)
-                    }
-                    inputMode="decimal"
-                    placeholder="0"
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  />
-                </Field>
-
-                <Field label="Custo un.">
-                  <input
-                    value={draftItemCost}
-                    onChange={(event) =>
-                      onUpdateForm("itemUnitCost", event.target.value)
-                    }
-                    inputMode="decimal"
-                    placeholder="0,00"
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  />
-                </Field>
-
-                <Button
-                  type="button"
-                  onClick={onAddItem}
-                  className="bg-slate-950 text-white hover:bg-slate-800"
-                >
-                  <Plus className="size-4" aria-hidden="true" />
-                  Adicionar
-                </Button>
-              </div>
-
-              <div className="overflow-x-auto border-t border-slate-200">
-                <table className="w-full min-w-[640px] border-collapse text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Produto</th>
-                      <th className="px-4 py-3 font-semibold">Qtd.</th>
-                      <th className="px-4 py-3 font-semibold">Custo un.</th>
-                      <th className="px-4 py-3 font-semibold">Subtotal</th>
-                      <th className="px-4 py-3 font-semibold">Acao</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {formState.items.map((item) => {
-                      const product = productById.get(item.productId);
-                      const quantity = parseNumber(item.quantity);
-                      const unitCost = parseNumber(item.unitCost);
-
-                      return (
-                        <tr key={item.id}>
-                          <td className="px-4 py-3 font-medium text-slate-950">
-                            {product?.name ?? "Produto removido"}
-                          </td>
-                          <td className="px-4 py-3">{quantity}</td>
-                          <td className="px-4 py-3">
-                            {formatCurrency(unitCost)}
-                          </td>
-                          <td className="px-4 py-3">
-                            {formatCurrency(quantity * unitCost)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => onRemoveItem(item.id)}
-                            >
-                              <Trash2 className="size-4" aria-hidden="true" />
-                              Remover
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-medium text-slate-950">
-                Fornecedor:{" "}
-                {supplierById.get(formState.supplierId)?.name ??
-                  "Nao selecionado"}
-              </p>
-              <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                <CalendarDays className="size-4" aria-hidden="true" />
-                Recebimento e entrada no estoque serao integrados na proxima
-                fase.
-              </p>
-            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 
-          <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
+          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              disabled={creating}
+              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
             >
-              <Save className="size-4" aria-hidden="true" />
-              {isEditing ? "Salvar alteracoes" : "Cadastrar pedido"}
+              {creating ? "Criando..." : "Criar rascunho"}
             </Button>
           </div>
         </form>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-  className = "",
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
-    </article>
   );
 }

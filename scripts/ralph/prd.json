@@ -104,7 +104,7 @@
         "Lint passes"
       ],
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-021. Products for item selection come from db.product.findMany(active). Supplier list for select comes from listSuppliers(). Client-side state for expanded receipt row."
     },
