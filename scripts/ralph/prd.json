@@ -162,7 +162,7 @@
         "Lint passes"
       ],
       "priority": 19,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
       "notes": "CSV export uses browser Blob API — no @react-pdf/renderer or external lib needed. Format: UTF-8 BOM for Excel compatibility (\\uFEFF prefix). Period filter via searchParams same as US-023."
     }

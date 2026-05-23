@@ -466,3 +466,15 @@ Append logs below using this format:
   - totalSales por sessão calculado com sales.reduce() no server component — não precisa de groupBy
   - take: 300 nas queries evita carregar toda a tabela sem paginação — suficiente para MVP
   - financeiro role em middleware já estava configurado — sidebar update foi a única mudança necessária
+
+## 2026-05-23 - US-025 (MVP 3 Fase 5)
+- What was implemented: /admin/relatorios page async server component with searchParams period filter (today|week|month|custom+dateFrom+dateTo). Query: db.sale.findMany include cashSession→cashRegister.name + _count.items + payments.method. ReportsContent rewritten (client component): period filter buttons (Link) + custom date range inputs with Filtrar button (router.push). Summary cards (total vendas, receita, descontos). Tabela de vendas (code, date, operator, caixa, items, subtotal, discount, total, payment badges). CSV export via Blob API: UTF-8 BOM prefix, cells quoted with double-quote escaping, decimal comma for Excel-BR.
+- Files changed: src/app/admin/relatorios/page.tsx, src/components/reports/reports-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CSV BOM: use literal ﻿ (U+FEFF) as first char of string — Blob+UTF-8 encoding preserves it for Excel
+  - downloadCsv: must appendChild + removeChild around a.click() — some browsers require element in DOM for programmatic click
+  - Custom date inputs show when period==="custom" OR from/to have values from previous navigation
+  - cashRegisterName requires include cashSession → cashRegister join in sale query — sale.cashSession.cashRegister.name
