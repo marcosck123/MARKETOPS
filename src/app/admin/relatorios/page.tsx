@@ -56,7 +56,7 @@ export default async function ReportsPage({
     },
   });
 
-  const saleRows = sales.map((s) => ({
+  const saleRows = sales.map((s: (typeof sales)[number]) => ({
     id: s.id,
     code: s.code,
     finishedAt: s.finishedAt?.toISOString() ?? "",
@@ -66,7 +66,7 @@ export default async function ReportsPage({
     subtotal: s.subtotal,
     discount: s.discount,
     total: s.total,
-    paymentMethods: [...new Set(s.payments.map((p) => p.method))],
+    paymentMethods: [...new Set(s.payments.map((p: { method: string }) => p.method))],
   }));
 
   return (

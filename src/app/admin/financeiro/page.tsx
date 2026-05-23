@@ -64,17 +64,17 @@ export default async function FinancePage({
   const ticketMedio = qtdSales > 0 ? totalSales / qtdSales : 0;
 
   const custoMercadorias = stockSaidas.reduce(
-    (sum, e) => sum + e.quantity * e.product.costPrice,
+    (sum: number, e: (typeof stockSaidas)[number]) => sum + e.quantity * e.product.costPrice,
     0,
   );
   const margemBruta = totalSales - custoMercadorias;
 
-  const sessionRows = sessions.map((s) => ({
+  const sessionRows = sessions.map((s: (typeof sessions)[number]) => ({
     id: s.id,
     cashRegisterName: s.cashRegister.name,
     operatorName: s.operatorName,
     status: s.status as string,
-    totalSales: s.sales.reduce((sum, sale) => sum + sale.total, 0),
+    totalSales: s.sales.reduce((sum: number, sale: { total: number }) => sum + sale.total, 0),
     openedAt: s.openedAt.toISOString(),
     closedAt: s.closedAt?.toISOString() ?? null,
   }));
@@ -84,7 +84,7 @@ export default async function FinancePage({
       <FinanceContent
         period={period}
         summary={{ totalSales, ticketMedio, qtdSales, totalDescontos }}
-        paymentBreakdown={paymentGroups.map((g) => ({
+        paymentBreakdown={paymentGroups.map((g: (typeof paymentGroups)[number]) => ({
           method: g.method,
           total: g._sum.amount ?? 0,
         }))}
@@ -96,7 +96,7 @@ export default async function FinancePage({
           margemBruta,
         }}
         sessions={sessionRows}
-        totalOpenSessions={sessions.filter((s) => s.status === "open").length}
+        totalOpenSessions={sessions.filter((s: (typeof sessions)[number]) => s.status === "open").length}
       />
     </AdminShell>
   );

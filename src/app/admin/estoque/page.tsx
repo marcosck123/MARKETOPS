@@ -16,10 +16,10 @@ export default async function StockPage() {
     ]);
 
   const stockMap = new Map(
-    grouped.map((g) => [g.productId, g._sum.quantity ?? 0]),
+    grouped.map((g: (typeof grouped)[number]) => [g.productId, g._sum.quantity ?? 0]),
   );
 
-  const products = productsRaw.map((p) => ({
+  const products = productsRaw.map((p: (typeof productsRaw)[number]) => ({
     id: p.id,
     name: p.name,
     sku: p.sku,
@@ -32,7 +32,7 @@ export default async function StockPage() {
     status: p.status as "active" | "inactive",
   }));
 
-  const movements = entriesRaw.map((e) => ({
+  const movements = entriesRaw.map((e: (typeof entriesRaw)[number]) => ({
     id: e.id,
     productId: e.productId,
     type: e.type as "entrada" | "saida" | "ajuste",
@@ -52,8 +52,8 @@ export default async function StockPage() {
     <AdminShell>
       <StockContent
         products={products}
-        sections={sections.map((s) => ({ id: s.id, name: s.name }))}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        sections={sections.map((s: (typeof sections)[number]) => ({ id: s.id, name: s.name }))}
+        categories={categories.map((c: (typeof categories)[number]) => ({ id: c.id, name: c.name }))}
         movements={movements}
       />
     </AdminShell>

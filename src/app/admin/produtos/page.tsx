@@ -30,8 +30,8 @@ export default async function ProductsPage() {
     <AdminShell>
       <ProductsContent
         products={products}
-        sections={sections.map((s) => ({ id: s.id, name: s.name }))}
-        categories={categories.map((c) => ({
+        sections={sections.map((s: (typeof sections)[number]) => ({ id: s.id, name: s.name }))}
+        categories={categories.map((c: (typeof categories)[number]) => ({
           id: c.id,
           name: c.name,
           sectionId: c.sectionId,
