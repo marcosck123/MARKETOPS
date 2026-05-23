@@ -354,3 +354,16 @@ Append logs below using this format:
   - findUnique on @unique field is fastest lookup — use for document lookup in PDV NF modal
   - listCustomers uses insensitive mode for name search — case-insensitive on Prisma PostgreSQL
   - CustomerRow type omits address fields to keep list queries lean — full details available via findUnique when editing
+
+## 2026-05-22 - US-016 (MVP 3 Fase 4)
+- What was implemented: Route /supervisor/clientes with async server component. CustomersContent rewritten from mock-based to real server actions (createCustomer, updateCustomer, toggleCustomerStatus). Table shows: tipo badge (CPF/CNPJ), masked document, nome+tradeName, contato, status toggle, edit button. Modal: type radio (cpf/cnpj), document input (disabled on edit), name, tradeName (CNPJ only), email, phone. Client-side search filter. Optimistic toggle update. Sidebar updated with href for Clientes (NF).
+- Files changed: src/app/supervisor/clientes/page.tsx (novo), src/components/customers/customers-content.tsx (reescrito), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Rewrote existing mock-based customers-content.tsx — the old version imported from customer-data.ts (MVP 1 mock), new version uses real server actions
+  - formatDocument() applied in table display only — DB stores raw digits, display formats them
+  - document field disabled on edit (can't change primary identifier without re-creating)
+  - has-[:checked]:border-emerald-500 on radio label for type selector — same pattern as session-gate
+  - /supervisor/clientes covered by /supervisor prefix in middleware ROLE_ROUTES — no middleware change needed

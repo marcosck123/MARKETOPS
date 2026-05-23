@@ -1,645 +1,376 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useMemo, useState } from "react";
-import {
-  BadgeDollarSign,
-  Edit3,
-  Mail,
-  MapPin,
-  Phone,
-  Plus,
-  RotateCcw,
-  Save,
-  Search,
-  ShoppingCart,
-  UserRound,
-  X,
-} from "lucide-react";
+import { type FormEvent, useState } from "react";
+import { Pencil, Plus, Search, UserCheck, UserX } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { PageHeader } from "@/components/shared/page-header";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import {
-  type Customer,
-  type CustomerKind,
-  type CustomerStatus,
-  customerKindLabels,
-  initialCustomers,
-} from "@/lib/customer-data";
+  createCustomer,
+  toggleCustomerStatus,
+  updateCustomer,
+  type CustomerRow,
+} from "@/lib/actions/customers";
 
-type CustomerFormState = {
-  name: string;
+type Props = {
+  customers: CustomerRow[];
+};
+
+type FormState = {
+  type: "cpf" | "cnpj";
   document: string;
-  kind: CustomerKind;
+  name: string;
+  tradeName: string;
   email: string;
   phone: string;
-  city: string;
-  address: string;
-  creditLimit: string;
-  currentBalance: string;
-  observations: string;
 };
 
-const defaultCustomerForm: CustomerFormState = {
-  name: "",
+const defaultForm: FormState = {
+  type: "cpf",
   document: "",
-  kind: "pf",
+  name: "",
+  tradeName: "",
   email: "",
   phone: "",
-  city: "",
-  address: "",
-  creditLimit: "",
-  currentBalance: "",
-  observations: "",
 };
 
-function normalizeId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+function formatDocument(type: "cpf" | "cnpj", doc: string): string {
+  const d = doc.replace(/\D/g, "");
+  if (type === "cpf" && d.length === 11) {
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
+  if (type === "cnpj" && d.length === 14) {
+    return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  }
+  return doc;
 }
 
-function parseNumber(value: string) {
-  const parsed = Number(value.replace(",", ".").trim());
+export function CustomersContent({ customers: propCustomers }: Props) {
+  const router = useRouter();
+  const [customers, setCustomers] = useState<CustomerRow[]>(propCustomers);
+  const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(defaultForm);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  return Number.isFinite(parsed) ? parsed : 0;
-}
+  const filtered = customers.filter((c) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.document.includes(q.replace(/\D/g, ""))
+    );
+  });
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
+  function openCreate() {
+    setForm(defaultForm);
+    setEditingId(null);
+    setError("");
+    setModalOpen(true);
+  }
 
-function customerToForm(customer: Customer): CustomerFormState {
-  return {
-    name: customer.name,
-    document: customer.document,
-    kind: customer.kind,
-    email: customer.email,
-    phone: customer.phone,
-    city: customer.city,
-    address: customer.address,
-    creditLimit: String(customer.creditLimit),
-    currentBalance: String(customer.currentBalance),
-    observations: customer.observations,
-  };
-}
-
-export function CustomersContent() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [formState, setFormState] =
-    useState<CustomerFormState>(defaultCustomerForm);
-  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(
-    null,
-  );
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [kindFilter, setKindFilter] = useState<"all" | CustomerKind>("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | CustomerStatus>(
-    "all",
-  );
-
-  const filteredCustomers = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-
-    return customers.filter((customer) => {
-      const matchesSearch =
-        !search ||
-        customer.name.toLowerCase().includes(search) ||
-        customer.document.toLowerCase().includes(search) ||
-        customer.email.toLowerCase().includes(search) ||
-        customer.city.toLowerCase().includes(search);
-      const matchesKind = kindFilter === "all" || customer.kind === kindFilter;
-      const matchesStatus =
-        statusFilter === "all" || customer.status === statusFilter;
-
-      return matchesSearch && matchesKind && matchesStatus;
+  function openEdit(customer: CustomerRow) {
+    setForm({
+      type: customer.type,
+      document: customer.document,
+      name: customer.name,
+      tradeName: customer.tradeName ?? "",
+      email: customer.email ?? "",
+      phone: customer.phone ?? "",
     });
-  }, [customers, kindFilter, searchTerm, statusFilter]);
-
-  const activeCustomers = customers.filter(
-    (customer) => customer.status === "active",
-  ).length;
-  const inactiveCustomers = customers.length - activeCustomers;
-  const totalCreditLimit = customers.reduce(
-    (total, customer) => total + customer.creditLimit,
-    0,
-  );
-  const openBalance = customers.reduce(
-    (total, customer) => total + customer.currentBalance,
-    0,
-  );
-
-  function updateForm<K extends keyof CustomerFormState>(
-    key: K,
-    value: CustomerFormState[K],
-  ) {
-    setFormState((current) => ({ ...current, [key]: value }));
+    setEditingId(customer.id);
+    setError("");
+    setModalOpen(true);
   }
 
-  function openNewCustomerModal() {
-    setFormState(defaultCustomerForm);
-    setEditingCustomerId(null);
-    setIsCustomerModalOpen(true);
-  }
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  function closeCustomerModal() {
-    setFormState(defaultCustomerForm);
-    setEditingCustomerId(null);
-    setIsCustomerModalOpen(false);
-  }
+    const result = editingId
+      ? await updateCustomer(editingId, form)
+      : await createCustomer(form);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const name = formState.name.trim();
+    setLoading(false);
 
-    if (!name) {
+    if (!result.success) {
+      setError(result.error);
       return;
     }
 
-    const payload = {
-      name,
-      document: formState.document.trim(),
-      kind: formState.kind,
-      email: formState.email.trim(),
-      phone: formState.phone.trim(),
-      city: formState.city.trim(),
-      address: formState.address.trim(),
-      creditLimit: parseNumber(formState.creditLimit),
-      currentBalance: parseNumber(formState.currentBalance),
-      observations: formState.observations.trim(),
-    };
+    setModalOpen(false);
 
-    if (editingCustomerId) {
-      setCustomers((current) =>
-        current.map((customer) =>
-          customer.id === editingCustomerId
+    if (!editingId && "data" in result && result.data) {
+      const newRow: CustomerRow = {
+        id: (result.data as { id: string }).id,
+        type: form.type,
+        document: form.document.replace(/\D/g, ""),
+        name: form.name.trim(),
+        tradeName: form.tradeName.trim() || null,
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        active: true,
+      };
+      setCustomers((prev) => [...prev, newRow]);
+    } else {
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === editingId
             ? {
-                ...customer,
-                ...payload,
+                ...c,
+                name: form.name.trim(),
+                tradeName: form.tradeName.trim() || null,
+                email: form.email.trim() || null,
+                phone: form.phone.trim() || null,
               }
-            : customer,
+            : c,
         ),
       );
-      closeCustomerModal();
-      return;
     }
 
-    const baseId = normalizeId(name) || "cliente";
-    const id = customers.some((customer) => customer.id === baseId)
-      ? `${baseId}-${Date.now()}`
-      : baseId;
-
-    setCustomers((current) => [
-      ...current,
-      {
-        id,
-        ...payload,
-        purchasesCount: 0,
-        lastPurchase: "Sem compras",
-        status: "active",
-      },
-    ]);
-    closeCustomerModal();
+    router.refresh();
   }
 
-  function handleEditCustomer(customer: Customer) {
-    setEditingCustomerId(customer.id);
-    setFormState(customerToForm(customer));
-    setIsCustomerModalOpen(true);
-  }
-
-  function handleToggleCustomer(customerId: string) {
-    setCustomers((current) =>
-      current.map((customer) =>
-        customer.id === customerId
-          ? {
-              ...customer,
-              status: customer.status === "active" ? "inactive" : "active",
-            }
-          : customer,
-      ),
+  async function handleToggle(customer: CustomerRow) {
+    setCustomers((prev) =>
+      prev.map((c) => (c.id === customer.id ? { ...c, active: !c.active } : c)),
     );
+    await toggleCustomerStatus(customer.id);
+    router.refresh();
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Cadastro operacional"
-        title="Clientes"
-        description="Cadastre clientes finais e empresas compradoras para preparar vendas, fiado controlado, limites e historico comercial."
-        action={
-          <Button
-            type="button"
-            onClick={openNewCustomerModal}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Novo cliente
-          </Button>
-        }
-      />
-
-      <CustomerFormModal
-        isOpen={isCustomerModalOpen}
-        isEditing={Boolean(editingCustomerId)}
-        formState={formState}
-        onClose={closeCustomerModal}
-        onSubmit={handleSubmit}
-        onUpdateForm={updateForm}
-      />
-
-      <section className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="Clientes ativos" value={String(activeCustomers)} />
-        <SummaryCard label="Inativos" value={String(inactiveCustomers)} />
-        <SummaryCard
-          label="Limite concedido"
-          value={formatCurrency(totalCreditLimit)}
-        />
-        <SummaryCard label="Saldo aberto" value={formatCurrency(openBalance)} />
-      </section>
-
-      <section className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <div className="flex gap-3">
-          <ShoppingCart className="mt-0.5 size-5 shrink-0 text-blue-700" />
-          <div>
-            <h2 className="text-sm font-semibold text-blue-900">
-              Base para vendas
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-blue-800">
-              Clientes cadastrados aqui poderao ser vinculados ao motor de venda,
-              ao PDV e aos controles financeiros nas proximas etapas.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Cadastro de clientes PF e PJ para emissão de NF-e
+          </p>
         </div>
-      </section>
-
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
-          <div>
-            <h2 className="text-base font-semibold text-slate-950">
-              Lista de clientes
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Busque por nome, documento, e-mail ou cidade.
-            </p>
-          </div>
-
-          <div className="grid gap-2 lg:grid-cols-[1fr_160px_150px]">
-            <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-                aria-hidden="true"
-              />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Buscar cliente"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            <select
-              value={kindFilter}
-              onChange={(event) =>
-                setKindFilter(event.target.value as "all" | CustomerKind)
-              }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="all">Todos tipos</option>
-              <option value="pf">Pessoa fisica</option>
-              <option value="pj">Pessoa juridica</option>
-            </select>
-
-            <select
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as "all" | CustomerStatus)
-              }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="all">Todos status</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-5 py-3 font-semibold">Cliente</th>
-                <th className="px-5 py-3 font-semibold">Contato</th>
-                <th className="px-5 py-3 font-semibold">Limite</th>
-                <th className="px-5 py-3 font-semibold">Saldo aberto</th>
-                <th className="px-5 py-3 font-semibold">Historico</th>
-                <th className="px-5 py-3 font-semibold">Status</th>
-                <th className="px-5 py-3 font-semibold">Acoes</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredCustomers.map((customer) => {
-                const availableCredit = Math.max(
-                  0,
-                  customer.creditLimit - customer.currentBalance,
-                );
-
-                return (
-                  <tr key={customer.id} className="text-slate-700">
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">
-                        {customer.name}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                        <UserRound className="size-3" aria-hidden="true" />
-                        {customer.document || "Sem documento"}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {customerKindLabels[customer.kind]}
-                      </p>
-                    </td>
-                    <td className="px-5 py-4">
-                      <p className="flex items-center gap-2 whitespace-nowrap">
-                        <Mail className="size-4 text-slate-400" aria-hidden="true" />
-                        {customer.email || "Sem email"}
-                      </p>
-                      <p className="mt-2 flex items-center gap-2 whitespace-nowrap">
-                        <Phone className="size-4 text-slate-400" aria-hidden="true" />
-                        {customer.phone || "Sem telefone"}
-                      </p>
-                      <p className="mt-2 flex items-center gap-2 whitespace-nowrap text-slate-500">
-                        <MapPin className="size-4 text-slate-400" aria-hidden="true" />
-                        {customer.city || "Sem cidade"}
-                      </p>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <p>{formatCurrency(customer.creditLimit)}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Disponivel {formatCurrency(availableCredit)}
-                      </p>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <StatusBadge
-                        label={formatCurrency(customer.currentBalance)}
-                        tone={customer.currentBalance > 0 ? "warning" : "success"}
-                      />
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <p>{customer.purchasesCount} compras</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Ultima: {customer.lastPurchase}
-                      </p>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <StatusBadge
-                        label={customer.status === "active" ? "Ativo" : "Inativo"}
-                        tone={customer.status === "active" ? "success" : "warning"}
-                      />
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => handleEditCustomer(customer)}
-                        >
-                          <Edit3 className="size-4" aria-hidden="true" />
-                          Editar
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => handleToggleCustomer(customer.id)}
-                        >
-                          <RotateCcw className="size-4" aria-hidden="true" />
-                          {customer.status === "active" ? "Inativar" : "Reativar"}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </>
-  );
-}
-
-function CustomerFormModal({
-  isOpen,
-  isEditing,
-  formState,
-  onClose,
-  onSubmit,
-  onUpdateForm,
-}: {
-  isOpen: boolean;
-  isEditing: boolean;
-  formState: CustomerFormState;
-  onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onUpdateForm: <K extends keyof CustomerFormState>(
-    key: K,
-    value: CustomerFormState[K],
-  ) => void;
-}) {
-  if (!isOpen) {
-    return null;
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="customer-modal-title"
-    >
-      <div className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <UserRound className="size-5 text-emerald-600" />
-            <div>
-              <h2
-                id="customer-modal-title"
-                className="text-base font-semibold text-slate-950"
-              >
-                {isEditing ? "Editar cliente" : "Novo cliente"}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Informe dados de contato, perfil comercial e limite inicial.
-              </p>
-            </div>
-          </div>
-          <Button type="button" variant="outline" size="icon" onClick={onClose}>
-            <X className="size-4" aria-hidden="true" />
-            <span className="sr-only">Fechar modal</span>
-          </Button>
-        </div>
-
-        <form onSubmit={onSubmit}>
-          <div className="grid max-h-[calc(92vh-142px)] gap-3 overflow-y-auto px-5 py-5 md:grid-cols-2">
-            <Field label="Nome / Razao social" className="md:col-span-2">
-              <input
-                value={formState.name}
-                onChange={(event) => onUpdateForm("name", event.target.value)}
-                placeholder="Ex.: Mercado Sao Lucas"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                autoFocus
-              />
-            </Field>
-
-            <Field label="Tipo">
-              <select
-                value={formState.kind}
-                onChange={(event) =>
-                  onUpdateForm("kind", event.target.value as CustomerKind)
-                }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              >
-                <option value="pf">Pessoa fisica</option>
-                <option value="pj">Pessoa juridica</option>
-              </select>
-            </Field>
-
-            <Field label="CPF / CNPJ">
-              <input
-                value={formState.document}
-                onChange={(event) => onUpdateForm("document", event.target.value)}
-                placeholder="000.000.000-00"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="E-mail">
-              <input
-                value={formState.email}
-                onChange={(event) => onUpdateForm("email", event.target.value)}
-                placeholder="cliente@email.com"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Telefone">
-              <input
-                value={formState.phone}
-                onChange={(event) => onUpdateForm("phone", event.target.value)}
-                placeholder="(65) 99999-0000"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Cidade">
-              <input
-                value={formState.city}
-                onChange={(event) => onUpdateForm("city", event.target.value)}
-                placeholder="Cuiaba"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Endereco">
-              <input
-                value={formState.address}
-                onChange={(event) => onUpdateForm("address", event.target.value)}
-                placeholder="Rua, bairro ou referencia"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Limite de credito">
-              <div className="relative">
-                <BadgeDollarSign
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-                  aria-hidden="true"
-                />
-                <input
-                  value={formState.creditLimit}
-                  onChange={(event) =>
-                    onUpdateForm("creditLimit", event.target.value)
-                  }
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                />
-              </div>
-            </Field>
-
-            <Field label="Saldo aberto">
-              <input
-                value={formState.currentBalance}
-                onChange={(event) =>
-                  onUpdateForm("currentBalance", event.target.value)
-                }
-                inputMode="decimal"
-                placeholder="0,00"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Observacoes" className="md:col-span-2">
-              <textarea
-                value={formState.observations}
-                onChange={(event) =>
-                  onUpdateForm("observations", event.target.value)
-                }
-                rows={3}
-                placeholder="Perfil de compra, condicoes comerciais ou observacoes internas"
-                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-          </div>
-
-          <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-            >
-              <Save className="size-4" aria-hidden="true" />
-              {isEditing ? "Salvar alteracoes" : "Cadastrar cliente"}
-            </Button>
-          </div>
-        </form>
+        <Button
+          onClick={openCreate}
+          className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          Novo cliente
+        </Button>
       </div>
+
+      <div className="relative">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+          aria-hidden="true"
+        />
+        <input
+          type="text"
+          placeholder="Buscar por nome ou documento..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-4 text-sm text-slate-800 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+              <th className="px-4 py-3">Tipo</th>
+              <th className="px-4 py-3">Documento</th>
+              <th className="px-4 py-3">Nome</th>
+              <th className="px-4 py-3">Contato</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  {customers.length === 0
+                    ? "Nenhum cliente cadastrado."
+                    : "Nenhum resultado para a busca."}
+                </td>
+              </tr>
+            ) : (
+              filtered.map((customer) => (
+                <tr key={customer.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold uppercase text-slate-600">
+                      {customer.type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-700">
+                    {formatDocument(customer.type, customer.document)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-900">{customer.name}</p>
+                    {customer.tradeName && (
+                      <p className="text-xs text-slate-400">{customer.tradeName}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {customer.email ?? customer.phone ?? "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => void handleToggle(customer)}
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
+                        customer.active
+                          ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                          : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                      }`}
+                    >
+                      {customer.active ? (
+                        <UserCheck className="size-3" aria-hidden="true" />
+                      ) : (
+                        <UserX className="size-3" aria-hidden="true" />
+                      )}
+                      {customer.active ? "Ativo" : "Inativo"}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => openEdit(customer)}
+                      className="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      title="Editar"
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+            <div className="border-b border-slate-200 px-6 py-4">
+              <h2 className="text-base font-semibold text-slate-900">
+                {editingId ? "Editar cliente" : "Novo cliente"}
+              </h2>
+            </div>
+
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 px-6 py-5">
+              {!editingId && (
+                <div className="flex gap-2">
+                  {(["cpf", "cnpj"] as const).map((t) => (
+                    <label
+                      key={t}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 transition has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50"
+                    >
+                      <input
+                        type="radio"
+                        name="type"
+                        value={t}
+                        checked={form.type === t}
+                        onChange={() => setForm((c) => ({ ...c, type: t }))}
+                        className="accent-emerald-500"
+                      />
+                      <span className="text-sm font-semibold uppercase">{t}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-slate-600">
+                  {form.type === "cpf" ? "CPF (11 dígitos)" : "CNPJ (14 dígitos)"}
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  disabled={!!editingId}
+                  value={form.document}
+                  onChange={(e) => setForm((c) => ({ ...c, document: e.target.value }))}
+                  placeholder={form.type === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"}
+                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-400"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-slate-600">
+                  {form.type === "cpf" ? "Nome" : "Razão Social"}
+                </span>
+                <input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))}
+                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </label>
+
+              {form.type === "cnpj" && (
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-slate-600">
+                    Nome Fantasia
+                  </span>
+                  <input
+                    type="text"
+                    value={form.tradeName}
+                    onChange={(e) => setForm((c) => ({ ...c, tradeName: e.target.value }))}
+                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  />
+                </label>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-slate-600">E-mail</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))}
+                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-slate-600">Telefone</span>
+                  <input
+                    type="text"
+                    inputMode="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))}
+                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  />
+                </label>
+              </div>
+
+              {error && (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+                >
+                  {loading ? "Salvando..." : editingId ? "Salvar" : "Criar"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-  className = "",
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
-    </article>
   );
 }

@@ -42,7 +42,7 @@ const navigationItems: NavItem[] = [
   { label: "Caixas", icon: BadgeDollarSign, href: "/caixas", roles: ["admin", "operator"] },
   { label: "Vendas", icon: ShoppingCart, href: "/vendas", roles: ["admin", "operator", "financeiro"] },
   { label: "Fila NF / Chamados", icon: ClipboardList, href: "/supervisor", roles: ["admin", "supervisor"] },
-  { label: "Clientes (NF)", icon: Users, roles: ["admin", "supervisor"] },
+  { label: "Clientes (NF)", icon: Users, href: "/supervisor/clientes", roles: ["admin", "supervisor"] },
   { label: "Produtos", icon: Package, href: "/admin/produtos", roles: ["admin", "estoque"] },
   { label: "Secoes e categorias", icon: Tags, href: "/admin/secoes-categorias", roles: ["admin", "estoque"] },
   { label: "Estoque", icon: Warehouse, href: "/admin/estoque", roles: ["admin", "estoque"] },

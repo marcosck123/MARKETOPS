@@ -178,7 +178,7 @@
         "Lint passes"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
       "notes": "Depends on US-015. Follow same pattern as /admin/usuarios: server component + client content + modal. Document display: format CPF as XXX.XXX.XXX-XX, CNPJ as XX.XXX.XXX/XXXX-XX in the table (display only, store raw)."
     },
