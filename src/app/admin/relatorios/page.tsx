@@ -66,7 +66,7 @@ export default async function ReportsPage({
     subtotal: s.subtotal,
     discount: s.discount,
     total: s.total,
-    paymentMethods: [...new Set(s.payments.map((p: { method: string }) => p.method))],
+    paymentMethods: [...new Set(s.payments.map((p: { method: string }) => p.method))] as string[],
   }));
 
   return (
