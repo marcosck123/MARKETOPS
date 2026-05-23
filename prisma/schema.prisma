@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  active
+  inactive
+}
+
+enum ProductUnit {
+  unidade
+  caixa
+  fardo
+  pacote
+  quilo
+  litro
+  volume
+}
+
+model Section {
+  id          String     @id
+  name        String
+  description String
+  status      Status     @default(active)
+  categories  Category[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id        String    @id
+  sectionId String
+  section   Section   @relation(fields: [sectionId], references: [id])
+  name      String
+  status    Status    @default(active)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum StockEntryType {
+  entrada
+  saida
+  ajuste
+}
+
+model Product {
+  id             String       @id
+  name           String
+  barcode        String       @unique
+  sku            String       @unique
+  sectionId      String
+  categoryId     String
+  category       Category     @relation(fields: [categoryId], references: [id])
+  unit           ProductUnit
+  costPrice      Float
+  salePrice      Float
+  wholesalePrice Float
+  currentStock   Int          @default(0)
+  minimumStock   Int          @default(0)
+  status         Status       @default(active)
+  ncm            String?
+  cfop           String?      @default("5102")
+  cst            String?      @default("400")
+  stockEntries   StockEntry[]
+  saleItems      SaleItem[]
+  receiptItems   StockReceiptItem[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model StockEntry {
+  id          String         @id @default(cuid())
+  productId   String
+  product     Product        @relation(fields: [productId], references: [id])
+  quantity    Int
+  type        StockEntryType
+  reason      String?
+  responsible String?
+  createdAt   DateTime       @default(now())
+}
+
+enum UserRole {
+  operator
+  supervisor
+  estoque
+  financeiro
+  admin
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          UserRole  @default(operator)
+  active        Boolean   @default(true)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum CashRegisterStatus {
+  open
+  closed
+}
+
+model CashRegister {
+  id             String             @id @default(cuid())
+  name           String
+  status         CashRegisterStatus @default(closed)
+  openedAt       DateTime?
+  closedAt       DateTime?
+  openingBalance Float              @default(0)
+  closingBalance Float?
+  cashSessions   CashSession[]
+  helpRequests   HelpRequest[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+enum CashSessionStatus {
+  open
+  closed
+}
+
+model CashSession {
+  id             String            @id @default(cuid())
+  cashRegisterId String
+  cashRegister   CashRegister      @relation(fields: [cashRegisterId], references: [id])
+  operatorId     String
+  operatorName   String
+  status         CashSessionStatus @default(open)
+  openedAt       DateTime          @default(now())
+  closedAt       DateTime?
+  openingBalance Float             @default(0)
+  closingBalance Float?
+  sales          Sale[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+enum SaleStatus {
+  open
+  finished
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  pix
+  debit
+  credit
+  store_credit
+}
+
+model Sale {
+  id           String      @id @default(cuid())
+  sequence     Int         @default(autoincrement())
+  code         String      @default("")
+  cashSessionId String
+  cashSession  CashSession @relation(fields: [cashSessionId], references: [id])
+  operatorId   String
+  operatorName String
+  status       SaleStatus  @default(open)
+  subtotal     Float
+  discount     Float       @default(0)
+  total        Float
+  notes        String?
+  finishedAt   DateTime?
+  cancelledAt  DateTime?
+  items        SaleItem[]
+  payments     SalePayment[]
+  createdAt    DateTime    @default(now())
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Float
+  unitPrice Float
+  total     Float
+}
+
+model SalePayment {
+  id     String        @id @default(cuid())
+  saleId String
+  sale   Sale          @relation(fields: [saleId], references: [id])
+  method PaymentMethod
+  amount Float
+}
+
+model CompanySettings {
+  id          String   @id @default("default")
+  razaoSocial String   @default("")
+  cnpj        String   @default("")
+  ie          String?
+  address     String   @default("")
+  number      String   @default("")
+  district    String   @default("")
+  city        String   @default("")
+  state       String   @default("")
+  zipCode     String   @default("")
+  phone       String   @default("")
+  nfeSerie    String   @default("1")
+  nfeSequence Int      @default(1)
+  updatedAt   DateTime @updatedAt
+}
+
+enum FiscalRequestStatus {
+  pending
+  processing
+  completed
+  cancelled
+}
+
+model FiscalRequest {
+  id           String              @id @default(cuid())
+  saleId       String
+  saleCode     String
+  customerId   String?
+  document     String
+  customerName String?
+  status       FiscalRequestStatus @default(pending)
+  nfeKey       String?
+  nfeNumber    String?
+  operatorId   String
+  supervisorId String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+enum CustomerType {
+  cpf
+  cnpj
+}
+
+model Customer {
+  id         String       @id @default(cuid())
+  type       CustomerType
+  document   String       @unique
+  name       String
+  tradeName  String?
+  email      String?
+  phone      String?
+  zipCode    String?
+  street     String?
+  number     String?
+  complement String?
+  district   String?
+  city       String?
+  state      String?
+  ie         String?
+  active     Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+}
+
+enum StockReceiptStatus {
+  draft
+  confirmed
+  cancelled
+}
+
+model StockReceipt {
+  id            String             @id @default(cuid())
+  sequence      Int                @default(autoincrement())
+  code          String             @unique @default("")
+  supplierId    String?
+  supplierName  String?
+  invoiceNumber String?
+  status        StockReceiptStatus @default(draft)
+  notes         String?
+  totalCost     Float              @default(0)
+  confirmedAt   DateTime?
+  items         StockReceiptItem[]
+  createdAt     DateTime           @default(now())
+}
+
+model StockReceiptItem {
+  id             String       @id @default(cuid())
+  stockReceiptId String
+  stockReceipt   StockReceipt @relation(fields: [stockReceiptId], references: [id])
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  productName    String
+  quantity       Float
+  unitCost       Float
+  total          Float
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String
+  cnpj        String?  @unique
+  phone       String?
+  email       String?
+  contactName String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+enum HelpRequestStatus {
+  active
+  attended
+  expired
+}
+
+model HelpRequest {
+  id               String            @id @default(cuid())
+  cashRegisterId   String
+  cashRegister     CashRegister      @relation(fields: [cashRegisterId], references: [id])
+  operatorId       String
+  operatorName     String
+  cashRegisterName String
+  status           HelpRequestStatus @default(active)
+  expiresAt        DateTime
+  attendedBy       String?
+  attendedAt       DateTime?
+  createdAt        DateTime          @default(now())
+}

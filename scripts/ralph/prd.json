@@ -1,246 +1,170 @@
 {
   "project": "MARKETOPS",
-  "branchName": "ralph/mvp-2",
-  "prdSource": "tasks/prd-mvp-2.md",
+  "branchName": "ralph/mvp-3",
+  "prdSource": "docs/MVP3_PLANEJAMENTO.md",
   "userStories": [
     {
-      "id": "US-001",
-      "title": "Setup Prisma + schema inicial (Section, Category, Product)",
-      "description": "As a developer, I want Prisma ORM configured with PostgreSQL and the initial schema for Section, Category, and Product, so that the application has a real persistence layer.",
+      "id": "US-007", "title": "Schema CashSession + server actions", "description": "", "acceptanceCriteria": [], "priority": 1, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-008", "title": "Schema Sale + SaleItem + SalePayment + persistFinishedSale", "description": "", "acceptanceCriteria": [], "priority": 2, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-009", "title": "PDV redesign — novo layout visual", "description": "", "acceptanceCriteria": [], "priority": 3, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-010", "title": "PDV gate de sessao", "description": "", "acceptanceCriteria": [], "priority": 4, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-011", "title": "Conectar PDV ao banco", "description": "", "acceptanceCriteria": [], "priority": 5, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-012", "title": "HelpRequest schema + server actions", "description": "", "acceptanceCriteria": [], "priority": 6, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-013", "title": "PDV — Botao Chamar Supervisor", "description": "", "acceptanceCriteria": [], "priority": 7, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-014", "title": "Tela /supervisor — polling, alarme, badge", "description": "", "acceptanceCriteria": [], "priority": 8, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-015", "title": "Customer schema + server actions", "description": "", "acceptanceCriteria": [], "priority": 9, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-016", "title": "Tela /supervisor/clientes", "description": "", "acceptanceCriteria": [], "priority": 10, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-017", "title": "CompanySettings + /admin/configuracoes + Product NCM/CFOP/CST", "description": "", "acceptanceCriteria": [], "priority": 11, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-018", "title": "FiscalRequest schema + server actions", "description": "", "acceptanceCriteria": [], "priority": 12, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-019", "title": "Fluxo NF no PDV + fila NF no supervisor", "description": "", "acceptanceCriteria": [], "priority": 13, "passes": true, "skillsRequired": [], "notes": ""
+    },
+    {
+      "id": "US-020",
+      "title": "Supplier schema + server actions + tela /admin/fornecedores",
+      "description": "As a stock manager, I want to register and manage suppliers so that I can link them to purchase orders.",
       "acceptanceCriteria": [
-        "prisma and @prisma/client are added to dependencies",
-        "prisma/schema.prisma defines models Section, Category, Product with correct field types, relations, and constraints",
-        "prisma migrate dev creates the initial migration",
-        "prisma/seed.ts seeds initial data from lib/catalog-data.ts and lib/product-data.ts",
-        "DATABASE_URL is read from environment variable (never hardcoded)",
-        "src/lib/db.ts exports a singleton Prisma client",
+        "Supplier model: id @default(cuid()), name, cnpj?, phone?, email?, contactName?, notes?, active Boolean @default(true), createdAt",
+        "src/lib/actions/suppliers.ts exports createSupplier, updateSupplier, toggleSupplierStatus, listSuppliers (optional search on name OR cnpj)",
+        "createSupplier validates cnpj uniqueness if provided (strip non-digits)",
+        "/admin/fornecedores page: async server component passes suppliers to SuppliersContent",
+        "SuppliersContent rewritten: table (name, cnpj, phone, email, status), modal (name, cnpj, phone, email, contactName, notes), edit, toggle status, client-side search",
+        "Sidebar: /admin/fornecedores href already in place",
         "Typecheck passes",
         "Lint passes"
       ],
-      "priority": 1,
-      "passes": false,
+      "priority": 14,
+      "passes": true,
+      "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
+      "notes": "Combined schema+screen since Supplier is simple. Rewrite existing SuppliersContent (currently mock-based). cnpj is optional and stored as raw digits."
+    },
+    {
+      "id": "US-021",
+      "title": "StockReceipt schema + server actions (nota fiscal de entrada)",
+      "description": "As a developer, I want StockReceipt and StockReceiptItem models and server actions to manage purchase receipts from draft to confirmed.",
+      "acceptanceCriteria": [
+        "StockReceiptStatus enum: draft | confirmed | cancelled",
+        "StockReceipt model: id @default(cuid()), code String @unique (NE-XXXXXX), supplierId? (FK optional), supplierName?, invoiceNumber?, status StockReceiptStatus @default(draft), notes?, totalCost Float @default(0), confirmedAt?, createdAt",
+        "StockReceiptItem model: id @default(cuid()), stockReceiptId (FK), productId (FK), productName String (snapshot), quantity Float, unitCost Float, total Float",
+        "Supplier model gets stockReceipts StockReceiptItem[] via StockReceipt (no direct relation — supplierId is String?)",
+        "Product model gets receiptItems StockReceiptItem[] relation",
+        "StockReceipt gets items StockReceiptItem[] relation",
+        "src/lib/actions/stock-receipts.ts exports: createStockReceipt, addReceiptItem, removeReceiptItem, confirmStockReceipt, cancelStockReceipt, listStockReceipts",
+        "createStockReceipt: generates code NE- + sequence padded (uses db count for sequence), creates draft",
+        "addReceiptItem: validates product exists, adds item (productName snapshot), recalculates totalCost",
+        "removeReceiptItem: removes item, recalculates totalCost",
+        "confirmStockReceipt: validates status=draft, db.$transaction: creates StockEntry (entrada) per item + updates StockReceipt to confirmed + confirmedAt",
+        "cancelStockReceipt: validates status=draft, updates to cancelled",
+        "listStockReceipts: optional status filter, ordered by createdAt desc, includes items count",
+        "Typecheck passes",
+        "Lint passes"
+      ],
+      "priority": 15,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "DATABASE_URL is already set in compose.yaml and .env.example as postgresql://marketops:marketops@db:5432/marketops. Seed must match the IDs used in catalog-data.ts and product-data.ts to avoid breaking existing UI references."
+      "notes": "Depends on Supplier (US-020) and Product. supplierId is optional string FK — receipt can be created without a supplier. productName stored as snapshot so receipt history is preserved if product is renamed."
     },
     {
-      "id": "US-002",
-      "title": "Server actions para Secoes (criar, editar, ativar/desativar)",
-      "description": "As a developer, I want Next.js server actions for sections CRUD, so that the sections-categories UI can persist section changes to the database.",
+      "id": "US-022",
+      "title": "Tela /admin/compras — nota fiscal de entrada UI",
+      "description": "As a stock manager, I want to create and manage purchase receipts (NF de entrada) with draft/confirm flow.",
       "acceptanceCriteria": [
-        "src/lib/actions/sections.ts exports createSection, updateSection, toggleSectionStatus",
-        "Each action uses the Prisma client from src/lib/db.ts",
-        "Each action uses the 'use server' directive",
-        "Input is validated (name is required, non-empty) before writing",
-        "Each mutation calls revalidatePath('/secoes-categorias')",
+        "/admin/compras page: async server component passes receipts + suppliers + products to PurchasesContent",
+        "PurchasesContent rewritten: table of receipts (code, supplier, invoiceNumber, status, totalCost, date, actions)",
+        "Status badges: draft=slate, confirmed=emerald, cancelled=red",
+        "Nova NF button opens create modal: optional supplier select, invoiceNumber?, notes?",
+        "Click on draft receipt row expands detail: list of items (product, qty, unitCost, total), add-item form (product select + qty + unitCost), remove item button",
+        "Confirmar button on draft receipt calls confirmStockReceipt — row updates to confirmed",
+        "Cancelar button on draft receipt calls cancelStockReceipt",
+        "Confirmed and cancelled receipts are read-only (no add/remove items)",
         "Typecheck passes",
         "Lint passes"
       ],
-      "priority": 2,
-      "passes": false,
-      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-001. Keep actions in src/lib/actions/ folder. Do not expose internal Prisma errors to the client."
-    },
-    {
-      "id": "US-003",
-      "title": "Server actions para Categorias (criar, editar, ativar/desativar)",
-      "description": "As a developer, I want Next.js server actions for categories CRUD, so that the sections-categories UI can persist category changes to the database.",
-      "acceptanceCriteria": [
-        "src/lib/actions/categories.ts exports createCategory, updateCategory, toggleCategoryStatus",
-        "Each action uses the Prisma client from src/lib/db.ts",
-        "Each action uses the 'use server' directive",
-        "sectionId is validated against existing sections before insert or update",
-        "Each mutation calls revalidatePath('/secoes-categorias')",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 3,
-      "passes": false,
-      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-001 and US-002."
-    },
-    {
-      "id": "US-004",
-      "title": "Conectar tela de Secoes e Categorias aos server actions",
-      "description": "As an admin, I want the sections-categories screen to persist changes to the database, so that data is not lost on page refresh.",
-      "acceptanceCriteria": [
-        "secoes-categorias/page.tsx becomes an async server component that fetches sections and categories from Prisma",
-        "SectionsCategoriesContent receives sections and categories as props instead of using initialSections/initialCategories from mock data",
-        "Form submissions call the server actions from US-002 and US-003",
-        "List updates after mutation without full client-side state management",
-        "Existing UI layout and visual design is preserved exactly",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 4,
-      "passes": false,
-      "skillsRequired": ["design-ux-ui", "full-stack-planner", "route-audit", "code-review"],
-      "notes": "Depends on US-002, US-003. Do not redesign the UI. The SectionsCategoriesContent component already has the correct visual structure."
-    },
-    {
-      "id": "US-005",
-      "title": "Server actions para Produtos (criar, editar, ativar/desativar)",
-      "description": "As a developer, I want Next.js server actions for products CRUD, so that the products UI can persist product changes to the database.",
-      "acceptanceCriteria": [
-        "src/lib/actions/products.ts exports createProduct, updateProduct, toggleProductStatus",
-        "Each action uses the Prisma client from src/lib/db.ts",
-        "Each action uses the 'use server' directive",
-        "barcode and sku uniqueness is validated before insert",
-        "sectionId and categoryId are validated against existing records before write",
-        "Each mutation calls revalidatePath('/produtos')",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 5,
-      "passes": false,
-      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-001. Product fields match the Product type in src/lib/product-data.ts."
-    },
-    {
-      "id": "US-006",
-      "title": "Conectar tela de Produtos aos server actions",
-      "description": "As an admin, I want the products screen to persist changes to the database, so that product data is not lost on page refresh.",
-      "acceptanceCriteria": [
-        "produtos/page.tsx becomes an async server component that fetches products, sections, and categories from Prisma",
-        "ProductsContent receives data as props instead of using initialProducts from mock data",
-        "Form submissions call the server actions from US-005",
-        "List updates after mutation",
-        "Existing UI layout and visual design is preserved exactly",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 6,
-      "passes": false,
+      "priority": 16,
+      "passes": true,
       "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
-      "notes": "Depends on US-005. Do not redesign the UI."
+      "notes": "Depends on US-021. Products for item selection come from db.product.findMany(active). Supplier list for select comes from listSuppliers(). Client-side state for expanded receipt row."
     },
     {
-      "id": "US-007",
-      "title": "Schema de Estoque + server actions (leitura e ajuste)",
-      "description": "As a developer, I want a StockEntry model in Prisma and server actions for reading and adjusting stock levels, so that the stock screen shows real data.",
+      "id": "US-023",
+      "title": "Dashboard financeiro /admin/financeiro — DRE simplificado",
+      "description": "As a financeiro user, I want a dashboard showing revenue, costs, and payment breakdown so I can understand the business performance.",
       "acceptanceCriteria": [
-        "prisma/schema.prisma adds StockEntry model with fields: id, productId (FK), quantity, type (entrada | saida | ajuste), createdAt",
-        "src/lib/actions/stock.ts exports getStockSummary and adjustStock",
-        "getStockSummary returns aggregated stock per product (sum of all entries)",
-        "adjustStock validates that productId exists before writing",
-        "Migration file is updated via prisma migrate dev",
+        "/admin/financeiro page: async server component queries real DB data",
+        "Period filter: today | week | month (default month) — passed as searchParam",
+        "Summary cards: Total de Vendas (sum Sale.total where finished), Ticket Médio, Qtd Vendas, Total Descontos",
+        "Payment breakdown table: por método (cash/pix/debit/credit/store_credit) — sum SalePayment.amount grouped by method",
+        "DRE simplificado: Receita Bruta (subtotal sum), Descontos (discount sum), Receita Líquida (total sum), Custo de Mercadorias (sum StockEntry.quantity * Product.costPrice where type=saida in period), Margem Bruta",
+        "Session summary: total open CashSessions in period, list of sessions (register, operator, total_sales)",
+        "FinanceContent receives all data as props from server component",
         "Typecheck passes",
         "Lint passes"
       ],
-      "priority": 7,
-      "passes": false,
-      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-001. Stock level = sum of StockEntry.quantity per product (positive = entrada, negative = saida)."
+      "priority": 17,
+      "passes": true,
+      "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
+      "notes": "Depends on existing Sale, SalePayment, StockEntry models. Period filter uses URL searchParams (not useState) so filter is shareable/bookmarkable. Custo de Mercadorias is approximated via StockEntry quantity × costPrice at current price — acceptable for MVP."
     },
     {
-      "id": "US-008",
-      "title": "Conectar tela de Estoque aos server actions",
-      "description": "As an admin, I want the stock screen to show real stock levels from the database, so that inventory reflects actual data.",
+      "id": "US-024",
+      "title": "Telas de leitura /admin/vendas e /admin/caixas para role financeiro",
+      "description": "As a financeiro user, I want read-only views of all sales and cash sessions so I can audit and reconcile.",
       "acceptanceCriteria": [
-        "estoque/page.tsx becomes an async server component that fetches stock summary from Prisma",
-        "StockContent receives real data as props instead of using mock stock-data.ts",
-        "Low-stock alert is based on product.minimumStock compared to real aggregated stock",
-        "Existing UI layout and visual design is preserved exactly",
+        "/admin/vendas: async server component lists all Sale (finished) ordered by finishedAt desc, with code, operator, total, items count, payment methods",
+        "/admin/caixas: async server component lists all CashSession ordered by openedAt desc, with register, operator, status, openingBalance, closingBalance, total_sales (sum of sales.total), opened/closed times",
+        "Both pages use AdminShell, simple table layout, no mutations (read-only)",
+        "Middleware: add '/admin/vendas' and '/admin/caixas' to financeiro ROLE_ROUTES",
+        "Sidebar: add 'Caixas (fin.)' and 'Vendas (fin.)' items for financeiro + admin, OR use existing items",
         "Typecheck passes",
         "Lint passes"
       ],
-      "priority": 8,
-      "passes": false,
-      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
-      "notes": "Depends on US-007. Do not redesign the UI."
+      "priority": 18,
+      "passes": true,
+      "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
+      "notes": "Standalone — only reads existing Sale and CashSession data. /admin/caixas is different from /caixas (operator screen). /admin/vendas shows ALL sales, not just current session. Sidebar items for financeiro already point to /admin/vendas and /admin/caixas — need to implement the pages."
     },
     {
-      "id": "US-009",
-      "title": "Schema de Caixas + server actions (abrir, fechar, visualizar)",
-      "description": "As a developer, I want a CashRegister model in Prisma and server actions for managing cash registers, so that the caixas screen shows real data.",
+      "id": "US-025",
+      "title": "Relatorios /admin/relatorios — tabela de vendas + exportacao CSV",
+      "description": "As a financeiro user, I want to view a sales report by period and export it as CSV.",
       "acceptanceCriteria": [
-        "prisma/schema.prisma adds CashRegister model with fields: id, name, status (open | closed), openedAt, closedAt, openingBalance, closingBalance",
-        "src/lib/actions/cash-registers.ts exports getCashRegisters, openCashRegister, closeCashRegister",
-        "openCashRegister validates that the register is not already open before writing",
-        "closeCashRegister validates that the register is currently open before writing",
-        "Each mutation calls revalidatePath('/caixas')",
-        "Migration file is updated via prisma migrate dev",
+        "/admin/relatorios: async server component with period filter (searchParams)",
+        "Report table: code, date, operator, cashRegister, items, subtotal, discount, total, payment methods",
+        "Period filter: today | week | month | custom (date range inputs)",
+        "CSV export: client-side Blob download — no server round-trip, no new dependency",
+        "CSV columns: Codigo, Data, Operador, Caixa, Itens, Subtotal, Desconto, Total, Pagamentos",
+        "ReportsContent receives sales data as props, handles CSV download client-side with Blob+URL.createObjectURL",
+        "Existing ReportsContent rewritten (currently mock-based)",
         "Typecheck passes",
         "Lint passes"
       ],
-      "priority": 9,
-      "passes": false,
-      "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
-      "notes": "Depends on US-001."
-    },
-    {
-      "id": "US-010",
-      "title": "Conectar tela de Caixas aos server actions",
-      "description": "As an admin, I want the cash registers screen to show real data from the database and allow opening and closing registers.",
-      "acceptanceCriteria": [
-        "caixas/page.tsx becomes an async server component that fetches cash registers from Prisma",
-        "CashRegistersContent receives real data as props instead of using mock cash-data.ts",
-        "Open and close actions persist to the database and revalidate the page",
-        "Existing UI layout and visual design is preserved exactly",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 10,
-      "passes": false,
-      "skillsRequired": ["design-ux-ui", "full-stack-planner", "code-review"],
-      "notes": "Depends on US-009. Do not redesign the UI."
-    },
-    {
-      "id": "US-011",
-      "title": "Setup NextAuth com credentials provider + model User no Prisma",
-      "description": "As an admin, I want to log in to the system with email and password, so that only authorized users can access the admin panel.",
-      "acceptanceCriteria": [
-        "next-auth and @auth/prisma-adapter are added to dependencies",
-        "bcryptjs is added to dependencies for password hashing",
-        "prisma/schema.prisma adds User model with fields: id, email (unique), passwordHash, role (admin | operator), createdAt",
-        "src/lib/auth.ts configures NextAuth with CredentialsProvider, JWT strategy, and PrismaAdapter",
-        "Login page at /login with email and password fields, matching existing visual style (slate-950 background, emerald accent)",
-        "Passwords are hashed with bcryptjs before storage (never stored in plaintext)",
-        "NEXTAUTH_SECRET is read from environment variable (must be set in .env.example)",
-        "prisma/seed.ts creates one default admin user (email: admin@marketops.local, password: admin123)",
-        "Migration file is updated via prisma migrate dev",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 11,
-      "passes": false,
-      "skillsRequired": ["security-review", "full-stack-planner", "design-ux-ui", "code-review"],
-      "notes": "Depends on US-001. Critical: never store plaintext passwords. NEXTAUTH_SECRET must be at least 32 characters. Add NEXTAUTH_SECRET and NEXTAUTH_URL to .env.example."
-    },
-    {
-      "id": "US-012",
-      "title": "Middleware de protecao de rotas autenticadas",
-      "description": "As an admin, I want all admin routes to require authentication, so that unauthenticated users are redirected to the login page.",
-      "acceptanceCriteria": [
-        "src/middleware.ts protects all routes except /login and /api/auth/*",
-        "Unauthenticated requests to protected routes are redirected to /login",
-        "Authenticated requests to /login are redirected to /",
-        "Static assets (/_next/*, /favicon.ico) are not blocked by middleware",
-        "Middleware matcher is explicitly configured to avoid performance issues",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 12,
-      "passes": false,
-      "skillsRequired": ["security-review", "route-audit", "code-review"],
-      "notes": "Depends on US-011. Use the withAuth helper from next-auth/middleware or implement manual token check via getToken."
-    },
-    {
-      "id": "US-013",
-      "title": "Atualizar sidebar para MVP 2 com usuario logado",
-      "description": "As an admin, I want the sidebar to show my logged-in name and reflect that the system is now on MVP 2, so that the interface communicates the current state.",
-      "acceptanceCriteria": [
-        "Sidebar bottom section shows logged-in user name and role from session",
-        "MVP label in sidebar bottom is updated from 'MVP 1' to 'MVP 2'",
-        "Configuracoes item remains disabled with tooltip 'Modulo planejado para as proximas etapas'",
-        "All other nav items remain functional as before",
-        "Logout button or link is available in the sidebar",
-        "Typecheck passes",
-        "Lint passes"
-      ],
-      "priority": 13,
-      "passes": false,
-      "skillsRequired": ["design-ux-ui", "code-review"],
-      "notes": "Depends on US-011. AppSidebar is a client component ('use client') so useSession() from next-auth/react can be used directly."
+      "priority": 19,
+      "passes": true,
+      "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
+      "notes": "CSV export uses browser Blob API — no @react-pdf/renderer or external lib needed. Format: UTF-8 BOM for Excel compatibility (\\uFEFF prefix). Period filter via searchParams same as US-023."
     }
   ]
 }

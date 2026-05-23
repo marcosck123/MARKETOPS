@@ -1,17 +1,37 @@
 "use client";
 
 import { type FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Edit3, Filter, FolderPlus, Plus, Save, Tags, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
-  type CatalogSection,
-  type ProductCategory,
-  initialCategories,
-  initialSections,
-} from "@/lib/catalog-data";
+  createSection,
+  toggleSectionStatus,
+  updateSection,
+} from "@/lib/actions/sections";
+import {
+  createCategory,
+  toggleCategoryStatus,
+  updateCategory,
+} from "@/lib/actions/categories";
+
+type SectionData = {
+  id: string;
+  name: string;
+  description: string;
+  status: "active" | "inactive";
+};
+
+type CategoryData = {
+  id: string;
+  sectionId: string;
+  name: string;
+  status: "active" | "inactive";
+  products: number;
+};
 
 type EditingSection = {
   id: string;
@@ -24,25 +44,19 @@ type EditingCategory = {
   name: string;
 };
 
-function normalizeId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+type Props = {
+  sections: SectionData[];
+  categories: CategoryData[];
+};
 
-export function SectionsCategoriesContent() {
-  const [sections, setSections] = useState<CatalogSection[]>(initialSections);
-  const [categories, setCategories] =
-    useState<ProductCategory[]>(initialCategories);
+export function SectionsCategoriesContent({ sections, categories }: Props) {
+  const router = useRouter();
+
   const [sectionName, setSectionName] = useState("");
   const [sectionDescription, setSectionDescription] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [categorySectionId, setCategorySectionId] = useState(
-    initialSections[0]?.id ?? "",
+    sections[0]?.id ?? "",
   );
   const [selectedSectionId, setSelectedSectionId] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,118 +96,69 @@ export function SectionsCategoriesContent() {
     0,
   );
 
-  function handleAddSection(event: FormEvent<HTMLFormElement>) {
+  async function handleAddSection(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = sectionName.trim();
+    if (!name) return;
 
-    if (!name) {
-      return;
+    const result = await createSection({ name, description: sectionDescription });
+    if (result.success) {
+      setCategorySectionId(result.data.id);
+      setSectionName("");
+      setSectionDescription("");
+      router.refresh();
     }
-
-    const baseId = normalizeId(name) || "secao";
-    const id = sections.some((section) => section.id === baseId)
-      ? `${baseId}-${Date.now()}`
-      : baseId;
-
-    setSections((current) => [
-      ...current,
-      {
-        id,
-        name,
-        description: sectionDescription.trim() || "Secao criada no MVP 1.",
-        status: "active",
-      },
-    ]);
-    setCategorySectionId(id);
-    setSectionName("");
-    setSectionDescription("");
   }
 
-  function handleAddCategory(event: FormEvent<HTMLFormElement>) {
+  async function handleAddCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = categoryName.trim();
+    if (!categoryName.trim() || !categorySectionId) return;
 
-    if (!name || !categorySectionId) {
-      return;
+    const result = await createCategory({
+      name: categoryName,
+      sectionId: categorySectionId,
+    });
+    if (result.success) {
+      setCategoryName("");
+      router.refresh();
     }
-
-    const baseId = normalizeId(name) || "categoria";
-    const id = categories.some((category) => category.id === baseId)
-      ? `${baseId}-${Date.now()}`
-      : baseId;
-
-    setCategories((current) => [
-      ...current,
-      {
-        id,
-        sectionId: categorySectionId,
-        name,
-        products: 0,
-        status: "active",
-      },
-    ]);
-    setCategoryName("");
   }
 
   function handleToggleSection(sectionId: string) {
-    setSections((current) =>
-      current.map((section) =>
-        section.id === sectionId
-          ? {
-              ...section,
-              status: section.status === "active" ? "inactive" : "active",
-            }
-          : section,
-      ),
-    );
+    void toggleSectionStatus(sectionId).then(() => router.refresh());
   }
 
   function handleToggleCategory(categoryId: string) {
-    setCategories((current) =>
-      current.map((category) =>
-        category.id === categoryId
-          ? {
-              ...category,
-              status: category.status === "active" ? "inactive" : "active",
-            }
-          : category,
-      ),
-    );
+    void toggleCategoryStatus(categoryId).then(() => router.refresh());
   }
 
-  function handleSaveSection() {
-    if (!editingSection?.name.trim()) {
-      return;
-    }
+  async function handleSaveSection() {
+    if (!editingSection?.name.trim()) return;
 
-    setSections((current) =>
-      current.map((section) =>
-        section.id === editingSection.id
-          ? {
-              ...section,
-              name: editingSection.name.trim(),
-              description:
-                editingSection.description.trim() || section.description,
-            }
-          : section,
-      ),
-    );
-    setEditingSection(null);
+    const result = await updateSection(editingSection.id, {
+      name: editingSection.name,
+      description: editingSection.description,
+    });
+    if (result.success) {
+      setEditingSection(null);
+      router.refresh();
+    }
   }
 
-  function handleSaveCategory() {
-    if (!editingCategory?.name.trim()) {
-      return;
-    }
+  async function handleSaveCategory() {
+    if (!editingCategory?.name.trim()) return;
 
-    setCategories((current) =>
-      current.map((category) =>
-        category.id === editingCategory.id
-          ? { ...category, name: editingCategory.name.trim() }
-          : category,
-      ),
-    );
-    setEditingCategory(null);
+    const category = categories.find((c) => c.id === editingCategory.id);
+    if (!category) return;
+
+    const result = await updateCategory(editingCategory.id, {
+      name: editingCategory.name,
+      sectionId: category.sectionId,
+    });
+    if (result.success) {
+      setEditingCategory(null);
+      router.refresh();
+    }
   }
 
   return (
@@ -202,7 +167,7 @@ export function SectionsCategoriesContent() {
         eyebrow="Cadastro operacional"
         title="Secoes e categorias"
         description="Organize produtos por areas do atacado antes de cadastrar mercadorias, estoque e regras de venda."
-        action={<StatusBadge label="Mock local" tone="info" />}
+        action={<StatusBadge label="Banco real" tone="success" />}
       />
 
       <section className="grid gap-4 md:grid-cols-3">

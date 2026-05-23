@@ -6,7 +6,82 @@
 - Keep this section short and useful.
 - Future Ralph iterations must read this before implementation.
 
+## Codebase Patterns
+
+- node_modules está em Docker volume (marketops_node_modules). npm install só funciona dentro do container.
+- Checks (typecheck, lint, build) requerem Docker rodando. Rodar com: `docker compose run --rm app npx tsc --noEmit` e `docker compose run --rm --no-deps app npm run lint`.
+- Após US-001: rodar `docker compose run --rm app npx prisma migrate dev --name init` e depois `docker compose run --rm app npx prisma db seed` para aplicar schema e dados.
+- IDs do schema Prisma são strings para compatibilidade com mock data existente (ex: "alimentos", "arroz-feijao").
+- Singleton Prisma client em src/lib/db.ts — padrão obrigatório para Next.js dev mode.
+- DATABASE_URL usa hostname "db" (resolve apenas dentro da Docker network).
+
 ## Iteration Logs
+
+## 2026-05-22 - US-006 (MVP 3 Fase 1)
+- What was implemented: src/components/users/users-content.tsx com tabela de usuários, modal de criação (name, email, password, role), modal de edição (name, role), botão toggle ativo/inativo desabilitado para conta própria. src/app/admin/usuarios/page.tsx async server component buscando users + session em paralelo. Role badges com cores distintas por role.
+- Files changed: src/components/users/users-content.tsx (novo), src/app/admin/usuarios/page.tsx (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - auth() em server component retorna sessão — usar para passar currentUserId ao client component
+  - Promise.all([getUsers(), auth()]) para buscar dados em paralelo na page
+  - void handleToggle() no onClick evita floating promise warning do TS/ESLint
+
+## 2026-05-22 - US-005 (MVP 3 Fase 1)
+- What was implemented: src/lib/actions/users.ts com getUsers, createUser, updateUser, toggleUserActive. getUsers usa select para nunca retornar passwordHash. createUser valida email único, senha mínima 6 chars, role válida, hash bcrypt saltRounds=12. updateUser altera apenas name e role. toggleUserActive verifica sessão atual para impedir auto-desativação.
+- Files changed: src/lib/actions/users.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - auth() em server action retorna a sessão do usuário logado — usar para verificar self-deactivation
+  - select no findMany garante que passwordHash nunca vaze — mais seguro que omitir depois
+  - VALID_ROLES como const array + tipo derivado evita divergência entre validação e tipo TypeScript
+
+## 2026-05-22 - US-004 (MVP 3 Fase 1)
+- What was implemented: navigationItems recebeu campo roles: string[]. NavItem type criado. visibleItems filtra por userRole antes de renderizar. Todos os hrefs atualizados para /admin/*. Itens supervisor (Fila NF, Clientes NF) adicionados como disabled (sem href). import React adicionado para tipagem do componente.
+- Files changed: src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - React.ComponentType usado para tipar icon field do NavItem — necessário pois lucide-react exporta componentes como function components
+  - user?.role ?? "operator" garante que role undefined não quebre o filtro
+  - Itens sem href (supervisor, configuracoes) renderizam como span disabled — comportamento existente preservado
+
+## 2026-05-22 - US-003 (MVP 3 Fase 1)
+- What was implemented: src/app/admin/layout.tsx criado (passthrough). 16 páginas criadas sob /admin/*: produtos, secoes-categorias, estoque (com data fetching), compras, fornecedores, clientes, pagamentos, financeiro, relatorios, auditoria, seguranca, self-checkout, impressao, integracoes, testes, deploy. next.config.ts atualizado com redirects permanentes das rotas antigas para /admin/*.
+- Files changed: src/app/admin/layout.tsx (novo), src/app/admin/*/page.tsx x16 (novos), next.config.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - admin/layout.tsx é passthrough pois cada page component já inclui AdminShell — não duplicar wrapper
+  - Redirects permanentes no next.config.ts evitam manter código morto nas rotas antigas
+  - self-checkout original não tinha AdminShell — adicionado na versão /admin/ para consistência visual
+
+## 2026-05-22 - US-002 (MVP 3 Fase 1)
+- What was implemented: Middleware reescrito com ROLE_ROUTES map por role. isAllowed() verifica role + startsWith para prefixos. admin bypassa verificação. Role não autorizado redireciona para /. Unauthenticated redireciona para /login. Authenticated em /login redireciona para /.
+- Files changed: src/middleware.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - req.auth?.user?.role retorna string — fallback para "operator" garante que role undefined não acesse rotas indevidas
+  - startsWith(prefix + "/") evita que /admin/produtosOutros seja permitido quando só /admin/produtos está na lista
+  - isAllowed verifica pathname === prefix (rota exata) OU startsWith(prefix + "/") para subrotas
+
+## 2026-05-22 - US-001 (MVP 3 Fase 1)
+- What was implemented: UserRole enum expandido com supervisor, estoque, financeiro. Campo active Boolean @default(true) adicionado ao model User. auth.ts authorize() rejeita user com active === false. Seed atualizado com active: true no upsert do admin.
+- Files changed: prisma/schema.prisma, src/lib/auth.ts, prisma/seed.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - UserRole enum alterado: qualquer cast de string para UserRole nos server actions existentes ainda funciona pois os valores antigos (admin, operator) foram mantidos
+  - active check deve vir ANTES do bcrypt.compare — evita hash desnecessário de senha para usuário desativado
+  - seed.ts: update: { active: true } garante que admin existente seja reativado em re-seed
 
 Append logs below using this format:
 
@@ -21,3 +96,385 @@ Append logs below using this format:
   - Patterns discovered
   - Gotchas encountered
 ```
+
+## 2026-05-22 - US-013
+- What was implemented: AppSidebar atualizado com useSession() mostrando nome/role do usuário logado + botão de logout (LogOut icon, signOut callbackUrl /login). MVP label atualizado de "MVP 1" para "MVP 2" com nova descrição. SessionProvider adicionado via src/components/providers.tsx wrappando o layout.
+- Files changed: src/components/layout/app-sidebar.tsx, src/components/providers.tsx (novo), src/app/layout.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - SessionProvider precisa estar no layout raiz (client component) para useSession() funcionar em qualquer client component abaixo
+  - useSession() retorna { data: session, status } — user só existe quando status === "authenticated"
+  - signOut({ callbackUrl: "/login" }) redireciona para /login após logout — não precisa de redirect manual
+  - user.role vem do JWT callback configurado em auth.ts — não está no tipo padrão de NextAuth.User sem o declare module
+
+## 2026-05-22 - US-012
+- What was implemented: src/middleware.ts usando auth() do next-auth v5 como handler de middleware. Redireciona não-autenticados para /login, redireciona autenticados do /login para /. Matcher exclui _next/static, _next/image, favicon.ico e api/auth de proteção.
+- Files changed: src/middleware.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - next-auth v5: middleware usa `auth` como handler diretamente: `export default auth((req) => { ... })`
+  - req.auth é null/undefined se não autenticado, objeto session se autenticado
+  - Matcher usa regex negativo para excluir assets estáticos — mais eficiente que listar rotas protegidas
+  - next-auth v4 tinha withAuth() do next-auth/middleware — v5 usa auth() diretamente
+
+## 2026-05-22 - US-011
+- What was implemented: next-auth@5-beta + @auth/prisma-adapter + bcryptjs adicionados ao package.json. Schema Prisma atualizado com UserRole enum + User model + Account/Session/VerificationToken (requeridos pelo PrismaAdapter). src/lib/auth.ts com NextAuth CredentialsProvider + JWT strategy + callbacks jwt/session para propagar role. API route em src/app/api/auth/[...nextauth]/route.ts. Login page em /login com visual slate-950/emerald. Seed atualizado com admin@marketops.local/admin123.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, package.json, src/lib/auth.ts (novo), src/app/api/auth/[...nextauth]/route.ts (novo), src/app/login/page.tsx (novo), .env.example
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - @auth/prisma-adapter (v5) requer Account/Session/VerificationToken no schema mesmo com JWT strategy — sem esses models o adapter falha em runtime
+  - email no User model é String? (nullable) para compatibilidade com PrismaAdapter padrão (OAuth users sem email)
+  - bcrypt.hash com saltRounds=12 — padrão seguro para senhas admin
+  - next-auth v5 exporta { handlers, signIn, signOut, auth } ao invés do default export do v4
+  - NEXTAUTH_SECRET deve ter no mínimo 32 chars — colocar no compose.yaml antes de rodar
+
+## 2026-05-22 - US-010
+- What was implemented: caixas/page.tsx virou async server component buscando CashRegister do Prisma. CashRegistersContent reescrito para receber props (registers: CashRegisterData[]) e usar openCashRegister/closeCashRegister + router.refresh(). UI adaptada ao modelo simplificado (CashRegister = sessão combinada). Removidos CashSession e CashMovement sections (não existem no schema).
+- Files changed: src/app/caixas/page.tsx, src/components/cash-registers/cash-registers-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - CashRegister do MVP combina conceito de register + session — UI de "sessões" mostra os próprios registros como linhas
+  - Mock data tinha status active/inactive (register activation) + session open/closed — DB model simplificou para um único status open/closed
+  - Operações de "supply" e "withdrawal" foram removidas do UI por não existirem no schema — serão adicionadas em iterações futuras com CashMovement model
+  - Tabela de "movimentos recentes" removida por não ter dados no schema ainda
+
+## 2026-05-22 - US-009
+- What was implemented: CashRegisterStatus enum (open|closed) + CashRegister model adicionados ao schema. src/lib/actions/cash-registers.ts com getCashRegisters, openCashRegister (valida not open), closeCashRegister (valida not closed). Seed atualizado com 4 caixas iniciais.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/actions/cash-registers.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - CashRegister usa @default(cuid()) para IDs pois registros de caixa não precisam de slugs legíveis
+  - skipDuplicates: false no seed de CashRegister — cuid garante IDs únicos, não há conflito
+  - openedAt/closedAt/closingBalance são nullable (DateTime? / Float?) para estado inicial fechado
+  - openCashRegister reseta closedAt e closingBalance para null ao reabrir
+
+## 2026-05-22 - US-008
+- What was implemented: estoque/page.tsx virou async server component. StockContent migrado para props + adjustStock + router.refresh(). StockEntry estendido com reason? e responsible? para preservar layout completo do UI. Tipos de movimento simplificados para 3 (entrada|saida|ajuste). Histórico de movimentações vem de db.stockEntry.
+- Files changed: src/app/estoque/page.tsx, src/components/stock/stock-content.tsx, prisma/schema.prisma, src/lib/actions/stock.ts
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - StockEntry precisou de reason? e responsible? para preservar o UI de movimento completo — extender schema como parte da story de UI é aceitável
+  - adjustStock nega quantity automaticamente para tipo "saida" — caller sempre passa valor positivo
+  - History table remove coluna stockAfter (não disponível sem replay de entries) — aceitável para MVP
+  - Movimentos limitados a últimos 100 no page.tsx (take: 100) — evitar queries pesadas
+
+## 2026-05-22 - US-007
+- What was implemented: StockEntryType enum (entrada|saida|ajuste) + StockEntry model adicionados ao schema. src/lib/actions/stock.ts com getStockSummary (groupBy + produto fallback) e adjustStock (validateProductId + create).
+- Files changed: prisma/schema.prisma, src/lib/actions/stock.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - getStockSummary usa fallback p.currentStock quando produto ainda não tem StockEntry — preserva dados legados do seed
+  - quantity é signed: positivo para entrada/ajuste positivo, negativo para saida/ajuste negativo
+  - groupBy _sum retorna null se não há entradas — usar ?? 0 ou ?? p.currentStock
+  - StockEntry.id usa @default(cuid()) pois IDs não precisam ser slugs legíveis (diferente de Product/Section/Category)
+
+## 2026-05-22 - US-006
+- What was implemented: produtos/page.tsx virou async server component buscando products, sections, categories do Prisma. ProductsContent migrado de useState/mock para props + server actions + router.refresh().
+- Files changed: src/app/produtos/page.tsx, src/components/products/products-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - ProductFormModal.categoriesForForm type mudou de `typeof initialCategories` para `CategoryData[]` — necessário ao remover dependência do mock
+  - defaultFormState virou função makeDefaultFormState(sections, categories) — necessário pois sections/categories chegam como props, não são constantes de módulo
+  - Mesmo padrão de US-004: props do server component + router.refresh() após mutação
+  - sections prop adicionada ao ProductFormModal para popular o select de seção no formulário
+
+## 2026-05-22 - US-005
+- What was implemented: Server actions para Produtos — createProduct, updateProduct, toggleProductStatus
+- Files changed: src/lib/actions/products.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - validateProductForm centraliza validação de campos numéricos — reutilizar padrão em outras actions com múltiplos campos
+  - Promise.all para verificar FKs em paralelo — mais eficiente que queries sequenciais
+  - Barcode e SKU únicos no schema — catch do Prisma captura UniqueConstraintViolation automaticamente
+
+## 2026-05-22 - US-004
+- What was implemented: page.tsx virou async server component buscando seções e categorias do Prisma. SectionsCategoriesContent migrado de useState para props + server actions + router.refresh().
+- Files changed: src/app/secoes-categorias/page.tsx, src/components/catalog/sections-categories-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - Padrão para client component com server actions: props do server component + router.refresh() após mutação
+  - Prisma _count.products adaptado para interface local na page antes de passar ao componente — desacopla componente de tipos Prisma
+  - void action().then(() => router.refresh()) funciona bem para handlers síncronos que disparam async
+
+## 2026-05-22 - US-003
+- What was implemented: Server actions para Categorias — createCategory, updateCategory, toggleCategoryStatus
+- Files changed: src/lib/actions/categories.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - sectionId validado com findUnique antes de create/update — padrão FK-safe a reutilizar em products.ts
+  - Mesmo ActionResult<T> de sections.ts — padrão estabelecido para todas as actions
+
+## 2026-05-22 - US-002
+- What was implemented: Server actions para Seções — createSection, updateSection, toggleSectionStatus
+- Files changed: src/lib/actions/sections.ts (novo)
+- Quality checks run: typecheck: not available (Docker offline), lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - Padrão ActionResult<T = void> funciona bem para server actions — reutilizar em categories.ts e products.ts
+  - "use server" no topo do arquivo aplica a todos os exports — não precisa repetir em cada função
+  - toSlug duplicado do UI — aceitável por ora, extrair para src/lib/utils.ts numa iteração futura se necessário
+
+## 2026-05-22 - US-001
+- What was implemented: Prisma ORM instalado. Schema com models Section, Category, Product (enums Status e ProductUnit). Singleton Prisma client. Seed com todos os dados do mock data.
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/db.ts, package.json
+- Quality checks run: typecheck: not available (Docker offline), lint: not available (Docker offline), test: not available, build: not available
+- Result of checks: PENDENTE — rodar `docker compose run --rm app npx prisma migrate dev --name init` e depois `npx prisma db seed` para concluir.
+- Commit hash: (ver abaixo)
+- **Learnings for future iterations:**
+  - @prisma/client 7.8.0 instalado via Docker antes de Docker cair. prisma + tsx adicionados manualmente ao package.json.
+  - Migration e seed dependem de Docker + DB rodando. São passos externos à iteração de código.
+  - IDs das models são strings curtas (slugs) para compatibilidade com mock data já usado pelo UI.
+
+## 2026-05-22 - US-007 (MVP 3 Fase 2)
+- What was implemented: CashSessionStatus enum (open | closed) and CashSession model added to prisma/schema.prisma. CashRegister model updated with cashSessions relation. src/lib/actions/cash-sessions.ts created with openCashSession, closeCashSession, getOperatorActiveSession, getOpenSessions. openCashSession validates cashRegister exists and operator has no open session. closeCashSession validates session status is open. Both mutations revalidate /caixas and /pdv.
+- Files changed: prisma/schema.prisma, src/lib/actions/cash-sessions.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CashSession.operatorName stored as snapshot (not join) — session history preserved even if user is renamed
+  - findFirst with status: "open" to check existing session before opening a new one
+  - ActiveSession type exported for use in US-010 PDV gate
+
+## 2026-05-22 - US-008 (MVP 3 Fase 2)
+- What was implemented: SaleStatus enum (open | finished | cancelled), PaymentMethod enum (cash | pix | debit | credit | store_credit), Sale model (sequence autoincrement, code computed as VEN-XXXXXX), SaleItem model (quantity Float), SalePayment model. Product gets saleItems relation. CashSession gets sales relation. src/lib/actions/sales.ts with persistFinishedSale using db.$transaction — creates Sale + SaleItems + SalePayments + StockEntry (saida) per item atomically. code computed inside transaction after Sale creation.
+- Files changed: prisma/schema.prisma, src/lib/actions/sales.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Sale.code computed in same $transaction: create sale → compute code from sequence → update sale — all atomic
+  - StockEntry.quantity is Int; SaleItem.quantity is Float — Math.round() converts Float to Int for StockEntry
+  - auth() called inside server action to get operatorId — never trust client-side operatorId
+
+## 2026-05-22 - US-009 (MVP 3 Fase 2)
+- What was implemented: PDV redesign — compact product list rows (name + SKU + price + stock badge), amber left border for low stock, dimmed/disabled for zero stock, current time in header, session info placeholder, Percent icon for discount, h-14 Finalizar button, brief green highlight on cart row when product added (lastAddedItemId state + 600ms timeout), customer select removed, session select removed. All sale-engine logic preserved.
+- Files changed: src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - cn() from @/lib/utils for conditional class merging with Tailwind
+  - lastAddedItemId state + setTimeout 600ms = brief row highlight without CSS keyframes
+  - setLastAddedItemId called synchronously after setSale (not inside setSale callback) to avoid nested setState issues
+  - useEffect with setInterval for live clock (30s refresh, cleanup on unmount)
+
+## 2026-05-22 - US-010 (MVP 3 Fase 2)
+- What was implemented: pdv/page.tsx converted to async server component — calls auth() + getOperatorActiveSession + db.cashRegister.findMany. If no active session: renders SessionGate client component (full-screen dark overlay, radio list of DB cash registers, opening balance input, calls openCashSession server action, router.refresh() on success). If active session: renders PosContent with cashSession prop. PosContent updated to accept optional cashSession?: ActiveSession prop — uses real register/operator name in header when prop is provided, falls back to mock for dev mode.
+- Files changed: src/app/pdv/page.tsx, src/components/pos/session-gate.tsx (novo), src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - router.refresh() from client component after server action causes Next.js server component to re-run → new session found → PDV renders
+  - has-[:checked]:border-emerald-500 Tailwind pseudo-class for styling radio label when input is checked
+  - ActiveSession type from cash-sessions.ts is shared between page.tsx and pos-content.tsx
+
+## 2026-05-22 - US-011 (MVP 3 Fase 2)
+- What was implemented: pdv/page.tsx updated to also fetch db.product.findMany (active only, ordered by name). PosContent rewritten to accept required props products: Product[] and cashSession: ActiveSession. Removed all imports of initialProducts, initialCashSessions, initialCashRegisters, salePriceModeLabels. handleFinishSale now async: calls finishSale (engine validation) then persistFinishedSale server action; on success calls router.refresh() to reload DB products with updated stock; on error shows persistResult.error. persistLoading state disables Finalizar button and shows "Salvando..." during server action. createPosSale now takes cashSession directly instead of cashSessionId+mock lookup.
+- Files changed: src/app/pdv/page.tsx, src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - DB Prisma enums (ProductUnit, Status) are structurally compatible with mock string unions but require `as unknown as Product[]` cast in TypeScript
+  - void handleFinishSale() on onClick — void operator discards the Promise from async function without floating promise lint error
+  - Products from props → local state: useState(propProducts) — needed for optimistic stock update after finishSale
+  - router.refresh() after persistFinishedSale causes server component to re-run and pass fresh DB products to PosContent
+
+## 2026-05-22 - US-012 (MVP 3 Fase 3)
+- What was implemented: HelpRequestStatus enum (active | attended | expired) and HelpRequest model added to prisma/schema.prisma. CashRegister gets helpRequests HelpRequest[] relation. src/lib/actions/help-requests.ts created with createHelpRequest (validates no active request for same cashRegister, sets expiresAt = now+60s), attendHelpRequest (validates status active, marks attended), getActiveHelpRequests (auto-expires stale records via expireOldRequests(), returns active ordered by createdAt). Both mutations revalidate /supervisor and /pdv.
+- Files changed: prisma/schema.prisma, src/lib/actions/help-requests.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - expireOldRequests is called inside getActiveHelpRequests before the SELECT — clean pattern: no cron job needed, stale records expire on next poll
+  - expiresAt = new Date(Date.now() + 60_000) — simpler than adding seconds to a Date object
+  - HelpRequest stores cashRegisterName as snapshot (same pattern as operatorName in CashSession)
+  - attendHelpRequest validates status === 'active' before updating — prevents double-attend race condition
+
+## 2026-05-22 - US-013 (MVP 3 Fase 3)
+- What was implemented: Bell icon button 'Chamar Supervisor' added to PDV header. On click: calls createHelpRequest server action with cashSession data. On success: helpCountdown state set to 60. useEffect with setTimeout (not setInterval) decrements countdown every second. Button shows amber 'Aguardando... (Xs)' while countdown > 0 and is disabled. On error: shows in existing errors list. Countdown reaches 0: button resets automatically.
+- Files changed: src/components/pos/pos-content.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - setTimeout + useEffect dependency on helpCountdown is cleaner than setInterval for countdown — each tick reschedules itself, no multiple-interval bugs
+  - void handleCallSupervisor() on onClick — discards Promise without floating-promise lint error
+  - cn() merges the amber classes when countdown > 0 — hover:bg-amber-950 repeated to override the base hover
+  - cashSession.cashRegisterId, operatorId, operatorName, cashRegisterName all available from ActiveSession type
+
+## 2026-05-22 - US-014 (MVP 3 Fase 3)
+- What was implemented: src/app/supervisor/page.tsx (async server component, fetches initial requests). src/components/supervisor/supervisor-content.tsx (client component) with: 4s polling via setInterval calling getActiveHelpRequests, 1s ticker for progress bar updates, Web Audio API alarm (440Hz oscillator, 200ms burst, every 5s while requests.length > 0 — AudioContext created lazily on first alarm), document.title badge '(N) Supervisor — MARKETOPS', cards with amber/red progress bar based on remaining time. Atender button calls attendHelpRequest optimistically. Empty state with CheckCircle2 icon. Fixed duplicate userRole declaration in app-sidebar.tsx. Added href '/supervisor' to 'Fila NF / Chamados' sidebar item.
+- Files changed: src/app/supervisor/page.tsx (novo), src/components/supervisor/supervisor-content.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - hasRequests (boolean) as useEffect dep is cleaner than requests.length — effect only triggers on alarm start/stop transitions, not on count changes
+  - AudioContext must be created lazily (after user interaction) — browser security policy blocks autoplay
+  - playBeep defined outside component (pure function taking AudioContext) avoids it being a dependency in useEffect
+  - new Date(expiresAt) in getRemainingSeconds handles both Date objects and ISO strings — defensive pattern for RSC serialization
+  - Optimistic UI in handleAttend: setRequests(prev => prev.filter(...)) gives instant feedback; 4s poll confirms server state
+  - Sidebar bug: two const userRole declarations cause TS error — renamed to userRoleLabel (display) and roleKey (filter)
+
+## 2026-05-22 - US-015 (MVP 3 Fase 4)
+- What was implemented: CustomerType enum (cpf | cnpj) and Customer model added to prisma/schema.prisma. src/lib/actions/customers.ts created with createCustomer (validates uniqueness, strips non-digits from document), updateCustomer, toggleCustomerStatus, findCustomerByDocument, listCustomers (optional search on name OR document). All fields trimmed. document stored as raw digits.
+- Files changed: prisma/schema.prisma, src/lib/actions/customers.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - document stored as raw digits (replace /\D/g, '') — masking is display-only concern
+  - findUnique on @unique field is fastest lookup — use for document lookup in PDV NF modal
+  - listCustomers uses insensitive mode for name search — case-insensitive on Prisma PostgreSQL
+  - CustomerRow type omits address fields to keep list queries lean — full details available via findUnique when editing
+
+## 2026-05-22 - US-016 (MVP 3 Fase 4)
+- What was implemented: Route /supervisor/clientes with async server component. CustomersContent rewritten from mock-based to real server actions (createCustomer, updateCustomer, toggleCustomerStatus). Table shows: tipo badge (CPF/CNPJ), masked document, nome+tradeName, contato, status toggle, edit button. Modal: type radio (cpf/cnpj), document input (disabled on edit), name, tradeName (CNPJ only), email, phone. Client-side search filter. Optimistic toggle update. Sidebar updated with href for Clientes (NF).
+- Files changed: src/app/supervisor/clientes/page.tsx (novo), src/components/customers/customers-content.tsx (reescrito), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Rewrote existing mock-based customers-content.tsx — the old version imported from customer-data.ts (MVP 1 mock), new version uses real server actions
+  - formatDocument() applied in table display only — DB stores raw digits, display formats them
+  - document field disabled on edit (can't change primary identifier without re-creating)
+  - has-[:checked]:border-emerald-500 on radio label for type selector — same pattern as session-gate
+  - /supervisor/clientes covered by /supervisor prefix in middleware ROLE_ROUTES — no middleware change needed
+
+## 2026-05-22 - US-017 (MVP 3 Fase 4)
+- What was implemented: CompanySettings model (single-row config with id='default', upsert pattern). Product model updated with ncm?, cfop? (@default '5102'), cst? (@default '400'). Seed updated with CompanySettings upsert. src/lib/actions/company-settings.ts with getCompanySettings (upsert to auto-create if missing) and updateCompanySettings. Route /admin/configuracoes with CompanySettingsContent form (company data, address, fiscal settings). Sidebar Configuracoes gets href. nfeSequence is read-only in the form (incremented by completeFiscalRequest in US-018).
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/actions/company-settings.ts (novo), src/app/admin/configuracoes/page.tsx (novo), src/components/settings/company-settings-content.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CompanySettings uses @id with fixed value 'default' — single-row config table, upsert handles both first-run and updates
+  - getCompanySettings calls upsert({ where: {id:'default'}, update:{}, create:{id:'default'} }) — auto-creates with defaults on first call
+  - nfeSequence is @default(1) but incremented in transactions — never exposed as editable in the form
+  - Product ncm/cfop/cst are optional with defaults — existing products don't break
+
+## 2026-05-22 - US-018 (MVP 3 Fase 4)
+- What was implemented: FiscalRequestStatus enum (pending | processing | completed | cancelled) and FiscalRequest model (saleId as String, no FK — avoids circular dependency with Sale). src/lib/actions/fiscal-requests.ts with createFiscalRequest (validates uniqueness per saleId), completeFiscalRequest (db.$transaction: upsert CompanySettings incrementing nfeSequence + generate 44-char nfeKey + update FiscalRequest), cancelFiscalRequest, getPendingFiscalRequests.
+- Files changed: prisma/schema.prisma, src/lib/actions/fiscal-requests.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - FiscalRequest.saleId is String (no @relation) to avoid circular dependency — Sale does not get a fiscalRequests relation
+  - nfeKey = 44 random digits generated client-side (pure Math.random) — acceptable for mock, real NF-e would use key from SEFAZ
+  - completeFiscalRequest uses db.$transaction: upsert CompanySettings (increment nfeSequence) + update FiscalRequest atomically
+  - nfeNumber = serie + '-' + nfeSequence.padStart(6, '0') — e.g. '1-000001'
+  - createFiscalRequest checks for existing pending/processing/completed — blocks duplicate NF for same sale
+
+## 2026-05-22 - US-019 (MVP 3 Fase 4)
+- What was implemented: PDV: 'Emitir NF' button appears when balance === 0 and sale has items (grid-cols-2 with Finalizar). 'Emitir NF' calls handleFinishWithNf (same engine+persist as handleFinishSale, but stores pendingSale={id,code} and opens NF modal). NF modal: document input + lookup button (findCustomerByDocument). 'Sem NF' = close modal + resetToNewSale(). 'Solicitar NF-e' = createFiscalRequest + close + reset. persistFinishedSale updated to return { id, code }. Supervisor: NF queue section with 'Emitir NF' (completeFiscalRequest) and 'Cancelar'. completeFiscalRequest success shows modal with nfeKey+nfeNumber+'Imprimir DANFE' (window.open + document.write printable HTML). supervisor/page.tsx updated to fetch both getActiveHelpRequests and getPendingFiscalRequests in parallel.
+- Files changed: src/lib/actions/sales.ts (return code), src/components/pos/pos-content.tsx, src/components/supervisor/supervisor-content.tsx, src/app/supervisor/page.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - persistFinishedSale now returns { id, code } — needed for FiscalRequest creation after sale is persisted
+  - handleFinishWithNf and handleFinishSale share engine+persist logic but diverge after: NF path stores pendingSale and opens modal
+  - resetToNewSale() extracted to avoid duplication between the two finish paths + handleSkipNf
+  - DANFE as printable HTML via window.open + document.write — avoids @react-pdf/renderer dependency
+  - Supervisor polling upgraded to Promise.all([getActiveHelpRequests(), getPendingFiscalRequests()]) in single interval
+  - document.title badge counts both help requests + NF queue: total = requests.length + fiscalRequests.length
+
+## 2026-05-22 - US-020 (MVP 3 Fase 5)
+- What was implemented: Supplier model added to prisma/schema.prisma (id, name, cnpj? @unique, phone?, email?, contactName?, notes?, active, createdAt). src/lib/actions/suppliers.ts with createSupplier (strips+validates cnpj uniqueness), updateSupplier (same cnpj check excluding self), toggleSupplierStatus, listSuppliers (search by name insensitive OR cnpj digits). /admin/fornecedores/page.tsx converted to async server component passing suppliers to SuppliersContent. SuppliersContent rewritten: receives initialSuppliers props, client-side search, modal for create/edit (name, cnpj, phone, email, contactName, notes), optimistic toggle + router.refresh(). cnpj formatted for display only (raw digits in DB).
+- Files changed: prisma/schema.prisma, src/lib/actions/suppliers.ts (novo), src/app/admin/fornecedores/page.tsx, src/components/suppliers/suppliers-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Supplier.cnpj @unique with optional value — Prisma allows multiple NULL values for @unique fields in PostgreSQL
+  - cnpj stripped of non-digits before uniqueness check and storage — display masking is SuppliersContent's responsibility
+  - formatCnpj() formats 14-digit raw string to XX.XXX.XXX/XXXX-XX for display — function lives in the component file
+  - Optimistic update pattern: update local state immediately + router.refresh() to sync server state
+
+## 2026-05-22 - US-021 (MVP 3 Fase 5)
+- What was implemented: StockReceiptStatus enum (draft | confirmed | cancelled), StockReceipt model (id, sequence autoincrement, code @unique @default(""), supplierId String?, supplierName?, invoiceNumber?, status, notes?, totalCost Float @default(0), confirmedAt?, items relation, createdAt), StockReceiptItem model (id, stockReceiptId FK, productId FK, productName snapshot, quantity Float, unitCost Float, total Float). Product model gets receiptItems StockReceiptItem[] relation. src/lib/actions/stock-receipts.ts with createStockReceipt (NE-XXXXXX code via autoincrement), addReceiptItem (validates draft + product, recalculates totalCost), removeReceiptItem (validates draft, recalculates totalCost), confirmStockReceipt (validates draft + has items, db.$transaction: StockEntry entrada + product.currentStock increment + status=confirmed), cancelStockReceipt (validates draft), listStockReceipts (optional status filter, includes _count.items), getReceiptItems.
+- Files changed: prisma/schema.prisma, src/lib/actions/stock-receipts.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - StockReceipt.supplierId is String? (no @relation) — same pattern as FiscalRequest.saleId; allows optional supplier without FK constraint
+  - confirmStockReceipt increments product.currentStock directly via { increment: N } — avoids read-modify-write race condition
+  - totalCost recalculated by summing all items after add/remove — db-authoritative approach, avoids drift
+  - getReceiptItems exported separately for use in PurchasesContent detail expansion
+
+## 2026-05-22 - US-022 (MVP 3 Fase 5)
+- What was implemented: /admin/compras page async server component fetching receipts (listStockReceipts), suppliers (listSuppliers), products (db.product.findMany active). PurchasesContent rewritten: table (code, supplier, invoiceNumber, status badge, items count, totalCost, date, actions). Status badges: draft=slate/default, confirmed=emerald/success, cancelled=red/danger. StatusBadge extended with "default" tone (slate-100/slate-600). Row click toggles expansion, lazy-loads items via getReceiptItems. Expanded draft row shows: items table with Trash2 remove buttons, add-item form (product select + qty + unitCost inputs). Confirmar/Cancelar buttons in actions column call server actions optimistically. Create modal: optional supplier select, invoiceNumber, notes. Fragment key used for two-row map pattern.
+- Files changed: src/app/admin/compras/page.tsx, src/components/purchases/purchases-content.tsx (reescrito), src/components/shared/status-badge.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Two-row pattern in table map requires <Fragment key={id}> not bare <> — bare fragment can't accept key prop
+  - StatusBadge tone "default" (slate-100/slate-600) added for neutral states like "draft" — now covers success/warning/danger/info/default
+  - expandedItems: Record<string, StockReceiptItemRow[]> lazy-loaded on row click — avoids N queries on page load
+  - e.stopPropagation() on action cell td prevents row toggle from firing when clicking action buttons
+
+## 2026-05-22 - US-023 (MVP 3 Fase 5)
+- What was implemented: /admin/financeiro page async server component with searchParams period filter (today|week|month). Parallel queries via Promise.all: db.sale.aggregate (sum total/subtotal/discount + count), db.salePayment.groupBy method (sum amount), db.stockEntry.findMany type=saida with product.costPrice, db.cashSession.findMany with cashRegister.name + sales.total. FinanceContent (server component, no "use client"): period filter as Link buttons, 4 summary cards (totalSales, ticketMedio, qtdSales, totalDescontos), payment breakdown table, DRE table (receitaBruta, descontos, receitaLiquida, custoMercadorias, margemBruta + % margem), sessions table (caixa, operador, status, abertura, total vendas).
+- Files changed: src/app/admin/financeiro/page.tsx, src/components/finance/finance-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - searchParams in Next.js 16 is Promise<Record<string, string | undefined>> — must await before accessing
+  - db.salePayment.groupBy with nested where: { sale: { status, finishedAt: { gte } } } filters by related field in groupBy
+  - sessionRows serialize Date to ISO string in page.tsx before passing to FinanceContent — avoids Next.js RSC Date serialization issues
+  - FinanceContent is server component (no "use client") — Link works in both server and client; no interactivity needed
+
+## 2026-05-23 - US-024 (MVP 3 Fase 5)
+- What was implemented: /admin/vendas/page.tsx (async server component): tabela de todas as vendas finalizadas (code, finishedAt, operatorName, items count, payment methods badges, total). /admin/caixas/page.tsx (async server component): tabela de todas as CashSessions (register, operator, status badge, openedAt, closedAt, openingBalance, closingBalance, total_sales computed). Sidebar: "Vendas (fin.)" → /admin/vendas e "Caixas (fin.)" → /admin/caixas adicionados para roles [admin, financeiro]. Middleware já tinha /admin/vendas e /admin/caixas para financeiro — sem alteração.
+- Files changed: src/app/admin/vendas/page.tsx (novo), src/app/admin/caixas/page.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - /admin/caixas e /admin/vendas são read-only — sem server actions, sem router.refresh(), apenas server component com db query
+  - totalSales por sessão calculado com sales.reduce() no server component — não precisa de groupBy
+  - take: 300 nas queries evita carregar toda a tabela sem paginação — suficiente para MVP
+  - financeiro role em middleware já estava configurado — sidebar update foi a única mudança necessária
+
+## 2026-05-23 - US-025 (MVP 3 Fase 5)
+- What was implemented: /admin/relatorios page async server component with searchParams period filter (today|week|month|custom+dateFrom+dateTo). Query: db.sale.findMany include cashSession→cashRegister.name + _count.items + payments.method. ReportsContent rewritten (client component): period filter buttons (Link) + custom date range inputs with Filtrar button (router.push). Summary cards (total vendas, receita, descontos). Tabela de vendas (code, date, operator, caixa, items, subtotal, discount, total, payment badges). CSV export via Blob API: UTF-8 BOM prefix, cells quoted with double-quote escaping, decimal comma for Excel-BR.
+- Files changed: src/app/admin/relatorios/page.tsx, src/components/reports/reports-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CSV BOM: use literal ﻿ (U+FEFF) as first char of string — Blob+UTF-8 encoding preserves it for Excel
+  - downloadCsv: must appendChild + removeChild around a.click() — some browsers require element in DOM for programmatic click
+  - Custom date inputs show when period==="custom" OR from/to have values from previous navigation
+  - cashRegisterName requires include cashSession → cashRegister join in sale query — sale.cashSession.cashRegister.name

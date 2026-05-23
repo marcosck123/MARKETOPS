@@ -4,12 +4,37 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
       "Bash(ConvertTo-Json)",
-      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\\\\\", \"\"\\) } | Sort-Object)"
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\.claude\\\\\", \"\"\\) } | Sort-Object)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(node -e \"const p = require\\('./node_modules/next/package.json'\\); console.log\\(p.version\\)\")",
+      "PowerShell(node -e \"const p = require\\('C:/Users/caixa.m1/MARKETOPS/node_modules/next/package.json'\\); console.log\\(p.version\\)\")",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" -ErrorAction SilentlyContinue)",
+      "PowerShell(\"Docker Desktop iniciando...\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('package.json'\\)\\); print\\('deps:', list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\); print\\('devDeps:', list\\(d.get\\('devDependencies',{}\\).keys\\(\\)\\)\\)\")",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\caixa.m1\\\\MARKETOPS\"; docker compose run --rm --no-deps app npm install --save-dev prisma tsx 2>&1 | ForEach-Object { if \\($_ -match \"added|error|ERR|warn\" -or $_ -match \"prisma|tsx\"\\) { $_ } })",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" -ErrorAction SilentlyContinue; Start-Sleep 15; $i=0; while\\($i -lt 24\\){ $r=docker info 2>&1; if\\($LASTEXITCODE -eq 0\\){ \"Docker pronto\"; break }; $i++; Start-Sleep 5; Write-Host \"${i}...\" })",
+      "PowerShell(docker context ls 2>&1)",
+      "PowerShell(docker --context default info 2>&1)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\src\\\\app\\\\api\\\\auth\\\\[...nextauth]\")",
+      "Read(//c/Users/caixa.m1/.claude/projects/c--Users-caixa-m1-MARKETOPS/memory/**)",
+      "Bash(git checkout *)",
+      "Bash(for f *)",
+      "Read(//c/Users/caixa.m1/MARKETOPS/src/app$f/**)",
+      "Bash(Get-Content \"c:\\\\Users\\\\caixa.m1\\\\MARKETOPS\\\\src\\\\app\\\\fornecedores\\\\page.tsx\")",
+      "PowerShell(git add src/app/admin/compras/page.tsx src/components/purchases/purchases-content.tsx src/components/shared/status-badge.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-022\\): tela /admin/compras - nota fiscal de entrada UI\")",
+      "PowerShell(git add src/app/admin/vendas/page.tsx src/app/admin/caixas/page.tsx src/components/layout/app-sidebar.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-024\\): telas de leitura /admin/vendas e /admin/caixas para financeiro\")",
+      "PowerShell(git add src/app/admin/relatorios/page.tsx src/components/reports/reports-content.tsx scripts/ralph/prd.json scripts/ralph/progress.txt)",
+      "PowerShell(git commit -m \"feat\\(US-025\\): relatorios /admin/relatorios - tabela de vendas + exportacao CSV\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\security-guardian",
       "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\agents",
-      "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\route-audit"
+      "c:\\Users\\caixa.m1\\MARKETOPS\\.claude\\skills\\route-audit",
+      "c:\\Users\\caixa.m1\\MARKETOPS\\src\\app\\api\\auth",
+      "c:\\Users\\caixa.m1\\.claude\\projects\\c--Users-caixa-m1-MARKETOPS\\memory"
     ]
   }
 }

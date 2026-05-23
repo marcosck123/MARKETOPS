@@ -1,10 +1,10 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Edit3,
   Mail,
-  MapPin,
   Phone,
   Plus,
   RotateCcw,
@@ -19,179 +19,133 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import {
-  type Supplier,
-  type SupplierStatus,
-  initialSuppliers,
-} from "@/lib/supplier-data";
+  createSupplier,
+  toggleSupplierStatus,
+  updateSupplier,
+  type SupplierRow,
+} from "@/lib/actions/suppliers";
 
-type SupplierFormState = {
+type FormState = {
   name: string;
-  document: string;
-  email: string;
+  cnpj: string;
   phone: string;
-  city: string;
-  representative: string;
-  observations: string;
+  email: string;
+  contactName: string;
+  notes: string;
 };
 
-const defaultSupplierForm: SupplierFormState = {
+const defaultForm: FormState = {
   name: "",
-  document: "",
-  email: "",
+  cnpj: "",
   phone: "",
-  city: "",
-  representative: "",
-  observations: "",
+  email: "",
+  contactName: "",
+  notes: "",
 };
 
-function normalizeId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+function formatCnpj(cnpj: string | null): string {
+  if (!cnpj) return "";
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length === 14)
+    return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  return cnpj;
 }
 
-function supplierToForm(supplier: Supplier): SupplierFormState {
-  return {
-    name: supplier.name,
-    document: supplier.document,
-    email: supplier.email,
-    phone: supplier.phone,
-    city: supplier.city,
-    representative: supplier.representative,
-    observations: supplier.observations,
-  };
-}
-
-export function SuppliersContent() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
-  const [formState, setFormState] =
-    useState<SupplierFormState>(defaultSupplierForm);
-  const [editingSupplierId, setEditingSupplierId] = useState<string | null>(
-    null,
-  );
-  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+export function SuppliersContent({
+  initialSuppliers,
+}: {
+  initialSuppliers: SupplierRow[];
+}) {
+  const router = useRouter();
+  const [suppliers, setSuppliers] = useState<SupplierRow[]>(initialSuppliers);
+  const [formState, setFormState] = useState<FormState>(defaultForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | SupplierStatus>(
-    "all",
-  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredSuppliers = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-
-    return suppliers.filter((supplier) => {
-      const matchesSearch =
-        !search ||
-        supplier.name.toLowerCase().includes(search) ||
-        supplier.document.toLowerCase().includes(search) ||
-        supplier.representative.toLowerCase().includes(search) ||
-        supplier.city.toLowerCase().includes(search);
-      const matchesStatus =
-        statusFilter === "all" || supplier.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchTerm, statusFilter, suppliers]);
-
-  const activeSuppliers = suppliers.filter(
-    (supplier) => supplier.status === "active",
-  ).length;
-  const inactiveSuppliers = suppliers.length - activeSuppliers;
-  const linkedProducts = suppliers.reduce(
-    (total, supplier) => total + supplier.linkedProducts,
-    0,
-  );
-
-  function updateForm<K extends keyof SupplierFormState>(
-    key: K,
-    value: SupplierFormState[K],
-  ) {
-    setFormState((current) => ({ ...current, [key]: value }));
-  }
-
-  function openNewSupplierModal() {
-    setFormState(defaultSupplierForm);
-    setEditingSupplierId(null);
-    setIsSupplierModalOpen(true);
-  }
-
-  function closeSupplierModal() {
-    setFormState(defaultSupplierForm);
-    setEditingSupplierId(null);
-    setIsSupplierModalOpen(false);
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const name = formState.name.trim();
-
-    if (!name) {
-      return;
-    }
-
-    const payload = {
-      name,
-      document: formState.document.trim(),
-      email: formState.email.trim(),
-      phone: formState.phone.trim(),
-      city: formState.city.trim(),
-      representative: formState.representative.trim(),
-      observations: formState.observations.trim(),
-    };
-
-    if (editingSupplierId) {
-      setSuppliers((current) =>
-        current.map((supplier) =>
-          supplier.id === editingSupplierId
-            ? {
-                ...supplier,
-                ...payload,
-              }
-            : supplier,
-        ),
-      );
-      closeSupplierModal();
-      return;
-    }
-
-    const baseId = normalizeId(name) || "fornecedor";
-    const id = suppliers.some((supplier) => supplier.id === baseId)
-      ? `${baseId}-${Date.now()}`
-      : baseId;
-
-    setSuppliers((current) => [
-      ...current,
-      {
-        id,
-        ...payload,
-        linkedProducts: 0,
-        lastPurchase: "Sem compras",
-        status: "active",
-      },
-    ]);
-    closeSupplierModal();
-  }
-
-  function handleEditSupplier(supplier: Supplier) {
-    setEditingSupplierId(supplier.id);
-    setFormState(supplierToForm(supplier));
-    setIsSupplierModalOpen(true);
-  }
-
-  function handleToggleSupplier(supplierId: string) {
-    setSuppliers((current) =>
-      current.map((supplier) =>
-        supplier.id === supplierId
-          ? {
-              ...supplier,
-              status: supplier.status === "active" ? "inactive" : "active",
-            }
-          : supplier,
-      ),
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return suppliers;
+    return suppliers.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        (s.cnpj && s.cnpj.includes(q.replace(/\D/g, ""))),
     );
+  }, [searchTerm, suppliers]);
+
+  const activeCount = suppliers.filter((s) => s.active).length;
+
+  function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setFormState((c) => ({ ...c, [key]: value }));
+  }
+
+  function openNew() {
+    setFormState(defaultForm);
+    setEditingId(null);
+    setError(null);
+    setIsModalOpen(true);
+  }
+
+  function openEdit(supplier: SupplierRow) {
+    setFormState({
+      name: supplier.name,
+      cnpj: supplier.cnpj ?? "",
+      phone: supplier.phone ?? "",
+      email: supplier.email ?? "",
+      contactName: supplier.contactName ?? "",
+      notes: supplier.notes ?? "",
+    });
+    setEditingId(supplier.id);
+    setError(null);
+    setIsModalOpen(true);
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setError(null);
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const data = {
+      name: formState.name.trim(),
+      cnpj: formState.cnpj.trim() || undefined,
+      phone: formState.phone.trim() || undefined,
+      email: formState.email.trim() || undefined,
+      contactName: formState.contactName.trim() || undefined,
+      notes: formState.notes.trim() || undefined,
+    };
+    const result = editingId
+      ? await updateSupplier(editingId, data)
+      : await createSupplier(data);
+    setSaving(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    if (editingId) {
+      setSuppliers((prev) =>
+        prev.map((s) => (s.id === editingId ? result.data : s)),
+      );
+    } else {
+      setSuppliers((prev) => [...prev, result.data]);
+    }
+    router.refresh();
+    closeModal();
+  }
+
+  async function handleToggle(id: string) {
+    const result = await toggleSupplierStatus(id);
+    if (!result.success) return;
+    setSuppliers((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, active: !s.active } : s)),
+    );
+    router.refresh();
   }
 
   return (
@@ -199,11 +153,11 @@ export function SuppliersContent() {
       <PageHeader
         eyebrow="Cadastro operacional"
         title="Fornecedores"
-        description="Cadastre fornecedores, contatos comerciais e status antes de iniciar pedidos de compra e recebimento de mercadorias."
+        description="Cadastre fornecedores e contatos comerciais para pedidos de compra e recebimento de mercadorias."
         action={
           <Button
             type="button"
-            onClick={openNewSupplierModal}
+            onClick={openNew}
             className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -212,19 +166,21 @@ export function SuppliersContent() {
         }
       />
 
-      <SupplierFormModal
-        isOpen={isSupplierModalOpen}
-        isEditing={Boolean(editingSupplierId)}
-        formState={formState}
-        onClose={closeSupplierModal}
-        onSubmit={handleSubmit}
-        onUpdateForm={updateForm}
-      />
+      {isModalOpen && (
+        <SupplierModal
+          isEditing={Boolean(editingId)}
+          formState={formState}
+          saving={saving}
+          error={error}
+          onClose={closeModal}
+          onSubmit={handleSubmit}
+          onUpdateForm={updateForm}
+        />
+      )}
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Fornecedores ativos" value={String(activeSuppliers)} />
-        <SummaryCard label="Inativos" value={String(inactiveSuppliers)} />
-        <SummaryCard label="Produtos vinculados" value={String(linkedProducts)} />
+      <section className="grid gap-4 md:grid-cols-2">
+        <SummaryCard label="Fornecedores ativos" value={String(activeCount)} />
+        <SummaryCard label="Total cadastrado" value={String(suppliers.length)} />
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -234,114 +190,115 @@ export function SuppliersContent() {
               Lista de fornecedores
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Busque por nome, documento, representante ou cidade.
+              Busque por nome ou CNPJ.
             </p>
           </div>
-
-          <div className="grid gap-2 sm:grid-cols-[1fr_160px]">
-            <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-                aria-hidden="true"
-              />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Buscar fornecedor"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            <select
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as "all" | SupplierStatus)
-              }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="all">Todos</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
-            </select>
+          <div className="relative max-w-xs">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar fornecedor"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[700px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Fornecedor</th>
-                <th className="px-5 py-3 font-semibold">Contato</th>
-                <th className="px-5 py-3 font-semibold">Representante</th>
-                <th className="px-5 py-3 font-semibold">Produtos</th>
-                <th className="px-5 py-3 font-semibold">Ultima compra</th>
+                <th className="px-5 py-3 font-semibold">CNPJ</th>
+                <th className="px-5 py-3 font-semibold">Telefone</th>
+                <th className="px-5 py-3 font-semibold">Email</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredSuppliers.map((supplier) => (
-                <tr key={supplier.id} className="text-slate-700">
-                  <td className="px-5 py-4">
-                    <p className="font-medium text-slate-950">{supplier.name}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {supplier.document || "Sem documento"}
-                    </p>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                      <MapPin className="size-3" aria-hidden="true" />
-                      {supplier.city || "Sem cidade"}
-                    </p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <p className="flex items-center gap-2 whitespace-nowrap">
-                      <Mail className="size-4 text-slate-400" aria-hidden="true" />
-                      {supplier.email || "Sem email"}
-                    </p>
-                    <p className="mt-2 flex items-center gap-2 whitespace-nowrap">
-                      <Phone className="size-4 text-slate-400" aria-hidden="true" />
-                      {supplier.phone || "Sem telefone"}
-                    </p>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <p className="flex items-center gap-2">
-                      <UserRound className="size-4 text-slate-400" aria-hidden="true" />
-                      {supplier.representative || "Sem representante"}
-                    </p>
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    {supplier.linkedProducts}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    {supplier.lastPurchase}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <StatusBadge
-                      label={supplier.status === "active" ? "Ativo" : "Inativo"}
-                      tone={supplier.status === "active" ? "success" : "warning"}
-                    />
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleEditSupplier(supplier)}
-                      >
-                        <Edit3 className="size-4" aria-hidden="true" />
-                        Editar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleToggleSupplier(supplier.id)}
-                      >
-                        <RotateCcw className="size-4" aria-hidden="true" />
-                        {supplier.status === "active" ? "Inativar" : "Reativar"}
-                      </Button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-5 py-8 text-center text-sm text-slate-400"
+                  >
+                    Nenhum fornecedor encontrado.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((s) => (
+                  <tr key={s.id} className="text-slate-700">
+                    <td className="px-5 py-4">
+                      <p className="font-medium text-slate-950">{s.name}</p>
+                      {s.contactName && (
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                          <UserRound className="size-3" aria-hidden="true" />
+                          {s.contactName}
+                        </p>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 font-mono text-xs">
+                      {formatCnpj(s.cnpj) || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      {s.phone ? (
+                        <p className="flex items-center gap-1.5 text-xs">
+                          <Phone
+                            className="size-3.5 text-slate-400"
+                            aria-hidden="true"
+                          />
+                          {s.phone}
+                        </p>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      {s.email ? (
+                        <p className="flex items-center gap-1.5 text-xs">
+                          <Mail
+                            className="size-3.5 text-slate-400"
+                            aria-hidden="true"
+                          />
+                          {s.email}
+                        </p>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <StatusBadge
+                        label={s.active ? "Ativo" : "Inativo"}
+                        tone={s.active ? "success" : "warning"}
+                      />
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => openEdit(s)}
+                        >
+                          <Edit3 className="size-4" aria-hidden="true" />
+                          Editar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => void handleToggle(s.id)}
+                        >
+                          <RotateCcw className="size-4" aria-hidden="true" />
+                          {s.active ? "Inativar" : "Reativar"}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -350,28 +307,23 @@ export function SuppliersContent() {
   );
 }
 
-function SupplierFormModal({
-  isOpen,
+function SupplierModal({
   isEditing,
   formState,
+  saving,
+  error,
   onClose,
   onSubmit,
   onUpdateForm,
 }: {
-  isOpen: boolean;
   isEditing: boolean;
-  formState: SupplierFormState;
+  formState: FormState;
+  saving: boolean;
+  error: string | null;
   onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onUpdateForm: <K extends keyof SupplierFormState>(
-    key: K,
-    value: SupplierFormState[K],
-  ) => void;
+  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  onUpdateForm: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
 }) {
-  if (!isOpen) {
-    return null;
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
@@ -379,98 +331,85 @@ function SupplierFormModal({
       aria-modal="true"
       aria-labelledby="supplier-modal-title"
     >
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Truck className="size-5 text-emerald-600" />
-            <div>
-              <h2
-                id="supplier-modal-title"
-                className="text-base font-semibold text-slate-950"
-              >
-                {isEditing ? "Editar fornecedor" : "Novo fornecedor"}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Informe dados comerciais e contatos para futuras compras.
-              </p>
-            </div>
+            <Truck className="size-5 text-emerald-600" aria-hidden="true" />
+            <h2
+              id="supplier-modal-title"
+              className="text-base font-semibold text-slate-950"
+            >
+              {isEditing ? "Editar fornecedor" : "Novo fornecedor"}
+            </h2>
           </div>
           <Button type="button" variant="outline" size="icon" onClick={onClose}>
             <X className="size-4" aria-hidden="true" />
-            <span className="sr-only">Fechar modal</span>
+            <span className="sr-only">Fechar</span>
           </Button>
         </div>
 
         <form onSubmit={onSubmit}>
-          <div className="grid max-h-[calc(92vh-142px)] gap-3 overflow-y-auto px-5 py-5 md:grid-cols-2">
+          <div className="grid max-h-[calc(92vh-140px)] gap-3 overflow-y-auto px-5 py-5 md:grid-cols-2">
             <Field label="Nome / Razao social" className="md:col-span-2">
               <input
                 value={formState.name}
-                onChange={(event) => onUpdateForm("name", event.target.value)}
+                onChange={(e) => onUpdateForm("name", e.target.value)}
                 placeholder="Ex.: Distribuidora Norte"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                required
                 autoFocus
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </Field>
 
-            <Field label="CNPJ / CPF">
+            <Field label="CNPJ (opcional)">
               <input
-                value={formState.document}
-                onChange={(event) => onUpdateForm("document", event.target.value)}
+                value={formState.cnpj}
+                onChange={(e) => onUpdateForm("cnpj", e.target.value)}
                 placeholder="00.000.000/0000-00"
                 className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </Field>
 
-            <Field label="Cidade">
-              <input
-                value={formState.city}
-                onChange={(event) => onUpdateForm("city", event.target.value)}
-                placeholder="Cuiaba"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="E-mail">
-              <input
-                value={formState.email}
-                onChange={(event) => onUpdateForm("email", event.target.value)}
-                placeholder="comercial@fornecedor.com"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-              />
-            </Field>
-
-            <Field label="Telefone">
+            <Field label="Telefone (opcional)">
               <input
                 value={formState.phone}
-                onChange={(event) => onUpdateForm("phone", event.target.value)}
+                onChange={(e) => onUpdateForm("phone", e.target.value)}
                 placeholder="(65) 3333-0000"
                 className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </Field>
 
-            <Field label="Representante" className="md:col-span-2">
+            <Field label="E-mail (opcional)">
               <input
-                value={formState.representative}
-                onChange={(event) =>
-                  onUpdateForm("representative", event.target.value)
-                }
+                value={formState.email}
+                onChange={(e) => onUpdateForm("email", e.target.value)}
+                placeholder="comercial@fornecedor.com"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              />
+            </Field>
+
+            <Field label="Contato / Representante (opcional)">
+              <input
+                value={formState.contactName}
+                onChange={(e) => onUpdateForm("contactName", e.target.value)}
                 placeholder="Nome do contato comercial"
                 className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </Field>
 
-            <Field label="Observacoes" className="md:col-span-2">
+            <Field label="Observacoes (opcional)" className="md:col-span-2">
               <textarea
-                value={formState.observations}
-                onChange={(event) =>
-                  onUpdateForm("observations", event.target.value)
-                }
+                value={formState.notes}
+                onChange={(e) => onUpdateForm("notes", e.target.value)}
                 rows={3}
                 placeholder="Condicoes comerciais, categorias atendidas ou observacoes internas"
                 className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </Field>
+
+            {error && (
+              <p className="md:col-span-2 text-sm text-red-600">{error}</p>
+            )}
           </div>
 
           <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
@@ -479,10 +418,15 @@ function SupplierFormModal({
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              disabled={saving}
+              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
             >
               <Save className="size-4" aria-hidden="true" />
-              {isEditing ? "Salvar alteracoes" : "Cadastrar fornecedor"}
+              {saving
+                ? "Salvando..."
+                : isEditing
+                  ? "Salvar alteracoes"
+                  : "Cadastrar fornecedor"}
             </Button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
@@ -17,14 +18,41 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { initialCategories, initialSections } from "@/lib/catalog-data";
-import { type Product, initialProducts } from "@/lib/product-data";
-import {
-  type StockMovement,
-  type StockMovementType,
-  initialStockMovements,
-  movementTypeLabels,
-} from "@/lib/stock-data";
+import { adjustStock } from "@/lib/actions/stock";
+
+type StockMovementType = "entrada" | "saida" | "ajuste";
+
+const movementTypeLabels: Record<StockMovementType, string> = {
+  entrada: "Entrada",
+  saida: "Saida",
+  ajuste: "Ajuste",
+};
+
+type StockProductData = {
+  id: string;
+  name: string;
+  sku: string;
+  barcode: string;
+  sectionId: string;
+  categoryId: string;
+  costPrice: number;
+  currentStock: number;
+  minimumStock: number;
+  status: "active" | "inactive";
+};
+
+type SectionData = { id: string; name: string };
+type CategoryData = { id: string; name: string };
+
+type StockEntryData = {
+  id: string;
+  productId: string;
+  type: StockMovementType;
+  quantity: number;
+  reason: string | null;
+  responsible: string | null;
+  createdAt: string;
+};
 
 type MovementFormState = {
   productId: string;
@@ -34,13 +62,17 @@ type MovementFormState = {
   responsible: string;
 };
 
-const defaultMovementForm: MovementFormState = {
-  productId: initialProducts[0]?.id ?? "",
-  type: "entry",
-  quantity: "",
-  reason: "",
-  responsible: "Admin MARKETOPS",
-};
+function makeDefaultMovementForm(
+  products: StockProductData[],
+): MovementFormState {
+  return {
+    productId: products[0]?.id ?? "",
+    type: "entrada",
+    quantity: "",
+    reason: "",
+    responsible: "Admin MARKETOPS",
+  };
+}
 
 function parseNumber(value: string) {
   const parsed = Number(value.replace(",", ".").trim());
@@ -55,74 +87,56 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function getMovementDelta({
-  type,
-  quantity,
-  currentStock,
-}: {
-  type: StockMovementType;
-  quantity: number;
-  currentStock: number;
-}) {
-  if (type === "inventory_correction") {
-    return quantity - currentStock;
-  }
-
-  if (type === "entry" || type === "adjustment_plus" || type === "return") {
-    return quantity;
-  }
-
-  return -quantity;
-}
-
-function getMovementTone(delta: number) {
-  if (delta > 0) {
-    return "success" as const;
-  }
-
-  if (delta < 0) {
-    return "warning" as const;
-  }
+function getMovementTone(quantity: number) {
+  if (quantity > 0) return "success" as const;
+  if (quantity < 0) return "warning" as const;
 
   return "info" as const;
 }
 
-function formatDelta(delta: number) {
-  if (delta > 0) {
-    return `+${delta}`;
-  }
+function formatDelta(quantity: number) {
+  if (quantity > 0) return `+${quantity}`;
 
-  return String(delta);
+  return String(quantity);
 }
 
-export function StockContent() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [movements, setMovements] =
-    useState<StockMovement[]>(initialStockMovements);
+export function StockContent({
+  products: initialProducts,
+  sections,
+  categories,
+  movements: initialMovements,
+}: {
+  products: StockProductData[];
+  sections: SectionData[];
+  categories: CategoryData[];
+  movements: StockEntryData[];
+}) {
+  const router = useRouter();
   const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
-  const [movementForm, setMovementForm] =
-    useState<MovementFormState>(defaultMovementForm);
+  const [movementForm, setMovementForm] = useState<MovementFormState>(() =>
+    makeDefaultMovementForm(initialProducts),
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
 
   const sectionById = useMemo(
-    () => new Map(initialSections.map((section) => [section.id, section])),
-    [],
+    () => new Map(sections.map((s) => [s.id, s])),
+    [sections],
   );
   const categoryById = useMemo(
-    () => new Map(initialCategories.map((category) => [category.id, category])),
-    [],
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories],
   );
   const productById = useMemo(
-    () => new Map(products.map((product) => [product.id, product])),
-    [products],
+    () => new Map(initialProducts.map((p) => [p.id, p])),
+    [initialProducts],
   );
 
   const filteredProducts = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
-    return products.filter((product) => {
+    return initialProducts.filter((product) => {
       const matchesSearch =
         !search ||
         product.name.toLowerCase().includes(search) ||
@@ -138,20 +152,19 @@ export function StockContent() {
 
       return matchesSearch && matchesSection && matchesStock;
     });
-  }, [products, searchTerm, sectionFilter, stockFilter]);
+  }, [initialProducts, searchTerm, sectionFilter, stockFilter]);
 
-  const totalUnits = products.reduce(
+  const totalUnits = initialProducts.reduce(
     (total, product) => total + product.currentStock,
     0,
   );
-  const lowStockCount = products.filter(
+  const lowStockCount = initialProducts.filter(
     (product) => product.currentStock <= product.minimumStock,
   ).length;
-  const stockValue = products.reduce(
+  const stockValue = initialProducts.reduce(
     (total, product) => total + product.currentStock * product.costPrice,
     0,
   );
-  const todayMovements = movements.length;
 
   function updateMovementForm<K extends keyof MovementFormState>(
     key: K,
@@ -162,57 +175,37 @@ export function StockContent() {
 
   function openMovementModal(productId?: string) {
     setMovementForm({
-      ...defaultMovementForm,
-      productId: productId ?? products[0]?.id ?? "",
+      ...makeDefaultMovementForm(initialProducts),
+      productId: productId ?? initialProducts[0]?.id ?? "",
     });
     setIsMovementModalOpen(true);
   }
 
   function closeMovementModal() {
-    setMovementForm(defaultMovementForm);
+    setMovementForm(makeDefaultMovementForm(initialProducts));
     setIsMovementModalOpen(false);
   }
 
-  function handleSubmitMovement(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmitMovement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const product = productById.get(movementForm.productId);
     const quantity = parseNumber(movementForm.quantity);
 
-    if (!product || quantity < 0 || !movementForm.reason.trim()) {
+    if (!movementForm.productId || quantity <= 0 || !movementForm.reason.trim()) {
       return;
     }
 
-    const delta = getMovementDelta({
-      type: movementForm.type,
+    const result = await adjustStock({
+      productId: movementForm.productId,
       quantity,
-      currentStock: product.currentStock,
+      type: movementForm.type,
+      reason: movementForm.reason,
+      responsible: movementForm.responsible,
     });
-    const nextStock = Math.max(0, product.currentStock + delta);
-    const finalDelta = nextStock - product.currentStock;
 
-    setProducts((current) =>
-      current.map((currentProduct) =>
-        currentProduct.id === product.id
-          ? { ...currentProduct, currentStock: nextStock }
-          : currentProduct,
-      ),
-    );
-
-    setMovements((current) => [
-      {
-        id: `mov-${Date.now()}`,
-        productId: product.id,
-        type: movementForm.type,
-        quantity,
-        delta: finalDelta,
-        reason: movementForm.reason.trim(),
-        responsible: movementForm.responsible.trim() || "Admin MARKETOPS",
-        createdAt: "19/05/2026 agora",
-        stockAfter: nextStock,
-      },
-      ...current,
-    ]);
-    closeMovementModal();
+    if (result.success) {
+      router.refresh();
+      closeMovementModal();
+    }
   }
 
   return (
@@ -222,21 +215,24 @@ export function StockContent() {
         title="Estoque"
         description="Registre entradas, ajustes, perdas e devolucoes mantendo historico. O saldo atual nao deve ser editado diretamente."
         action={
-          <Button
-            type="button"
-            onClick={() => openMovementModal()}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Registrar movimento
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge label="Banco real" tone="info" />
+            <Button
+              type="button"
+              onClick={() => openMovementModal()}
+              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Registrar movimento
+            </Button>
+          </div>
         }
       />
 
       <StockMovementModal
         isOpen={isMovementModalOpen}
         formState={movementForm}
-        products={products}
+        products={initialProducts}
         onClose={closeMovementModal}
         onSubmit={handleSubmitMovement}
         onUpdateForm={updateMovementForm}
@@ -246,7 +242,7 @@ export function StockContent() {
         <SummaryCard label="Unidades em estoque" value={String(totalUnits)} />
         <SummaryCard label="Produtos em alerta" value={String(lowStockCount)} />
         <SummaryCard label="Valor em estoque" value={formatCurrency(stockValue)} />
-        <SummaryCard label="Movimentos" value={String(todayMovements)} />
+        <SummaryCard label="Movimentos" value={String(initialMovements.length)} />
       </section>
 
       <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -312,7 +308,7 @@ export function StockContent() {
               className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
             >
               <option value="all">Todas as secoes</option>
-              {initialSections.map((section) => (
+              {sections.map((section) => (
                 <option key={section.id} value={section.id}>
                   {section.name}
                 </option>
@@ -404,13 +400,12 @@ export function StockContent() {
                 <th className="px-5 py-3 font-semibold">Produto</th>
                 <th className="px-5 py-3 font-semibold">Tipo</th>
                 <th className="px-5 py-3 font-semibold">Qtd.</th>
-                <th className="px-5 py-3 font-semibold">Saldo</th>
                 <th className="px-5 py-3 font-semibold">Responsavel</th>
                 <th className="px-5 py-3 font-semibold">Motivo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {movements.map((movement) => {
+              {initialMovements.map((movement) => {
                 const product = productById.get(movement.productId);
 
                 return (
@@ -426,18 +421,15 @@ export function StockContent() {
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
                       <StatusBadge
-                        label={formatDelta(movement.delta)}
-                        tone={getMovementTone(movement.delta)}
+                        label={formatDelta(movement.quantity)}
+                        tone={getMovementTone(movement.quantity)}
                       />
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
-                      {movement.stockAfter}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-4">
-                      {movement.responsible}
+                      {movement.responsible ?? "—"}
                     </td>
                     <td className="min-w-64 px-5 py-4 text-slate-500">
-                      {movement.reason}
+                      {movement.reason ?? "—"}
                     </td>
                   </tr>
                 );
@@ -460,7 +452,7 @@ function StockMovementModal({
 }: {
   isOpen: boolean;
   formState: MovementFormState;
-  products: Product[];
+  products: StockProductData[];
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onUpdateForm: <K extends keyof MovementFormState>(
@@ -471,7 +463,6 @@ function StockMovementModal({
   const selectedProduct = products.find(
     (product) => product.id === formState.productId,
   );
-  const isCorrection = formState.type === "inventory_correction";
 
   if (!isOpen) {
     return null;
@@ -540,7 +531,7 @@ function StockMovementModal({
               </select>
             </Field>
 
-            <Field label={isCorrection ? "Novo saldo" : "Quantidade"}>
+            <Field label="Quantidade">
               <input
                 value={formState.quantity}
                 onChange={(event) => onUpdateForm("quantity", event.target.value)}
@@ -575,22 +566,20 @@ function StockMovementModal({
                 Saldo atual: {selectedProduct?.currentStock ?? 0}
               </p>
               <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                {isCorrection ? (
-                  <>
-                    <ClipboardList className="size-4" aria-hidden="true" />
-                    A quantidade informada sera o novo saldo do produto.
-                  </>
-                ) : formState.type === "entry" ||
-                  formState.type === "adjustment_plus" ||
-                  formState.type === "return" ? (
+                {formState.type === "entrada" ? (
                   <>
                     <ArrowUp className="size-4 text-emerald-600" aria-hidden="true" />
                     Este movimento soma ao estoque atual.
                   </>
-                ) : (
+                ) : formState.type === "saida" ? (
                   <>
                     <ArrowDown className="size-4 text-amber-600" aria-hidden="true" />
                     Este movimento reduz o estoque atual.
+                  </>
+                ) : (
+                  <>
+                    <ClipboardList className="size-4" aria-hidden="true" />
+                    Ajuste positivo soma, ajuste negativo reduz o estoque.
                   </>
                 )}
               </p>

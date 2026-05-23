@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import {
   BadgeDollarSign,
   BarChart3,
@@ -10,6 +11,7 @@ import {
   CreditCard,
   FileBarChart2,
   Landmark,
+  LogOut,
   Monitor,
   Package,
   Printer,
@@ -25,33 +27,60 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
-const navigationItems = [
-  { label: "Dashboard", icon: BarChart3, href: "/" },
-  { label: "Secoes e categorias", icon: Tags, href: "/secoes-categorias" },
-  { label: "Produtos", icon: Package, href: "/produtos" },
-  { label: "Estoque", icon: Warehouse, href: "/estoque" },
-  { label: "Compras", icon: Boxes, href: "/compras" },
-  { label: "Vendas", icon: ShoppingCart, href: "/vendas" },
-  { label: "PDV", icon: Monitor, href: "/pdv" },
-  { label: "Pagamentos", icon: CreditCard, href: "/pagamentos" },
-  { label: "Caixas", icon: BadgeDollarSign, href: "/caixas" },
-  { label: "Clientes", icon: Users, href: "/clientes" },
-  { label: "Fornecedores", icon: Truck, href: "/fornecedores" },
-  { label: "Financeiro", icon: Landmark, href: "/financeiro" },
-  { label: "Relatorios", icon: FileBarChart2, href: "/relatorios" },
-  { label: "Auditoria", icon: ClipboardList, href: "/auditoria" },
-  { label: "Seguranca", icon: ShieldCheck, href: "/seguranca" },
-  { label: "Self-checkout", icon: QrCode, href: "/self-checkout" },
-  { label: "Impressao", icon: Printer, href: "/impressao" },
-  { label: "Integracoes", icon: Cable, href: "/integracoes" },
-  { label: "Testes", icon: ClipboardCheck, href: "/testes" },
-  { label: "Deploy", icon: Rocket, href: "/deploy" },
-  { label: "Configuracoes", icon: Settings },
+type NavItem = {
+  label: string;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  href?: string;
+  roles: string[];
+};
+
+const navigationItems: NavItem[] = [
+  { label: "Dashboard", icon: BarChart3, href: "/", roles: ["admin", "operator", "supervisor", "estoque", "financeiro"] },
+  { label: "PDV", icon: Monitor, href: "/pdv", roles: ["admin", "operator"] },
+  { label: "Caixas", icon: BadgeDollarSign, href: "/caixas", roles: ["admin", "operator"] },
+  { label: "Vendas", icon: ShoppingCart, href: "/vendas", roles: ["admin", "operator"] },
+  { label: "Vendas (fin.)", icon: ShoppingCart, href: "/admin/vendas", roles: ["admin", "financeiro"] },
+  { label: "Caixas (fin.)", icon: BadgeDollarSign, href: "/admin/caixas", roles: ["admin", "financeiro"] },
+  { label: "Fila NF / Chamados", icon: ClipboardList, href: "/supervisor", roles: ["admin", "supervisor"] },
+  { label: "Clientes (NF)", icon: Users, href: "/supervisor/clientes", roles: ["admin", "supervisor"] },
+  { label: "Produtos", icon: Package, href: "/admin/produtos", roles: ["admin", "estoque"] },
+  { label: "Secoes e categorias", icon: Tags, href: "/admin/secoes-categorias", roles: ["admin", "estoque"] },
+  { label: "Estoque", icon: Warehouse, href: "/admin/estoque", roles: ["admin", "estoque"] },
+  { label: "Compras", icon: Boxes, href: "/admin/compras", roles: ["admin", "estoque", "financeiro"] },
+  { label: "Fornecedores", icon: Truck, href: "/admin/fornecedores", roles: ["admin", "estoque"] },
+  { label: "Financeiro", icon: Landmark, href: "/admin/financeiro", roles: ["admin", "financeiro"] },
+  { label: "Pagamentos", icon: CreditCard, href: "/admin/pagamentos", roles: ["admin", "financeiro"] },
+  { label: "Relatorios", icon: FileBarChart2, href: "/admin/relatorios", roles: ["admin", "financeiro"] },
+  { label: "Auditoria", icon: ClipboardList, href: "/admin/auditoria", roles: ["admin", "financeiro"] },
+  { label: "Usuarios", icon: Users, href: "/admin/usuarios", roles: ["admin"] },
+  { label: "Seguranca", icon: ShieldCheck, href: "/admin/seguranca", roles: ["admin"] },
+  { label: "Self-checkout", icon: QrCode, href: "/admin/self-checkout", roles: ["admin"] },
+  { label: "Impressao", icon: Printer, href: "/admin/impressao", roles: ["admin"] },
+  { label: "Integracoes", icon: Cable, href: "/admin/integracoes", roles: ["admin"] },
+  { label: "Testes", icon: ClipboardCheck, href: "/admin/testes", roles: ["admin"] },
+  { label: "Deploy", icon: Rocket, href: "/admin/deploy", roles: ["admin"] },
+  { label: "Configuracoes", icon: Settings, href: "/admin/configuracoes", roles: ["admin"] },
 ];
+
+const roleLabels: Record<string, string> = {
+  admin: "Administrador",
+  operator: "Operador",
+};
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const userInitial =
+    user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U";
+  const userName = user?.name ?? user?.email ?? "Usuario";
+  const userRoleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : null;
+  const roleKey = user?.role ?? "operator";
+  const visibleItems = navigationItems.filter((item) =>
+    item.roles.includes(roleKey),
+  );
 
   return (
     <aside className="hidden min-h-screen border-r border-slate-800 bg-slate-950 text-white lg:flex lg:flex-col">
@@ -68,7 +97,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-5">
-        {navigationItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.href === pathname;
           const content = (
@@ -111,11 +140,36 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-slate-800 p-4 space-y-3">
+        {user && (
+          <div className="flex items-center gap-3 rounded-lg bg-slate-900 px-3 py-2.5">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-sm font-bold text-slate-950">
+              {userInitial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {userName}
+              </p>
+              {userRoleLabel && (
+                <p className="text-xs text-slate-400">{userRoleLabel}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => void signOut({ callbackUrl: "/login" })}
+              className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              title="Sair"
+            >
+              <LogOut className="size-4" aria-hidden="true" />
+              <span className="sr-only">Sair</span>
+            </button>
+          </div>
+        )}
+
         <div className="rounded-lg bg-slate-900 p-4">
-          <p className="text-sm font-medium text-white">MVP 1</p>
+          <p className="text-sm font-medium text-white">MVP 2</p>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Base administrativa, produtos, estoque e caixas.
+            Persistencia real com Prisma, autenticacao e controle de acesso.
           </p>
         </div>
       </div>
