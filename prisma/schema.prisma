@@ -303,6 +303,18 @@ model Customer {
   createdAt  DateTime     @default(now())
 }
 
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String
+  cnpj        String?  @unique
+  phone       String?
+  email       String?
+  contactName String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
 enum HelpRequestStatus {
   active
   attended

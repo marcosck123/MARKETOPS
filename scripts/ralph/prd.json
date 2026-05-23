@@ -57,7 +57,7 @@
         "Lint passes"
       ],
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
       "notes": "Combined schema+screen since Supplier is simple. Rewrite existing SuppliersContent (currently mock-based). cnpj is optional and stored as raw digits."
     },

@@ -406,3 +406,15 @@ Append logs below using this format:
   - DANFE as printable HTML via window.open + document.write — avoids @react-pdf/renderer dependency
   - Supervisor polling upgraded to Promise.all([getActiveHelpRequests(), getPendingFiscalRequests()]) in single interval
   - document.title badge counts both help requests + NF queue: total = requests.length + fiscalRequests.length
+
+## 2026-05-22 - US-020 (MVP 3 Fase 5)
+- What was implemented: Supplier model added to prisma/schema.prisma (id, name, cnpj? @unique, phone?, email?, contactName?, notes?, active, createdAt). src/lib/actions/suppliers.ts with createSupplier (strips+validates cnpj uniqueness), updateSupplier (same cnpj check excluding self), toggleSupplierStatus, listSuppliers (search by name insensitive OR cnpj digits). /admin/fornecedores/page.tsx converted to async server component passing suppliers to SuppliersContent. SuppliersContent rewritten: receives initialSuppliers props, client-side search, modal for create/edit (name, cnpj, phone, email, contactName, notes), optimistic toggle + router.refresh(). cnpj formatted for display only (raw digits in DB).
+- Files changed: prisma/schema.prisma, src/lib/actions/suppliers.ts (novo), src/app/admin/fornecedores/page.tsx, src/components/suppliers/suppliers-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - Supplier.cnpj @unique with optional value — Prisma allows multiple NULL values for @unique fields in PostgreSQL
+  - cnpj stripped of non-digits before uniqueness check and storage — display masking is SuppliersContent's responsibility
+  - formatCnpj() formats 14-digit raw string to XX.XXX.XXX/XXXX-XX for display — function lives in the component file
+  - Optimistic update pattern: update local state immediately + router.refresh() to sync server state
