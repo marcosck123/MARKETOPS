@@ -565,7 +565,6 @@ export function PurchasesContent({
                           </td>
                         </tr>
                       )}
-                    </>
                     </Fragment>
                   );
                 })
