@@ -11,7 +11,7 @@ export default async function SectionsCategoriesPage() {
     }),
   ]);
 
-  const categories = categoriesRaw.map((cat) => ({
+  const categories = categoriesRaw.map((cat: (typeof categoriesRaw)[number]) => ({
     id: cat.id,
     sectionId: cat.sectionId,
     name: cat.name,
@@ -22,7 +22,7 @@ export default async function SectionsCategoriesPage() {
   return (
     <AdminShell>
       <SectionsCategoriesContent
-        sections={sections.map((s) => ({
+        sections={sections.map((s: (typeof sections)[number]) => ({
           id: s.id,
           name: s.name,
           description: s.description,

@@ -7,7 +7,7 @@ export default async function CashRegistersPage() {
     orderBy: { name: "asc" },
   });
 
-  const registers = registersRaw.map((r) => ({
+  const registers = registersRaw.map((r: (typeof registersRaw)[number]) => ({
     id: r.id,
     name: r.name,
     status: r.status as "open" | "closed",

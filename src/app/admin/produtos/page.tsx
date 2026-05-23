@@ -10,7 +10,7 @@ export default async function ProductsPage() {
     db.category.findMany({ orderBy: { name: "asc" } }),
   ]);
 
-  const products: Product[] = productsRaw.map((p) => ({
+  const products: Product[] = productsRaw.map((p: (typeof productsRaw)[number]) => ({
     id: p.id,
     name: p.name,
     barcode: p.barcode,
