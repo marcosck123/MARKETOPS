@@ -22,12 +22,15 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (pathname === "/login") {
+    if (isLoggedIn) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+    return NextResponse.next();
   }
 
-  if (pathname === "/login") {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const role = req.auth?.user?.role ?? "operator";
