@@ -367,3 +367,15 @@ Append logs below using this format:
   - document field disabled on edit (can't change primary identifier without re-creating)
   - has-[:checked]:border-emerald-500 on radio label for type selector — same pattern as session-gate
   - /supervisor/clientes covered by /supervisor prefix in middleware ROLE_ROUTES — no middleware change needed
+
+## 2026-05-22 - US-017 (MVP 3 Fase 4)
+- What was implemented: CompanySettings model (single-row config with id='default', upsert pattern). Product model updated with ncm?, cfop? (@default '5102'), cst? (@default '400'). Seed updated with CompanySettings upsert. src/lib/actions/company-settings.ts with getCompanySettings (upsert to auto-create if missing) and updateCompanySettings. Route /admin/configuracoes with CompanySettingsContent form (company data, address, fiscal settings). Sidebar Configuracoes gets href. nfeSequence is read-only in the form (incremented by completeFiscalRequest in US-018).
+- Files changed: prisma/schema.prisma, prisma/seed.ts, src/lib/actions/company-settings.ts (novo), src/app/admin/configuracoes/page.tsx (novo), src/components/settings/company-settings-content.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - CompanySettings uses @id with fixed value 'default' — single-row config table, upsert handles both first-run and updates
+  - getCompanySettings calls upsert({ where: {id:'default'}, update:{}, create:{id:'default'} }) — auto-creates with defaults on first call
+  - nfeSequence is @default(1) but incremented in transactions — never exposed as editable in the form
+  - Product ncm/cfop/cst are optional with defaults — existing products don't break

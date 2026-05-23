@@ -167,6 +167,26 @@ async function main() {
     skipDuplicates: false,
   });
 
+  await prisma.companySettings.upsert({
+    where: { id: "default" },
+    update: {},
+    create: {
+      id: "default",
+      razaoSocial: "MARKETOPS COMERCIO LTDA",
+      cnpj: "00000000000000",
+      ie: "",
+      address: "Rua Principal",
+      number: "100",
+      district: "Centro",
+      city: "Cuiaba",
+      state: "MT",
+      zipCode: "78000000",
+      phone: "(65) 99999-0000",
+      nfeSerie: "1",
+      nfeSequence: 1,
+    },
+  });
+
   const adminPasswordHash = await bcrypt.hash("admin123", 12);
   await prisma.user.upsert({
     where: { email: "admin@marketops.local" },

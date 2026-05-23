@@ -64,6 +64,9 @@ model Product {
   currentStock   Int          @default(0)
   minimumStock   Int          @default(0)
   status         Status       @default(active)
+  ncm            String?
+  cfop           String?      @default("5102")
+  cst            String?      @default("400")
   stockEntries   StockEntry[]
   saleItems      SaleItem[]
   createdAt      DateTime     @default(now())
@@ -233,6 +236,23 @@ model SalePayment {
   sale   Sale          @relation(fields: [saleId], references: [id])
   method PaymentMethod
   amount Float
+}
+
+model CompanySettings {
+  id          String   @id @default("default")
+  razaoSocial String   @default("")
+  cnpj        String   @default("")
+  ie          String?
+  address     String   @default("")
+  number      String   @default("")
+  district    String   @default("")
+  city        String   @default("")
+  state       String   @default("")
+  zipCode     String   @default("")
+  phone       String   @default("")
+  nfeSerie    String   @default("1")
+  nfeSequence Int      @default(1)
+  updatedAt   DateTime @updatedAt
 }
 
 enum CustomerType {

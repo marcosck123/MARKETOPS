@@ -59,7 +59,7 @@ const navigationItems: NavItem[] = [
   { label: "Integracoes", icon: Cable, href: "/admin/integracoes", roles: ["admin"] },
   { label: "Testes", icon: ClipboardCheck, href: "/admin/testes", roles: ["admin"] },
   { label: "Deploy", icon: Rocket, href: "/admin/deploy", roles: ["admin"] },
-  { label: "Configuracoes", icon: Settings, roles: ["admin"] },
+  { label: "Configuracoes", icon: Settings, href: "/admin/configuracoes", roles: ["admin"] },
 ];
 
 const roleLabels: Record<string, string> = {

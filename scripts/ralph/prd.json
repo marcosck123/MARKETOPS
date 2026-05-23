@@ -197,7 +197,7 @@
         "Lint passes"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "code-review"],
       "notes": "CompanySettings uses @id with fixed value 'default' — single-row config table (upsert pattern). nfeSequence is incremented inside completeFiscalRequest in US-018."
     },
