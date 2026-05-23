@@ -418,3 +418,15 @@ Append logs below using this format:
   - cnpj stripped of non-digits before uniqueness check and storage — display masking is SuppliersContent's responsibility
   - formatCnpj() formats 14-digit raw string to XX.XXX.XXX/XXXX-XX for display — function lives in the component file
   - Optimistic update pattern: update local state immediately + router.refresh() to sync server state
+
+## 2026-05-22 - US-021 (MVP 3 Fase 5)
+- What was implemented: StockReceiptStatus enum (draft | confirmed | cancelled), StockReceipt model (id, sequence autoincrement, code @unique @default(""), supplierId String?, supplierName?, invoiceNumber?, status, notes?, totalCost Float @default(0), confirmedAt?, items relation, createdAt), StockReceiptItem model (id, stockReceiptId FK, productId FK, productName snapshot, quantity Float, unitCost Float, total Float). Product model gets receiptItems StockReceiptItem[] relation. src/lib/actions/stock-receipts.ts with createStockReceipt (NE-XXXXXX code via autoincrement), addReceiptItem (validates draft + product, recalculates totalCost), removeReceiptItem (validates draft, recalculates totalCost), confirmStockReceipt (validates draft + has items, db.$transaction: StockEntry entrada + product.currentStock increment + status=confirmed), cancelStockReceipt (validates draft), listStockReceipts (optional status filter, includes _count.items), getReceiptItems.
+- Files changed: prisma/schema.prisma, src/lib/actions/stock-receipts.ts (novo)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - StockReceipt.supplierId is String? (no @relation) — same pattern as FiscalRequest.saleId; allows optional supplier without FK constraint
+  - confirmStockReceipt increments product.currentStock directly via { increment: N } — avoids read-modify-write race condition
+  - totalCost recalculated by summing all items after add/remove — db-authoritative approach, avoids drift
+  - getReceiptItems exported separately for use in PurchasesContent detail expansion

@@ -69,6 +69,7 @@ model Product {
   cst            String?      @default("400")
   stockEntries   StockEntry[]
   saleItems      SaleItem[]
+  receiptItems   StockReceiptItem[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -301,6 +302,39 @@ model Customer {
   ie         String?
   active     Boolean      @default(true)
   createdAt  DateTime     @default(now())
+}
+
+enum StockReceiptStatus {
+  draft
+  confirmed
+  cancelled
+}
+
+model StockReceipt {
+  id            String             @id @default(cuid())
+  sequence      Int                @default(autoincrement())
+  code          String             @unique @default("")
+  supplierId    String?
+  supplierName  String?
+  invoiceNumber String?
+  status        StockReceiptStatus @default(draft)
+  notes         String?
+  totalCost     Float              @default(0)
+  confirmedAt   DateTime?
+  items         StockReceiptItem[]
+  createdAt     DateTime           @default(now())
+}
+
+model StockReceiptItem {
+  id             String       @id @default(cuid())
+  stockReceiptId String
+  stockReceipt   StockReceipt @relation(fields: [stockReceiptId], references: [id])
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  productName    String
+  quantity       Float
+  unitCost       Float
+  total          Float
 }
 
 model Supplier {

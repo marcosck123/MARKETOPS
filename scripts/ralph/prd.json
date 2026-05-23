@@ -83,7 +83,7 @@
         "Lint passes"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "security-review", "code-review"],
       "notes": "Depends on Supplier (US-020) and Product. supplierId is optional string FK — receipt can be created without a supplier. productName stored as snapshot so receipt history is preserved if product is renamed."
     },
