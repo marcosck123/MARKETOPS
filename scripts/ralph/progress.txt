@@ -454,3 +454,15 @@ Append logs below using this format:
   - db.salePayment.groupBy with nested where: { sale: { status, finishedAt: { gte } } } filters by related field in groupBy
   - sessionRows serialize Date to ISO string in page.tsx before passing to FinanceContent — avoids Next.js RSC Date serialization issues
   - FinanceContent is server component (no "use client") — Link works in both server and client; no interactivity needed
+
+## 2026-05-23 - US-024 (MVP 3 Fase 5)
+- What was implemented: /admin/vendas/page.tsx (async server component): tabela de todas as vendas finalizadas (code, finishedAt, operatorName, items count, payment methods badges, total). /admin/caixas/page.tsx (async server component): tabela de todas as CashSessions (register, operator, status badge, openedAt, closedAt, openingBalance, closingBalance, total_sales computed). Sidebar: "Vendas (fin.)" → /admin/vendas e "Caixas (fin.)" → /admin/caixas adicionados para roles [admin, financeiro]. Middleware já tinha /admin/vendas e /admin/caixas para financeiro — sem alteração.
+- Files changed: src/app/admin/vendas/page.tsx (novo), src/app/admin/caixas/page.tsx (novo), src/components/layout/app-sidebar.tsx
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - /admin/caixas e /admin/vendas são read-only — sem server actions, sem router.refresh(), apenas server component com db query
+  - totalSales por sessão calculado com sales.reduce() no server component — não precisa de groupBy
+  - take: 300 nas queries evita carregar toda a tabela sem paginação — suficiente para MVP
+  - financeiro role em middleware já estava configurado — sidebar update foi a única mudança necessária

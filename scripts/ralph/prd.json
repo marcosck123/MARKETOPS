@@ -142,7 +142,7 @@
         "Lint passes"
       ],
       "priority": 18,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
       "notes": "Standalone — only reads existing Sale and CashSession data. /admin/caixas is different from /caixas (operator screen). /admin/vendas shows ALL sales, not just current session. Sidebar items for financeiro already point to /admin/vendas and /admin/caixas — need to implement the pages."
     },
