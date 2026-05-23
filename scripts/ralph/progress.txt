@@ -442,3 +442,15 @@ Append logs below using this format:
   - StatusBadge tone "default" (slate-100/slate-600) added for neutral states like "draft" — now covers success/warning/danger/info/default
   - expandedItems: Record<string, StockReceiptItemRow[]> lazy-loaded on row click — avoids N queries on page load
   - e.stopPropagation() on action cell td prevents row toggle from firing when clicking action buttons
+
+## 2026-05-22 - US-023 (MVP 3 Fase 5)
+- What was implemented: /admin/financeiro page async server component with searchParams period filter (today|week|month). Parallel queries via Promise.all: db.sale.aggregate (sum total/subtotal/discount + count), db.salePayment.groupBy method (sum amount), db.stockEntry.findMany type=saida with product.costPrice, db.cashSession.findMany with cashRegister.name + sales.total. FinanceContent (server component, no "use client"): period filter as Link buttons, 4 summary cards (totalSales, ticketMedio, qtdSales, totalDescontos), payment breakdown table, DRE table (receitaBruta, descontos, receitaLiquida, custoMercadorias, margemBruta + % margem), sessions table (caixa, operador, status, abertura, total vendas).
+- Files changed: src/app/admin/financeiro/page.tsx, src/components/finance/finance-content.tsx (reescrito)
+- Quality checks run: typecheck: not available, lint: not available, test: not available, build: not available
+- Result of checks: n/a — Docker offline
+- Commit hash: (ver git log)
+- **Learnings for future iterations:**
+  - searchParams in Next.js 16 is Promise<Record<string, string | undefined>> — must await before accessing
+  - db.salePayment.groupBy with nested where: { sale: { status, finishedAt: { gte } } } filters by related field in groupBy
+  - sessionRows serialize Date to ISO string in page.tsx before passing to FinanceContent — avoids Next.js RSC Date serialization issues
+  - FinanceContent is server component (no "use client") — Link works in both server and client; no interactivity needed

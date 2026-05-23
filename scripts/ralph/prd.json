@@ -124,7 +124,7 @@
         "Lint passes"
       ],
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "skillsRequired": ["full-stack-planner", "design-ux-ui", "code-review"],
       "notes": "Depends on existing Sale, SalePayment, StockEntry models. Period filter uses URL searchParams (not useState) so filter is shareable/bookmarkable. Custo de Mercadorias is approximated via StockEntry quantity × costPrice at current price — acceptable for MVP."
     },
