@@ -83,15 +83,15 @@ export function AppSidebar() {
   );
 
   return (
-    <aside className="hidden min-h-screen border-r border-slate-800 bg-slate-950 text-white lg:flex lg:flex-col">
-      <div className="border-b border-slate-800 px-6 py-6">
+    <aside className="hidden min-h-screen border-r border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-white lg:flex lg:flex-col">
+      <div className="border-b border-slate-200 px-6 py-6 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-500 text-lg font-bold text-slate-950">
             M
           </div>
           <div>
-            <p className="text-lg font-semibold">MARKETOPS</p>
-            <p className="text-xs text-slate-400">Operacao ao caixa</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-white">MARKETOPS</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Operacao ao caixa</p>
           </div>
         </div>
       </div>
@@ -107,7 +107,7 @@ export function AppSidebar() {
                 {item.label}
               </span>
               {isActive ? (
-                <span className="h-2 w-2 rounded-full bg-slate-950" />
+                <span className="h-2 w-2 rounded-full bg-white dark:bg-slate-950" />
               ) : null}
             </>
           );
@@ -116,7 +116,7 @@ export function AppSidebar() {
             return (
               <span
                 key={item.label}
-                className="flex cursor-not-allowed items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500"
+                className="flex cursor-not-allowed items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-500"
                 title="Modulo planejado para as proximas etapas"
               >
                 {content}
@@ -131,7 +131,7 @@ export function AppSidebar() {
               className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
                   ? "bg-emerald-500 text-slate-950"
-                  : "text-slate-300 hover:bg-slate-900 hover:text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
               }`}
             >
               {content}
@@ -140,24 +140,24 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-slate-800 p-4 space-y-3">
+      <div className="border-t border-slate-200 p-4 space-y-3 dark:border-slate-800">
         {user && (
-          <div className="flex items-center gap-3 rounded-lg bg-slate-900 px-3 py-2.5">
+          <div className="flex items-center gap-3 rounded-lg bg-slate-100 px-3 py-2.5 dark:bg-slate-900">
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-sm font-bold text-slate-950">
               {userInitial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">
+              <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
                 {userName}
               </p>
               {userRoleLabel && (
-                <p className="text-xs text-slate-400">{userRoleLabel}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{userRoleLabel}</p>
               )}
             </div>
             <button
               type="button"
               onClick={() => void signOut({ callbackUrl: "/login" })}
-              className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              className="shrink-0 rounded-md p-1.5 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
               title="Sair"
             >
               <LogOut className="size-4" aria-hidden="true" />
@@ -166,9 +166,9 @@ export function AppSidebar() {
           </div>
         )}
 
-        <div className="rounded-lg bg-slate-900 p-4">
-          <p className="text-sm font-medium text-white">MVP 2</p>
-          <p className="mt-1 text-xs leading-5 text-slate-400">
+        <div className="rounded-lg bg-slate-100 p-4 dark:bg-slate-900">
+          <p className="text-sm font-medium text-slate-900 dark:text-white">MVP 2</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
             Persistencia real com Prisma, autenticacao e controle de acesso.
           </p>
         </div>
