@@ -97,12 +97,15 @@ function getStatusTone(status: SaleStatus) {
 
 function saleToForm(sale: Sale): SaleFormState {
   return {
-    ...defaultSaleForm,
     customerId: sale.customerId,
     cashSessionId: sale.cashSessionId,
     operator: sale.operator,
     notes: sale.notes,
+    itemProductId: "",
+    itemQuantity: "",
+    priceMode: "retail",
     discount: String(sale.discount || ""),
+    paymentMethod: "pix",
     paymentAmount: "",
   };
 }
