@@ -36,6 +36,7 @@ export async function openCashSession(params: {
 
   const cashRegister = await db.cashRegister.findUnique({ where: { id: cashRegisterId } });
   if (!cashRegister) return { success: false, error: "Caixa não encontrado." };
+  if (cashRegister.status !== "open") return { success: false, error: "Caixa não está aberto. Solicite ao supervisor que abra o caixa antes de iniciar a sessão." };
 
   const existing = await db.cashSession.findFirst({
     where: { operatorId, status: "open" },

@@ -14,6 +14,7 @@ export default async function PosPage() {
 
   if (!activeSession) {
     const registers = await db.cashRegister.findMany({
+      where: { status: "open" },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });

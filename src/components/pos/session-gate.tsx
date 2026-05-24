@@ -67,7 +67,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
           <form onSubmit={(e) => void handleConfirm(e)} className="mt-5 space-y-4">
             {registers.length === 0 ? (
               <p className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-400">
-                Nenhum caixa cadastrado. Crie um caixa na retaguarda primeiro.
+                Nenhum caixa aberto no momento. Solicite ao supervisor que abra um caixa em <strong className="text-slate-300">Retaguarda → Caixas</strong>.
               </p>
             ) : (
               <div className="space-y-2">
