@@ -9,7 +9,7 @@ type AdminShellProps = {
 
 export function AdminShell({ children }: AdminShellProps) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_1fr]">
         <AppSidebar />
         <main className="min-w-0">
