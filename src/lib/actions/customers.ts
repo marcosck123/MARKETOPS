@@ -14,6 +14,14 @@ export type CustomerRow = {
   tradeName: string | null;
   email: string | null;
   phone: string | null;
+  zipCode: string | null;
+  street: string | null;
+  number: string | null;
+  complement: string | null;
+  district: string | null;
+  city: string | null;
+  state: string | null;
+  ie: string | null;
   active: boolean;
 };
 
@@ -116,7 +124,7 @@ export async function toggleCustomerStatus(id: string): Promise<ActionResult> {
 
 export async function findCustomerByDocument(
   document: string,
-): Promise<(CustomerRow & { city: string | null; state: string | null }) | null> {
+): Promise<CustomerRow | null> {
   const doc = document.replace(/\D/g, "");
   if (!doc) return null;
 
@@ -130,13 +138,19 @@ export async function findCustomerByDocument(
       tradeName: true,
       email: true,
       phone: true,
-      active: true,
+      zipCode: true,
+      street: true,
+      number: true,
+      complement: true,
+      district: true,
       city: true,
       state: true,
+      ie: true,
+      active: true,
     },
   });
 
-  return customer as typeof customer & { type: "cpf" | "cnpj" };
+  return customer as CustomerRow | null;
 }
 
 export async function listCustomers(search?: string): Promise<CustomerRow[]> {
@@ -158,6 +172,14 @@ export async function listCustomers(search?: string): Promise<CustomerRow[]> {
       tradeName: true,
       email: true,
       phone: true,
+      zipCode: true,
+      street: true,
+      number: true,
+      complement: true,
+      district: true,
+      city: true,
+      state: true,
+      ie: true,
       active: true,
     },
   });
