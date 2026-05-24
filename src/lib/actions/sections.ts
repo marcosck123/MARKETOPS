@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -32,6 +33,14 @@ export async function createSection(formData: {
     await db.section.create({
       data: { id, name, description: formData.description.trim() },
     });
+    await createAuditLog({
+      module: "catalog",
+      action: "created",
+      actorName: "Sistema",
+      target: "Secao",
+      targetId: id,
+      description: `Seção "${name}" criada`,
+    });
     revalidatePath("/secoes-categorias");
     return { success: true, data: { id } };
   } catch {
@@ -52,6 +61,14 @@ export async function updateSection(
       where: { id },
       data: { name, description: formData.description.trim() },
     });
+    await createAuditLog({
+      module: "catalog",
+      action: "updated",
+      actorName: "Sistema",
+      target: "Secao",
+      targetId: id,
+      description: `Seção "${name}" atualizada`,
+    });
     revalidatePath("/secoes-categorias");
     return { success: true, data: undefined };
   } catch {
@@ -66,9 +83,19 @@ export async function toggleSectionStatus(id: string): Promise<ActionResult> {
     const section = await db.section.findUnique({ where: { id } });
     if (!section) return { success: false, error: "Seção não encontrada." };
 
+    const newStatus = section.status === "active" ? "inactive" : "active";
     await db.section.update({
       where: { id },
-      data: { status: section.status === "active" ? "inactive" : "active" },
+      data: { status: newStatus },
+    });
+    await createAuditLog({
+      module: "catalog",
+      action: "updated",
+      severity: newStatus === "inactive" ? "warning" : "info",
+      actorName: "Sistema",
+      target: "Secao",
+      targetId: id,
+      description: `Seção "${section.name}" ${newStatus === "active" ? "ativada" : "desativada"}`,
     });
     revalidatePath("/secoes-categorias");
     return { success: true, data: undefined };

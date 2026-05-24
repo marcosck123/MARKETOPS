@@ -368,3 +368,18 @@ model HelpRequest {
   attendedAt       DateTime?
   createdAt        DateTime          @default(now())
 }
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  module       String
+  action       String
+  severity     String   @default("info")
+  reviewStatus String   @default("pending")
+  actorId      String?
+  actorName    String
+  actorRole    String   @default("system")
+  target       String
+  targetId     String
+  description  String
+  createdAt    DateTime @default(now())
+}

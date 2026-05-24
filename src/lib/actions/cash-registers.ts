@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -75,6 +76,14 @@ export async function openCashRegister(
         closingBalance: null,
       },
     });
+    await createAuditLog({
+      module: "cash",
+      action: "opened",
+      actorName: "Sistema",
+      target: "Caixa",
+      targetId: id,
+      description: `Caixa "${register.name}" aberto com saldo inicial de R$ ${openingBalance.toFixed(2)}`,
+    });
     revalidatePath("/caixas");
     return { success: true, data: undefined };
   } catch {
@@ -103,6 +112,14 @@ export async function closeCashRegister(
         closedAt: new Date(),
         closingBalance,
       },
+    });
+    await createAuditLog({
+      module: "cash",
+      action: "closed",
+      actorName: "Sistema",
+      target: "Caixa",
+      targetId: id,
+      description: `Caixa "${register.name}" fechado com saldo de R$ ${closingBalance.toFixed(2)}`,
     });
     revalidatePath("/caixas");
     return { success: true, data: undefined };

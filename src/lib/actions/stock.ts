@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -80,6 +81,15 @@ export async function adjustStock(data: {
         reason: data.reason?.trim() || null,
         responsible: data.responsible?.trim() || null,
       },
+    });
+    await createAuditLog({
+      module: "stock",
+      action: data.type === "entrada" ? "created" : "updated",
+      severity: data.type === "saida" ? "warning" : "info",
+      actorName: data.responsible ?? "Sistema",
+      target: "Estoque",
+      targetId: data.productId,
+      description: `${data.type === "entrada" ? "Entrada" : data.type === "saida" ? "Saída" : "Ajuste"} de ${Math.abs(data.quantity)} unidades — ${data.reason ?? "sem motivo"}`,
     });
     revalidatePath("/estoque");
     return { success: true, data: undefined };

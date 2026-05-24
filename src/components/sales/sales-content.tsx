@@ -21,11 +21,10 @@ import { Button } from "@/components/ui/button";
 import {
   type CashRegister,
   type CashSession,
-  initialCashRegisters,
-  initialCashSessions,
 } from "@/lib/cash-data";
-import { initialCustomers } from "@/lib/customer-data";
-import { type Product, initialProducts } from "@/lib/product-data";
+import type { Customer } from "@/lib/customer-data";
+import { type Product } from "@/lib/product-data";
+import { persistFinishedSale } from "@/lib/actions/sales";
 import {
   addSaleItem,
   addSalePayment,
@@ -44,7 +43,6 @@ import {
   type Sale,
   type SalePriceMode,
   type SaleStatus,
-  initialSales,
   paymentMethodLabels,
   salePriceModeLabels,
   saleStatusLabels,
@@ -65,27 +63,11 @@ type SaleFormState = {
 
 type SaleMetaKey = "customerId" | "cashSessionId" | "operator" | "notes";
 
-const firstOpenSession = initialCashSessions.find(
-  (session) => session.status === "open",
-);
-const firstActiveCustomer = initialCustomers.find(
-  (customer) => customer.status === "active",
-);
-const firstActiveProduct = initialProducts.find(
-  (product) => product.status === "active",
-);
-
-const defaultSaleForm: SaleFormState = {
-  customerId: firstActiveCustomer?.id ?? "",
-  cashSessionId: firstOpenSession?.id ?? "",
-  operator: firstOpenSession?.operator ?? "Operador",
-  notes: "",
-  itemProductId: firstActiveProduct?.id ?? "",
-  itemQuantity: "",
-  priceMode: "retail",
-  discount: "",
-  paymentMethod: "pix",
-  paymentAmount: "",
+type SalesContentProps = {
+  products: Product[];
+  cashSessions: CashSession[];
+  cashRegisters: CashRegister[];
+  customers: Customer[];
 };
 
 function parseNumber(value: string) {
@@ -134,9 +116,25 @@ function getCashSessionLabel(
   return `${cashRegister?.code ?? "Caixa"} | ${session.operator} | ${session.openedAt}`;
 }
 
-export function SalesContent() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [sales, setSales] = useState<Sale[]>(initialSales);
+export function SalesContent({ products: initProducts, cashSessions, cashRegisters, customers }: SalesContentProps) {
+  const firstOpenSession = cashSessions.find((s) => s.status === "open");
+  const firstActiveCustomer = customers.find((c) => c.status === "active");
+  const firstActiveProduct = initProducts.find((p) => p.status === "active");
+  const defaultSaleForm: SaleFormState = {
+    customerId: firstActiveCustomer?.id ?? "",
+    cashSessionId: firstOpenSession?.id ?? "",
+    operator: firstOpenSession?.operator ?? "Operador",
+    notes: "",
+    itemProductId: firstActiveProduct?.id ?? "",
+    itemQuantity: "",
+    priceMode: "retail",
+    discount: "",
+    paymentMethod: "pix",
+    paymentAmount: "",
+  };
+
+  const [products, setProducts] = useState<Product[]>(initProducts);
+  const [sales, setSales] = useState<Sale[]>([]);
   const [formState, setFormState] = useState<SaleFormState>(defaultSaleForm);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -145,29 +143,28 @@ export function SalesContent() {
   const [statusFilter, setStatusFilter] = useState<"all" | SaleStatus>("all");
 
   const activeCustomers = useMemo(
-    () => initialCustomers.filter((customer) => customer.status === "active"),
-    [],
+    () => customers.filter((customer) => customer.status === "active"),
+    [customers],
   );
   const activeProducts = useMemo(
     () => products.filter((product) => product.status === "active"),
     [products],
   );
   const openCashSessions = useMemo(
-    () => initialCashSessions.filter((session) => session.status === "open"),
-    [],
+    () => cashSessions.filter((session) => session.status === "open"),
+    [cashSessions],
   );
   const customerById = useMemo(
-    () => new Map(initialCustomers.map((customer) => [customer.id, customer])),
-    [],
+    () => new Map(customers.map((customer) => [customer.id, customer])),
+    [customers],
   );
   const productById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
     [products],
   );
   const registerById = useMemo(
-    () =>
-      new Map(initialCashRegisters.map((cashRegister) => [cashRegister.id, cashRegister])),
-    [],
+    () => new Map(cashRegisters.map((cashRegister) => [cashRegister.id, cashRegister])),
+    [cashRegisters],
   );
   const selectedSale =
     sales.find((sale) => sale.id === selectedSaleId) ?? null;
@@ -231,7 +228,7 @@ export function SalesContent() {
       cashSessionId: defaultSaleForm.cashSessionId,
       operator: defaultSaleForm.operator,
       notes: "",
-      createdAt: "20/05/2026 agora",
+      createdAt: new Date().toLocaleString("pt-BR"),
     });
 
     setSales((current) => [sale, ...current]);
@@ -345,15 +342,13 @@ export function SalesContent() {
     );
   }
 
-  function handleFinishSale() {
-    if (!selectedSale) {
-      return;
-    }
+  async function handleFinishSale() {
+    if (!selectedSale) return;
 
     const result = finishSale({
       sale: selectedSale,
       products,
-      finishedAt: "20/05/2026 agora",
+      finishedAt: new Date().toLocaleString("pt-BR"),
     });
 
     if (!result.ok) {
@@ -363,11 +358,11 @@ export function SalesContent() {
 
     setProducts(result.products);
     setSales((current) =>
-      current.map((sale) =>
-        sale.id === result.sale.id ? result.sale : sale,
-      ),
+      current.map((sale) => (sale.id === result.sale.id ? result.sale : sale)),
     );
     closeSaleModal();
+
+    await persistFinishedSale(result.sale);
   }
 
   function handleCancelSale() {
@@ -378,7 +373,7 @@ export function SalesContent() {
     setSales((current) =>
       current.map((sale) =>
         sale.id === selectedSale.id
-          ? cancelSale(sale, "20/05/2026 agora")
+          ? cancelSale(sale, new Date().toLocaleString("pt-BR"))
           : sale,
       ),
     );
@@ -587,7 +582,7 @@ function SaleBuilderModal({
   sale: Sale | null;
   formState: SaleFormState;
   errors: string[];
-  customers: typeof initialCustomers;
+  customers: Customer[];
   products: Product[];
   productById: Map<string, Product>;
   openCashSessions: CashSession[];
