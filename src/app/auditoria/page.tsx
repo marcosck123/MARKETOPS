@@ -1,10 +1,5 @@
-import { AuditContent } from "@/components/audit/audit-content";
-import { AdminShell } from "@/components/layout/admin-shell";
+import { redirect } from "next/navigation";
 
 export default function AuditPage() {
-  return (
-    <AdminShell>
-      <AuditContent />
-    </AdminShell>
-  );
+  redirect("/admin/auditoria");
 }

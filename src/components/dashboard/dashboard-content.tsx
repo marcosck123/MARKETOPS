@@ -3,36 +3,90 @@ import { MetricCard } from "@/components/dashboard/metric-card";
 import { DataTable } from "@/components/shared/data-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import {
-  lowStockProducts,
-  metricCards,
-  recentSales,
-  salesByDay,
-} from "@/lib/mock-data";
 
-export function DashboardContent() {
+type RecentSale = {
+  code: string;
+  operatorName: string;
+  cashRegisterName: string;
+  total: string;
+  finishedAt: string;
+};
+
+type ActiveSession = {
+  id: string;
+  cashRegisterName: string;
+  operatorName: string;
+};
+
+type LowStockProduct = {
+  name: string;
+  sku: string;
+  current: number;
+  minimum: number;
+};
+
+type DashboardProps = {
+  faturamentoHoje: string;
+  pedidosHoje: number;
+  ticketMedio: string;
+  caixasAbertos: number;
+  salesByDay: { label: string; value: number }[];
+  recentSales: RecentSale[];
+  activeSessions: ActiveSession[];
+  lowStockProducts: LowStockProduct[];
+};
+
+export function DashboardContent({
+  faturamentoHoje,
+  pedidosHoje,
+  ticketMedio,
+  caixasAbertos,
+  salesByDay,
+  recentSales,
+  activeSessions,
+  lowStockProducts,
+}: DashboardProps) {
   return (
     <>
       <PageHeader
         eyebrow="Visao administrativa"
         title="Dashboard operacional"
-        action={
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Dados mockados do MVP 1
-          </div>
-        }
       />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {metricCards.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
+        <MetricCard
+          label="Faturamento hoje"
+          value={faturamentoHoje}
+          helper="Vendas finalizadas no dia"
+          trend={pedidosHoje > 0 ? "Ativo" : "Sem vendas"}
+          tone="emerald"
+        />
+        <MetricCard
+          label="Pedidos hoje"
+          value={String(pedidosHoje)}
+          helper="Operacoes finalizadas no PDV"
+          trend={pedidosHoje > 0 ? `${pedidosHoje} venda${pedidosHoje !== 1 ? "s" : ""}` : "—"}
+          tone="blue"
+        />
+        <MetricCard
+          label="Ticket medio"
+          value={ticketMedio}
+          helper="Media por venda finalizada hoje"
+          trend={pedidosHoje > 0 ? "Calculado" : "—"}
+          tone="slate"
+        />
+        <MetricCard
+          label="Caixas abertos"
+          value={String(caixasAbertos)}
+          helper="Sessoes de caixa ativas agora"
+          trend={caixasAbertos > 0 ? "Em operacao" : "Nenhum"}
+          tone="amber"
+        />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <DashboardChartCard
-          title="Faturamento dos ultimos dias"
+          title="Faturamento dos ultimos 7 dias"
           subtitle="Resumo visual para acompanhar o ritmo da operacao"
           data={salesByDay}
         />
@@ -44,25 +98,38 @@ export function DashboardContent() {
                 Caixas ativos
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Situacao dos terminais em operacao
+                Sessoes abertas agora
               </p>
             </div>
-            <StatusBadge label="3 abertos" tone="success" />
+            <StatusBadge
+              label={`${caixasAbertos} aberto${caixasAbertos !== 1 ? "s" : ""}`}
+              tone={caixasAbertos > 0 ? "success" : "default"}
+            />
           </div>
 
           <div className="mt-5 space-y-3">
-            {["Caixa 01", "Caixa 02", "Caixa 04"].map((cashier, index) => (
-              <div
-                key={cashier}
-                className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">{cashier}</p>
-                  <p className="text-sm text-slate-500">Operador {index + 1}</p>
+            {activeSessions.length === 0 ? (
+              <p className="py-4 text-center text-sm text-slate-400">
+                Nenhum caixa aberto no momento.
+              </p>
+            ) : (
+              activeSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3"
+                >
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {session.cashRegisterName}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {session.operatorName}
+                    </p>
+                  </div>
+                  <StatusBadge label="Aberto" tone="success" />
                 </div>
-                <StatusBadge label="Aberto" tone="success" />
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -70,34 +137,54 @@ export function DashboardContent() {
       <section className="grid gap-4 xl:grid-cols-2">
         <DataTable
           title="Ultimas vendas"
-          columns={["Venda", "Cliente", "Caixa", "Total", "Status"]}
-          rows={recentSales.map((sale) => [
-            sale.id,
-            sale.customer,
-            sale.cashier,
-            sale.total,
-            <StatusBadge
-              key={sale.id}
-              label={sale.status}
-              tone={sale.status === "Finalizada" ? "success" : "warning"}
-            />,
-          ])}
+          columns={["Venda", "Operador", "Caixa", "Data/Hora", "Total"]}
+          rows={
+            recentSales.length === 0
+              ? [[
+                  <span key="empty" className="text-slate-400">
+                    Nenhuma venda registrada.
+                  </span>,
+                  "", "", "", "",
+                ]]
+              : recentSales.map((sale) => [
+                  <span key={sale.code} className="font-mono text-xs font-semibold text-slate-900">
+                    {sale.code}
+                  </span>,
+                  sale.operatorName,
+                  sale.cashRegisterName,
+                  sale.finishedAt,
+                  <span key={`total-${sale.code}`} className="font-semibold tabular-nums text-slate-900">
+                    {sale.total}
+                  </span>,
+                ])
+          }
         />
 
         <DataTable
           title="Produtos com estoque baixo"
           columns={["Produto", "SKU", "Atual", "Minimo", "Status"]}
-          rows={lowStockProducts.map((product) => [
-            product.name,
-            product.sku,
-            product.current,
-            product.minimum,
-            <StatusBadge
-              key={product.sku}
-              label={product.current <= 5 ? "Critico" : "Baixo"}
-              tone={product.current <= 5 ? "danger" : "warning"}
-            />,
-          ])}
+          rows={
+            lowStockProducts.length === 0
+              ? [[
+                  <span key="empty" className="text-slate-400">
+                    Nenhum produto com estoque baixo.
+                  </span>,
+                  "", "", "", "",
+                ]]
+              : lowStockProducts.map((product) => [
+                  product.name,
+                  <span key={product.sku} className="font-mono text-xs">
+                    {product.sku}
+                  </span>,
+                  product.current,
+                  product.minimum,
+                  <StatusBadge
+                    key={`status-${product.sku}`}
+                    label={product.current === 0 ? "Zerado" : product.current <= 5 ? "Critico" : "Baixo"}
+                    tone={product.current === 0 ? "danger" : product.current <= 5 ? "danger" : "warning"}
+                  />,
+                ])
+          }
         />
       </section>
     </>

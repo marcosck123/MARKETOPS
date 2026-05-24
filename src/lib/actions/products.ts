@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 
 type ProductUnit =
   | "unidade"
@@ -90,6 +91,14 @@ export async function createProduct(
         minimumStock: data.minimumStock,
       },
     });
+    await createAuditLog({
+      module: "catalog",
+      action: "created",
+      actorName: "Sistema",
+      target: "Produto",
+      targetId: id,
+      description: `Produto "${data.name.trim()}" criado (SKU: ${data.sku.trim()})`,
+    });
     revalidatePath("/produtos");
     return { success: true, data: { id } };
   } catch {
@@ -133,6 +142,14 @@ export async function updateProduct(
         minimumStock: data.minimumStock,
       },
     });
+    await createAuditLog({
+      module: "catalog",
+      action: "updated",
+      actorName: "Sistema",
+      target: "Produto",
+      targetId: id,
+      description: `Produto "${data.name.trim()}" atualizado`,
+    });
     revalidatePath("/produtos");
     return { success: true, data: undefined };
   } catch {
@@ -150,9 +167,19 @@ export async function toggleProductStatus(id: string): Promise<ActionResult> {
     const product = await db.product.findUnique({ where: { id } });
     if (!product) return { success: false, error: "Produto não encontrado." };
 
+    const newStatus = product.status === "active" ? "inactive" : "active";
     await db.product.update({
       where: { id },
-      data: { status: product.status === "active" ? "inactive" : "active" },
+      data: { status: newStatus },
+    });
+    await createAuditLog({
+      module: "catalog",
+      action: "updated",
+      severity: newStatus === "inactive" ? "warning" : "info",
+      actorName: "Sistema",
+      target: "Produto",
+      targetId: id,
+      description: `Produto "${product.name}" ${newStatus === "active" ? "ativado" : "desativado"}`,
     });
     revalidatePath("/produtos");
     return { success: true, data: undefined };

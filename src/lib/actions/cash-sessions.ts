@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -45,6 +46,16 @@ export async function openCashSession(params: {
     const session = await db.cashSession.create({
       data: { cashRegisterId, operatorId, operatorName, status: "open", openingBalance },
     });
+    await createAuditLog({
+      module: "cash",
+      action: "opened",
+      actorId: operatorId,
+      actorName: operatorName,
+      actorRole: "operator",
+      target: "SessaoCaixa",
+      targetId: session.id,
+      description: `Sessão de caixa aberta por ${operatorName} — saldo inicial R$ ${openingBalance.toFixed(2)}`,
+    });
     revalidatePath("/caixas");
     revalidatePath("/pdv");
     return { success: true, data: { id: session.id } };
@@ -67,6 +78,16 @@ export async function closeCashSession(params: {
     await db.cashSession.update({
       where: { id: sessionId },
       data: { status: "closed", closedAt: new Date(), closingBalance },
+    });
+    await createAuditLog({
+      module: "cash",
+      action: "closed",
+      actorId: session.operatorId,
+      actorName: session.operatorName,
+      actorRole: "operator",
+      target: "SessaoCaixa",
+      targetId: sessionId,
+      description: `Sessão de caixa fechada por ${session.operatorName} — saldo final R$ ${closingBalance.toFixed(2)}`,
     });
     revalidatePath("/caixas");
     revalidatePath("/pdv");

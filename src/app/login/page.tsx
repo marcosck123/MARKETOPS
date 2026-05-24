@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Lock, Mail, ShoppingCart } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,64 +35,94 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            MARKETOPS
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">Painel administrativo</p>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4">
+      {/* Background blobs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-emerald-600/20 blur-[120px]" />
+        <div className="absolute -bottom-40 -right-24 h-[550px] w-[550px] rounded-full bg-blue-700/20 blur-[140px]" />
+        <div className="absolute left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-emerald-900/30 blur-[100px]" />
+      </div>
+
+      <div className="relative w-full max-w-sm">
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm">
+            <ShoppingCart className="h-9 w-9 text-emerald-400" strokeWidth={1.5} />
+          </div>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold tracking-widest text-white">
+              MARKETOPS
+            </h1>
+            <p className="mt-1 text-xs font-medium uppercase tracking-widest text-emerald-400/80">
+              Controle total da operacao ao caixa
+            </p>
+          </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-lg border border-slate-800 bg-slate-900 p-6 shadow-xl"
-        >
-          <h2 className="mb-5 text-base font-semibold text-white">
-            Acesso ao sistema
-          </h2>
-
-          <div className="space-y-4">
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-300">
-                Email
-              </span>
+        {/* Form card */}
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-md">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-400">
+                <Mail className="h-4 w-4" />
+              </div>
               <input
                 name="email"
                 type="email"
                 required
                 autoFocus
                 autoComplete="email"
-                placeholder="admin@marketops.local"
-                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="EMAIL"
+                className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-11 pr-4 text-sm font-medium uppercase tracking-widest text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500/60 focus:bg-white/10 focus:ring-1 focus:ring-emerald-500/40"
               />
-            </label>
+            </div>
 
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-300">
-                Senha
-              </span>
+            {/* Senha */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-400">
+                <Lock className="h-4 w-4" />
+              </div>
               <input
                 name="password"
                 type="password"
                 required
                 autoComplete="current-password"
-                placeholder="••••••••"
-                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="SENHA"
+                className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-11 pr-4 text-sm font-medium uppercase tracking-widest text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500/60 focus:bg-white/10 focus:ring-1 focus:ring-emerald-500/40"
               />
-            </label>
+            </div>
+
+            {error && (
+              <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-center text-xs font-medium text-red-400">
+                {error}
+              </p>
+            )}
+
+            {/* Botao */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 h-12 w-full rounded-xl bg-emerald-500 text-sm font-bold uppercase tracking-widest text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-60"
+            >
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+          </form>
+
+          <div className="mt-5 text-center">
+            <button
+              type="button"
+              className="text-xs text-slate-400 transition hover:text-emerald-400"
+            >
+              Esqueceu a senha?
+            </button>
           </div>
+        </div>
 
-          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-5 h-10 w-full rounded-lg bg-emerald-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
+        {/* Footer */}
+        <p className="mt-6 text-center text-xs text-slate-600">
+          MARKETOPS &copy; {new Date().getFullYear()} — Acesso restrito
+        </p>
       </div>
     </main>
   );

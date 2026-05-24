@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { type Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/actions/audit-log";
 import type { Sale } from "@/lib/sale-data";
 
 type ActionResult<T = void> =
@@ -74,6 +75,16 @@ export async function persistFinishedSale(
       return { id: newSale.id, code };
     });
 
+    await createAuditLog({
+      module: "sale",
+      action: "approved",
+      actorId: operatorId,
+      actorName: sale.operator,
+      actorRole: "operator",
+      target: "Venda",
+      targetId: result.id,
+      description: `Venda ${result.code} finalizada — ${sale.items.length} item(ns) — total R$ ${sale.total.toFixed(2)}`,
+    });
     return { success: true, data: result };
   } catch {
     return { success: false, error: "Erro ao persistir venda." };
