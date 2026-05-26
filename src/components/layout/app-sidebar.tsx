@@ -6,6 +6,8 @@ import {
   BarChart3,
   Boxes,
   Cable,
+  ChevronLeft,
+  ChevronRight,
   ClipboardCheck,
   ClipboardList,
   CreditCard,
@@ -28,6 +30,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 
 type NavItem = {
   label: string;
@@ -67,11 +70,16 @@ const navigationItems: NavItem[] = [
 const roleLabels: Record<string, string> = {
   admin: "Administrador",
   operator: "Operador",
+  supervisor: "Supervisor",
+  estoque: "Estoque",
+  financeiro: "Financeiro",
 };
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [collapsed, setCollapsed] = useState(false);
+
   const user = session?.user;
   const userInitial =
     user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U";
@@ -83,43 +91,72 @@ export function AppSidebar() {
   );
 
   return (
-    <aside className="hidden min-h-screen border-r border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-white lg:flex lg:flex-col">
-      <div className="border-b border-slate-200 px-6 py-6 dark:border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-500 text-lg font-bold text-slate-950">
+    <aside
+      className={`hidden min-h-screen flex-col border-r border-stone-200 bg-white text-stone-800 transition-all duration-300 dark:border-stone-800 dark:bg-stone-950 dark:text-white lg:flex ${
+        collapsed ? "w-14" : "w-52"
+      }`}
+    >
+      {/* Logo */}
+      <div className={`flex items-center border-b border-stone-200 dark:border-stone-800 ${collapsed ? "justify-center px-3 py-5" : "justify-between px-4 py-5"}`}>
+        {!collapsed && (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-amber-400 text-base font-bold text-stone-950">
+              M
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold tracking-wide text-stone-900 dark:text-white" style={{ fontFamily: "var(--font-syne)" }}>
+                MARKETOPS
+              </p>
+              <p className="truncate text-xs text-stone-500 dark:text-stone-400">Operacao ao caixa</p>
+            </div>
+          </div>
+        )}
+        {collapsed && (
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400 text-base font-bold text-stone-950">
             M
           </div>
-          <div>
-            <p className="text-lg font-semibold text-slate-900 dark:text-white">MARKETOPS</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Operacao ao caixa</p>
-          </div>
-        </div>
+        )}
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            className="shrink-0 rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-900 dark:hover:text-stone-300"
+            title="Recolher menu"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-5">
+      {/* Expand button when collapsed */}
+      {collapsed && (
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          className="mx-auto mt-2 rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-900 dark:hover:text-stone-300"
+          title="Expandir menu"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      )}
+
+      {/* Nav */}
+      <nav className={`flex-1 space-y-0.5 overflow-y-auto py-4 ${collapsed ? "px-2" : "px-3"}`}>
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.href === pathname;
-          const content = (
-            <>
-              <span className="flex items-center gap-3">
-                <Icon className="size-4" aria-hidden={true} />
-                {item.label}
-              </span>
-              {isActive ? (
-                <span className="h-2 w-2 rounded-full bg-white dark:bg-slate-950" />
-              ) : null}
-            </>
-          );
 
           if (!item.href) {
             return (
               <span
                 key={item.label}
-                className="flex cursor-not-allowed items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-500"
-                title="Modulo planejado para as proximas etapas"
+                className={`flex cursor-not-allowed items-center rounded-lg py-2 text-sm font-medium text-stone-400 dark:text-stone-600 ${
+                  collapsed ? "justify-center px-2" : "gap-3 px-3"
+                }`}
+                title={collapsed ? item.label : "Modulo planejado para as proximas etapas"}
               >
-                {content}
+                <Icon className="size-4 shrink-0" aria-hidden={true} />
+                {!collapsed && <span className="truncate">{item.label}</span>}
               </span>
             );
           }
@@ -128,50 +165,57 @@ export function AppSidebar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+              title={collapsed ? item.label : undefined}
+              className={`flex items-center rounded-lg py-2 text-sm font-medium transition-colors ${
+                collapsed ? "justify-center px-2" : "gap-3 px-3"
+              } ${
                 isActive
-                  ? "bg-emerald-500 text-slate-950"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                  ? "bg-amber-400 text-stone-950"
+                  : "text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-white"
               }`}
             >
-              {content}
+              <Icon className="size-4 shrink-0" aria-hidden={true} />
+              {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-4 space-y-3 dark:border-slate-800">
+      {/* User card */}
+      <div className={`border-t border-stone-200 dark:border-stone-800 ${collapsed ? "p-2" : "p-3"}`}>
         {user && (
-          <div className="flex items-center gap-3 rounded-lg bg-slate-100 px-3 py-2.5 dark:bg-slate-900">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-sm font-bold text-slate-950">
+          <div className={`flex items-center rounded-lg bg-stone-100 dark:bg-stone-900 ${
+            collapsed ? "justify-center p-2" : "gap-3 px-3 py-2.5"
+          }`}>
+            <div
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-amber-400 text-sm font-bold text-stone-950"
+              title={collapsed ? userName : undefined}
+            >
               {userInitial}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
-                {userName}
-              </p>
-              {userRoleLabel && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">{userRoleLabel}</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => void signOut({ callbackUrl: "/login" })}
-              className="shrink-0 rounded-md p-1.5 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-              title="Sair"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              <span className="sr-only">Sair</span>
-            </button>
+            {!collapsed && (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-stone-900 dark:text-white">
+                    {userName}
+                  </p>
+                  {userRoleLabel && (
+                    <p className="text-xs text-stone-500 dark:text-stone-400">{userRoleLabel}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void signOut({ callbackUrl: "/login" })}
+                  className="shrink-0 rounded-md p-1.5 text-stone-500 transition hover:bg-stone-200 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
+                  title="Sair"
+                >
+                  <LogOut className="size-4" aria-hidden="true" />
+                  <span className="sr-only">Sair</span>
+                </button>
+              </>
+            )}
           </div>
         )}
-
-        <div className="rounded-lg bg-slate-100 p-4 dark:bg-slate-900">
-          <p className="text-sm font-medium text-slate-900 dark:text-white">MVP 2</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            Persistencia real com Prisma, autenticacao e controle de acesso.
-          </p>
-        </div>
       </div>
     </aside>
   );

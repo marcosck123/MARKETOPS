@@ -3,12 +3,36 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Lock, Mail, ShoppingCart } from "lucide-react";
+import { Lock, Mail, ShoppingCart, TrendingUp, Boxes, BadgeDollarSign } from "lucide-react";
+
+const CAROUSEL_ITEMS = [
+  {
+    icon: ShoppingCart,
+    title: "PDV Inteligente",
+    description: "Frente de caixa ágil com suporte a múltiplos operadores e sessões simultâneas.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Financeiro em tempo real",
+    description: "Acompanhe faturamento, ticket médio e desempenho por caixa sem esperar relatórios.",
+  },
+  {
+    icon: Boxes,
+    title: "Controle de estoque",
+    description: "Ajuste de inventário, alertas de reposição e rastreabilidade por produto.",
+  },
+  {
+    icon: BadgeDollarSign,
+    title: "Auditoria completa",
+    description: "Toda ação registrada: abertura de caixas, vendas, ajustes e acesso ao sistema.",
+  },
+];
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,76 +58,138 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4">
-      {/* Background blobs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-emerald-600/20 blur-[120px]" />
-        <div className="absolute -bottom-40 -right-24 h-[550px] w-[550px] rounded-full bg-blue-700/20 blur-[140px]" />
-        <div className="absolute left-1/2 top-1/3 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-emerald-900/30 blur-[100px]" />
-      </div>
+  const current = CAROUSEL_ITEMS[carouselIndex];
+  const Icon = current.icon;
 
-      <div className="relative w-full max-w-sm">
+  return (
+    <main className="flex min-h-screen">
+      {/* Left panel — dark brand */}
+      <div className="hidden w-5/12 flex-col justify-between bg-stone-950 p-12 lg:flex">
         {/* Logo */}
-        <div className="mb-8 flex flex-col items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm">
-            <ShoppingCart className="h-9 w-9 text-emerald-400" strokeWidth={1.5} />
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 text-lg font-bold text-stone-950">
+            M
           </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-widest text-white">
-              MARKETOPS
-            </h1>
-            <p className="mt-1 text-xs font-medium uppercase tracking-widest text-emerald-400/80">
-              Controle total da operacao ao caixa
+          <span
+            className="text-lg font-bold tracking-wide text-white"
+            style={{ fontFamily: "var(--font-syne)" }}
+          >
+            MARKETOPS
+          </span>
+        </div>
+
+        {/* Feature carousel */}
+        <div className="space-y-8">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl border border-stone-800 bg-stone-900">
+            <Icon className="h-8 w-8 text-amber-400" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h2
+              className="text-2xl font-bold text-white"
+              style={{ fontFamily: "var(--font-syne)" }}
+            >
+              {current.title}
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-stone-400">
+              {current.description}
             </p>
+          </div>
+
+          {/* Dots */}
+          <div className="flex gap-2">
+            {CAROUSEL_ITEMS.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setCarouselIndex(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === carouselIndex
+                    ? "w-8 bg-amber-400"
+                    : "w-4 bg-stone-700 hover:bg-stone-600"
+                }`}
+                aria-label={`Ver item ${i + 1}`}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Form card */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-md">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-xs text-stone-600">
+          MARKETOPS &copy; {new Date().getFullYear()} — Acesso restrito
+        </p>
+      </div>
+
+      {/* Right panel — light form */}
+      <div className="flex flex-1 items-center justify-center bg-stone-50 px-6 py-12 dark:bg-stone-900">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-amber-400 text-base font-bold text-stone-950">
+              M
+            </div>
+            <span
+              className="text-base font-bold tracking-wide text-stone-900 dark:text-white"
+              style={{ fontFamily: "var(--font-syne)" }}
+            >
+              MARKETOPS
+            </span>
+          </div>
+
+          <h1
+            className="text-2xl font-bold text-stone-900 dark:text-white"
+            style={{ fontFamily: "var(--font-syne)" }}
+          >
+            Bem-vindo de volta
+          </h1>
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+            Faça login para acessar o sistema.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             {/* Email */}
             <div className="group relative">
-              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-400">
+              <label htmlFor="email" className="sr-only">Email</label>
+              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 transition group-focus-within:text-amber-500">
                 <Mail className="h-4 w-4" />
               </div>
               <input
+                id="email"
                 name="email"
                 type="email"
                 required
                 autoFocus
                 autoComplete="email"
-                placeholder="EMAIL"
-                className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-11 pr-4 text-sm font-medium uppercase tracking-widest text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500/60 focus:bg-white/10 focus:ring-1 focus:ring-emerald-500/40"
+                placeholder="seu@email.com"
+                className="h-12 w-full rounded-xl border border-stone-200 bg-white pl-11 pr-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:border-stone-700 dark:bg-stone-800 dark:text-white dark:focus:ring-amber-900/30"
               />
             </div>
 
             {/* Senha */}
             <div className="group relative">
-              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-400">
+              <label htmlFor="password" className="sr-only">Senha</label>
+              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 transition group-focus-within:text-amber-500">
                 <Lock className="h-4 w-4" />
               </div>
               <input
+                id="password"
                 name="password"
                 type="password"
                 required
                 autoComplete="current-password"
-                placeholder="SENHA"
-                className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-11 pr-4 text-sm font-medium uppercase tracking-widest text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500/60 focus:bg-white/10 focus:ring-1 focus:ring-emerald-500/40"
+                placeholder="Senha"
+                className="h-12 w-full rounded-xl border border-stone-200 bg-white pl-11 pr-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:border-stone-700 dark:bg-stone-800 dark:text-white dark:focus:ring-amber-900/30"
               />
             </div>
 
             {error && (
-              <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-center text-xs font-medium text-red-400">
+              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-xs font-medium text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
                 {error}
               </p>
             )}
 
-            {/* Botao */}
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 h-12 w-full rounded-xl bg-emerald-500 text-sm font-bold uppercase tracking-widest text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl bg-stone-900 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 active:scale-[0.98] disabled:opacity-60 dark:bg-amber-400 dark:text-stone-950 dark:hover:bg-amber-300"
             >
               {loading ? "Entrando..." : "Entrar"}
             </button>
@@ -112,17 +198,12 @@ export default function LoginPage() {
           <div className="mt-5 text-center">
             <button
               type="button"
-              className="text-xs text-slate-400 transition hover:text-emerald-400"
+              className="text-xs text-stone-400 transition hover:text-amber-600"
             >
               Esqueceu a senha?
             </button>
           </div>
         </div>
-
-        {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-600">
-          MARKETOPS &copy; {new Date().getFullYear()} — Acesso restrito
-        </p>
       </div>
     </main>
   );

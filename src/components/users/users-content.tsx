@@ -89,7 +89,7 @@ export function UsersContent({ users, currentUserId }: Props) {
         title="Usuários"
         description="Gerencie operadores, supervisores e administradores do sistema."
         action={
-          <Button onClick={() => { setShowCreate(true); setError(""); }} className="bg-slate-950 text-white hover:bg-slate-800">
+          <Button onClick={() => { setShowCreate(true); setError(""); }} className="bg-stone-950 text-white hover:bg-stone-800">
             <Plus className="size-4" aria-hidden="true" />
             Novo usuário
           </Button>
@@ -97,16 +97,16 @@ export function UsersContent({ users, currentUserId }: Props) {
       />
 
       {users.length === 0 ? (
-        <div className="grid min-h-72 place-items-center rounded-lg border border-slate-200 bg-white">
+        <div className="grid min-h-72 place-items-center rounded-lg border border-stone-200 bg-white">
           <div className="text-center">
-            <Users className="mx-auto size-10 text-slate-300" />
-            <p className="mt-3 text-sm font-medium text-slate-500">Nenhum usuário cadastrado</p>
+            <Users className="mx-auto size-10 text-stone-300" />
+            <p className="mt-3 text-sm font-medium text-stone-500">Nenhum usuário cadastrado</p>
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
           <table className="w-full border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-4 py-3 font-semibold">Nome / Email</th>
                 <th className="px-4 py-3 font-semibold">Cargo</th>
@@ -115,15 +115,15 @@ export function UsersContent({ users, currentUserId }: Props) {
                 <th className="px-4 py-3 font-semibold">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {users.map((user) => {
                 const badge = roleBadge[user.role] ?? { label: user.role, tone: "info" as const };
                 const isSelf = user.id === currentUserId;
                 return (
-                  <tr key={user.id} className="text-slate-700 hover:bg-slate-50">
+                  <tr key={user.id} className="text-stone-700 hover:bg-stone-50">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-950">{user.name ?? "—"}</p>
-                      <p className="text-xs text-slate-500">{user.email}</p>
+                      <p className="font-medium text-stone-950">{user.name ?? "—"}</p>
+                      <p className="text-xs text-stone-500">{user.email}</p>
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge label={badge.label} tone={badge.tone} />
@@ -134,7 +134,7 @@ export function UsersContent({ users, currentUserId }: Props) {
                         tone={user.active ? "success" : "danger"}
                       />
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-500">{user.createdAt}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-stone-500">{user.createdAt}</td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="icon" onClick={() => openEdit(user)} title="Editar">
@@ -151,7 +151,7 @@ export function UsersContent({ users, currentUserId }: Props) {
                           {user.active ? (
                             <UserX className="size-4 text-red-500" aria-hidden="true" />
                           ) : (
-                            <UserCheck className="size-4 text-emerald-500" aria-hidden="true" />
+                            <UserCheck className="size-4 text-amber-500" aria-hidden="true" />
                           )}
                           <span className="sr-only">{user.active ? "Desativar" : "Ativar"}</span>
                         </Button>
@@ -166,32 +166,32 @@ export function UsersContent({ users, currentUserId }: Props) {
       )}
 
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-950">Novo usuário</h2>
+            <h2 className="text-lg font-semibold text-stone-950">Novo usuário</h2>
             <form onSubmit={(e) => void handleCreate(e)} className="mt-4 space-y-4">
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Nome</span>
-                <input value={createForm.name} onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" placeholder="Nome completo (opcional)" />
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Nome</span>
+                <input value={createForm.name} onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" placeholder="Nome completo (opcional)" />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Email <span className="text-red-500">*</span></span>
-                <input required type="email" value={createForm.email} onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" placeholder="email@exemplo.com" />
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Email <span className="text-red-500">*</span></span>
+                <input required type="email" value={createForm.email} onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" placeholder="email@exemplo.com" />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Senha <span className="text-red-500">*</span></span>
-                <input required type="password" value={createForm.password} onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" placeholder="Mínimo 6 caracteres" />
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Senha <span className="text-red-500">*</span></span>
+                <input required type="password" value={createForm.password} onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" placeholder="Mínimo 6 caracteres" />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Cargo <span className="text-red-500">*</span></span>
-                <select value={createForm.role} onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Cargo <span className="text-red-500">*</span></span>
+                <select value={createForm.role} onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
                   {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </label>
               {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => { setShowCreate(false); setError(""); }}>Cancelar</Button>
-                <Button type="submit" disabled={loading} className="bg-slate-950 text-white hover:bg-slate-800">{loading ? "Criando..." : "Criar usuário"}</Button>
+                <Button type="submit" disabled={loading} className="bg-stone-950 text-white hover:bg-stone-800">{loading ? "Criando..." : "Criar usuário"}</Button>
               </div>
             </form>
           </div>
@@ -199,25 +199,25 @@ export function UsersContent({ users, currentUserId }: Props) {
       )}
 
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-950">Editar usuário</h2>
-            <p className="mt-1 text-sm text-slate-500">{editingUser.email}</p>
+            <h2 className="text-lg font-semibold text-stone-950">Editar usuário</h2>
+            <p className="mt-1 text-sm text-stone-500">{editingUser.email}</p>
             <form onSubmit={(e) => void handleEdit(e)} className="mt-4 space-y-4">
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Nome</span>
-                <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" placeholder="Nome completo (opcional)" />
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Nome</span>
+                <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" placeholder="Nome completo (opcional)" />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-700">Cargo</span>
-                <select value={editForm.role} onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
+                <span className="mb-1.5 block text-sm font-medium text-stone-700">Cargo</span>
+                <select value={editForm.role} onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))} className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
                   {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </label>
               {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => { setEditingUser(null); setError(""); }}>Cancelar</Button>
-                <Button type="submit" disabled={loading} className="bg-slate-950 text-white hover:bg-slate-800">{loading ? "Salvando..." : "Salvar"}</Button>
+                <Button type="submit" disabled={loading} className="bg-stone-950 text-white hover:bg-stone-800">{loading ? "Salvando..." : "Salvar"}</Button>
               </div>
             </form>
           </div>

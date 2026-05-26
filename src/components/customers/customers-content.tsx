@@ -75,9 +75,9 @@ function formatZip(value: string): string {
   return d;
 }
 
-const INPUT = "h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:disabled:bg-slate-900 dark:disabled:text-slate-600";
-const LABEL = "mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400";
-const SECTION_TITLE = "mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400";
+const INPUT = "h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 disabled:bg-stone-50 disabled:text-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:focus:border-amber-400 dark:disabled:bg-stone-900 dark:disabled:text-stone-600";
+const LABEL = "mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400";
+const SECTION_TITLE = "mb-3 text-xs font-semibold uppercase tracking-wider text-stone-400";
 
 export function CustomersContent({ customers: propCustomers }: Props) {
   const router = useRouter();
@@ -251,32 +251,32 @@ export function CustomersContent({ customers: propCustomers }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Clientes</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Clientes</h1>
+          <p className="mt-1 text-sm text-stone-500">
             Cadastro de clientes PF e PJ para emissão de NF-e
           </p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-500 text-slate-950 hover:bg-emerald-400">
+        <Button onClick={openCreate} className="bg-amber-400 text-stone-950 hover:bg-amber-300">
           <Plus className="size-4" aria-hidden="true" />
           Novo cliente
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
         <input
           type="text"
           placeholder="Buscar por nome ou documento..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-4 text-sm text-slate-800 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="h-10 w-full rounded-lg border border-stone-200 bg-white pl-9 pr-4 text-sm text-stone-800 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
         />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-800">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900">
+            <tr className="border-b border-stone-100 bg-stone-50 text-left text-xs font-medium uppercase tracking-wide text-stone-500 dark:border-stone-700 dark:bg-stone-900">
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Documento</th>
               <th className="px-4 py-3">Nome</th>
@@ -286,35 +286,35 @@ export function CustomersContent({ customers: propCustomers }: Props) {
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-700">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-stone-400">
                   {customers.length === 0 ? "Nenhum cliente cadastrado." : "Nenhum resultado para a busca."}
                 </td>
               </tr>
             ) : (
               filtered.map((customer) => (
-                <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                <tr key={customer.id} className="hover:bg-stone-50 dark:hover:bg-stone-700/50">
                   <td className="px-4 py-3">
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold uppercase text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    <span className="rounded-md bg-stone-100 px-2 py-0.5 text-xs font-semibold uppercase text-stone-600 dark:bg-stone-700 dark:text-stone-300">
                       {customer.type}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                  <td className="px-4 py-3 font-mono text-xs text-stone-700 dark:text-stone-300">
                     {formatDocument(customer.type, customer.document)}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900 dark:text-slate-100">{customer.name}</p>
+                    <p className="font-medium text-stone-900 dark:text-stone-100">{customer.name}</p>
                     {customer.tradeName && (
-                      <p className="text-xs text-slate-400">{customer.tradeName}</p>
+                      <p className="text-xs text-stone-400">{customer.tradeName}</p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-stone-500">
                     <p>{customer.email ?? "—"}</p>
-                    {customer.phone && <p className="text-xs text-slate-400">{customer.phone}</p>}
+                    {customer.phone && <p className="text-xs text-stone-400">{customer.phone}</p>}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-stone-500">
                     {customer.city
                       ? `${customer.city}${customer.state ? ` / ${customer.state}` : ""}`
                       : "—"}
@@ -325,8 +325,8 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                       onClick={() => void handleToggle(customer)}
                       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
                         customer.active
-                          ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                          : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400"
+                          ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                          : "bg-stone-100 text-stone-500 hover:bg-stone-200 dark:bg-stone-700 dark:text-stone-400"
                       }`}
                     >
                       {customer.active ? (
@@ -341,7 +341,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                     <button
                       type="button"
                       onClick={() => openEdit(customer)}
-                      className="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+                      className="rounded-md p-1.5 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-700"
                       title="Editar"
                     >
                       <Pencil className="size-4" aria-hidden="true" />
@@ -356,17 +356,17 @@ export function CustomersContent({ customers: propCustomers }: Props) {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/70 p-4 py-10">
-          <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl dark:bg-slate-900">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/70 p-4 py-10">
+          <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl dark:bg-stone-900">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4 dark:border-stone-700">
+              <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100">
                 {editingId ? "Editar cliente" : "Novo cliente"}
               </h2>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800"
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
@@ -383,7 +383,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                       {(["cpf", "cnpj"] as const).map((t) => (
                         <label
                           key={t}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 transition hover:border-emerald-400 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:border-slate-700 dark:has-[:checked]:bg-emerald-950/40"
+                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-4 py-2.5 transition hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 dark:border-stone-700 dark:has-[:checked]:bg-amber-950/40"
                         >
                           <input
                             type="radio"
@@ -391,10 +391,10 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                             value={t}
                             checked={form.type === t}
                             onChange={() => setForm((c) => ({ ...c, type: t, document: "" }))}
-                            className="accent-emerald-500"
+                            className="accent-amber-400"
                           />
-                          <span className="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">{t}</span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-sm font-bold uppercase text-stone-700 dark:text-stone-300">{t}</span>
+                          <span className="text-xs text-stone-400">
                             {t === "cpf" ? "Pessoa Física" : "Pessoa Jurídica"}
                           </span>
                         </label>
@@ -494,7 +494,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                           type="button"
                           onClick={() => void fetchCep()}
                           disabled={cepLoading}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition hover:text-emerald-600 disabled:opacity-40"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-stone-400 transition hover:text-amber-600 disabled:opacity-40"
                           title="Buscar endereço pelo CEP"
                         >
                           <MapPin className="size-4" aria-hidden="true" />
@@ -570,7 +570,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                       />
                     </label>
                     <div className="flex items-end">
-                      <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 transition hover:bg-slate-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:border-slate-700 dark:hover:bg-slate-800 dark:has-[:checked]:bg-emerald-950/40">
+                      <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2.5 transition hover:bg-stone-50 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 dark:border-stone-700 dark:hover:bg-stone-800 dark:has-[:checked]:bg-amber-950/40">
                         <input
                           type="checkbox"
                           checked={form.noComplement}
@@ -581,9 +581,9 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                               complement: e.target.checked ? "" : c.complement,
                             }))
                           }
-                          className="accent-emerald-500"
+                          className="accent-amber-400"
                         />
-                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Sem complemento</span>
+                        <span className="text-xs font-medium text-stone-600 dark:text-stone-400">Sem complemento</span>
                       </label>
                     </div>
                   </div>
@@ -606,7 +606,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                         />
                       </label>
                       <div className="flex items-end">
-                        <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 transition hover:bg-slate-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:border-slate-700 dark:hover:bg-slate-800 dark:has-[:checked]:bg-emerald-950/40">
+                        <label className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2.5 transition hover:bg-stone-50 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 dark:border-stone-700 dark:hover:bg-stone-800 dark:has-[:checked]:bg-amber-950/40">
                           <input
                             type="checkbox"
                             checked={form.ieIsento}
@@ -617,9 +617,9 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                                 ie: e.target.checked ? "" : c.ie,
                               }))
                             }
-                            className="accent-emerald-500"
+                            className="accent-amber-400"
                           />
-                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Contribuinte isento</span>
+                          <span className="text-xs font-medium text-stone-600 dark:text-stone-400">Contribuinte isento</span>
                         </label>
                       </div>
                     </div>
@@ -634,7 +634,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
               </div>
 
               {/* Footer */}
-              <div className="flex gap-2 border-t border-slate-200 px-6 py-4 dark:border-slate-700">
+              <div className="flex gap-2 border-t border-stone-200 px-6 py-4 dark:border-stone-700">
                 <Button
                   type="button"
                   variant="outline"
@@ -646,7 +646,7 @@ export function CustomersContent({ customers: propCustomers }: Props) {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+                  className="flex-1 bg-amber-400 text-stone-950 hover:bg-amber-300 disabled:opacity-50"
                 >
                   {loading ? "Salvando..." : editingId ? "Salvar alterações" : "Criar cliente"}
                 </Button>

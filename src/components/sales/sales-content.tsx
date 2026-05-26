@@ -393,7 +393,7 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
           <Button
             type="button"
             onClick={openNewSaleModal}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
           >
             <Plus className="size-4" aria-hidden="true" />
             Nova venda
@@ -430,14 +430,14 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
         <SummaryCard label="Em aberto" value={formatCurrency(pendingValue)} />
       </section>
 
-      <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+      <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <div className="flex gap-3">
-          <FileText className="mt-0.5 size-5 shrink-0 text-emerald-700" />
+          <FileText className="mt-0.5 size-5 shrink-0 text-amber-700" />
           <div>
-            <h2 className="text-sm font-semibold text-emerald-900">
+            <h2 className="text-sm font-semibold text-amber-900">
               Base para o PDV
             </h2>
-            <p className="mt-1 text-sm leading-6 text-emerald-800">
+            <p className="mt-1 text-sm leading-6 text-amber-800">
               Esta etapa valida regras de item, total, desconto, pagamento e
               estoque. A tela de PDV deve reaproveitar este motor.
             </p>
@@ -445,13 +445,13 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 xl:flex-row xl:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Vendas registradas
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Acompanhe vendas abertas, finalizadas e canceladas.
             </p>
           </div>
@@ -459,14 +459,14 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
           <div className="grid gap-2 sm:grid-cols-[1fr_160px]">
             <div className="relative">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar venda"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
 
@@ -475,7 +475,7 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
               onChange={(event) =>
                 setStatusFilter(event.target.value as "all" | SaleStatus)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos status</option>
               {Object.entries(saleStatusLabels).map(([status, label]) => (
@@ -489,7 +489,7 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Venda</th>
                 <th className="px-5 py-3 font-semibold">Cliente</th>
@@ -501,17 +501,17 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredSales.map((sale) => {
                 const customer = customerById.get(sale.customerId);
                 const paidAmount = getPaidAmount(sale.payments);
                 const balance = getSaleBalance(sale);
 
                 return (
-                  <tr key={sale.id} className="text-slate-700">
+                  <tr key={sale.id} className="text-stone-700">
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">{sale.code}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="font-medium text-stone-950">{sale.code}</p>
+                      <p className="mt-1 text-xs text-stone-500">
                         {sale.createdAt}
                       </p>
                     </td>
@@ -529,7 +529,7 @@ export function SalesContent({ products: initProducts, cashSessions, cashRegiste
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
                       <p>{formatCurrency(paidAmount)} pago</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         Saldo {formatCurrency(balance)}
                       </p>
                     </td>
@@ -618,23 +618,23 @@ function SaleBuilderModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sale-modal-title"
     >
-      <div className="max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+      <div className="max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-lg border border-stone-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="size-5 text-emerald-600" />
+            <ShoppingCart className="size-5 text-amber-600" />
             <div>
               <h2
                 id="sale-modal-title"
-                className="text-base font-semibold text-slate-950"
+                className="text-base font-semibold text-stone-950"
               >
                 {sale.code}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500">
                 Motor de venda com estoque e pagamento simulado.
               </p>
             </div>
@@ -667,7 +667,7 @@ function SaleBuilderModal({
                   onUpdateSaleMeta("customerId", event.target.value)
                 }
                 disabled={!isEditable}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition disabled:bg-stone-100 disabled:text-stone-500 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
@@ -684,7 +684,7 @@ function SaleBuilderModal({
                   onUpdateSaleMeta("cashSessionId", event.target.value)
                 }
                 disabled={!isEditable}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition disabled:bg-stone-100 disabled:text-stone-500 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {openCashSessions.map((session) => (
                   <option key={session.id} value={session.id}>
@@ -701,7 +701,7 @@ function SaleBuilderModal({
                   onUpdateSaleMeta("operator", event.target.value)
                 }
                 disabled={!isEditable}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition disabled:bg-stone-100 disabled:text-stone-500 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -711,14 +711,14 @@ function SaleBuilderModal({
                 onChange={(event) => onUpdateSaleMeta("notes", event.target.value)}
                 disabled={!isEditable}
                 placeholder="Ex.: venda balcão, pedido atacado, condicao combinada"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition disabled:bg-stone-100 disabled:text-stone-500 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
           </div>
 
-          <div className="mt-5 rounded-lg border border-slate-200">
-            <div className="border-b border-slate-200 px-4 py-3">
-              <h3 className="text-sm font-semibold text-slate-950">
+          <div className="mt-5 rounded-lg border border-stone-200">
+            <div className="border-b border-stone-200 px-4 py-3">
+              <h3 className="text-sm font-semibold text-stone-950">
                 Itens da venda
               </h3>
             </div>
@@ -731,7 +731,7 @@ function SaleBuilderModal({
                     onChange={(event) =>
                       onUpdateForm("itemProductId", event.target.value)
                     }
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                    className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
                   >
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
@@ -747,7 +747,7 @@ function SaleBuilderModal({
                     onChange={(event) =>
                       onUpdateForm("priceMode", event.target.value as SalePriceMode)
                     }
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                    className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
                   >
                     {Object.entries(salePriceModeLabels).map(([mode, label]) => (
                       <option key={mode} value={mode}>
@@ -765,13 +765,13 @@ function SaleBuilderModal({
                     }
                     inputMode="decimal"
                     placeholder="0"
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                    className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
                   />
                 </Field>
 
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                  <p className="text-xs font-medium text-slate-500">Valor un.</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-950">
+                <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+                  <p className="text-xs font-medium text-stone-500">Valor un.</p>
+                  <p className="mt-1 text-sm font-semibold text-stone-950">
                     {formatCurrency(selectedPrice)}
                   </p>
                 </div>
@@ -779,7 +779,7 @@ function SaleBuilderModal({
                 <Button
                   type="button"
                   onClick={onAddItem}
-                  className="bg-slate-950 text-white hover:bg-slate-800"
+                  className="bg-stone-950 text-white hover:bg-stone-800"
                 >
                   <Plus className="size-4" aria-hidden="true" />
                   Adicionar
@@ -787,9 +787,9 @@ function SaleBuilderModal({
               </div>
             ) : null}
 
-            <div className="overflow-x-auto border-t border-slate-200">
+            <div className="overflow-x-auto border-t border-stone-200">
               <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Produto</th>
                     <th className="px-4 py-3 font-semibold">Qtd.</th>
@@ -798,16 +798,16 @@ function SaleBuilderModal({
                     <th className="px-4 py-3 font-semibold">Acao</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-stone-100">
                   {sale.items.map((item) => {
                     const product = productById.get(item.productId);
 
                     return (
-                      <tr key={item.id} className="text-slate-700">
-                        <td className="px-4 py-3 font-medium text-slate-950">
+                      <tr key={item.id} className="text-stone-700">
+                        <td className="px-4 py-3 font-medium text-stone-950">
                           <span className="inline-flex items-center gap-2">
                             <Package
-                              className="size-4 text-slate-400"
+                              className="size-4 text-stone-400"
                               aria-hidden="true"
                             />
                             {product?.name ?? "Produto removido"}
@@ -840,9 +840,9 @@ function SaleBuilderModal({
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_360px]">
-            <section className="rounded-lg border border-slate-200">
-              <div className="border-b border-slate-200 px-4 py-3">
-                <h3 className="text-sm font-semibold text-slate-950">
+            <section className="rounded-lg border border-stone-200">
+              <div className="border-b border-stone-200 px-4 py-3">
+                <h3 className="text-sm font-semibold text-stone-950">
                   Pagamentos
                 </h3>
               </div>
@@ -858,7 +858,7 @@ function SaleBuilderModal({
                           event.target.value as PaymentMethod,
                         )
                       }
-                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                      className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
                     >
                       {Object.entries(paymentMethodLabels).map(([method, label]) => (
                         <option key={method} value={method}>
@@ -876,14 +876,14 @@ function SaleBuilderModal({
                       }
                       inputMode="decimal"
                       placeholder={formatCurrency(balance)}
-                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                      className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
                     />
                   </Field>
 
                   <Button
                     type="button"
                     onClick={onAddPayment}
-                    className="bg-slate-950 text-white hover:bg-slate-800"
+                    className="bg-stone-950 text-white hover:bg-stone-800"
                   >
                     <BadgeDollarSign className="size-4" aria-hidden="true" />
                     Pagar
@@ -891,18 +891,18 @@ function SaleBuilderModal({
                 </div>
               ) : null}
 
-              <div className="overflow-x-auto border-t border-slate-200">
+              <div className="overflow-x-auto border-t border-stone-200">
                 <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                  <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Metodo</th>
                       <th className="px-4 py-3 font-semibold">Valor</th>
                       <th className="px-4 py-3 font-semibold">Acao</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-stone-100">
                     {sale.payments.map((payment) => (
-                      <tr key={payment.id} className="text-slate-700">
+                      <tr key={payment.id} className="text-stone-700">
                         <td className="px-4 py-3">
                           {paymentMethodLabels[payment.method]}
                         </td>
@@ -927,8 +927,8 @@ function SaleBuilderModal({
               </div>
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-sm font-semibold text-slate-950">Totais</h3>
+            <section className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+              <h3 className="text-sm font-semibold text-stone-950">Totais</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <TotalRow label="Subtotal" value={formatCurrency(sale.subtotal)} />
                 <TotalRow label="Desconto" value={formatCurrency(sale.discount)} />
@@ -946,7 +946,7 @@ function SaleBuilderModal({
                     }
                     inputMode="decimal"
                     placeholder="Desconto"
-                    className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                   />
                   <Button type="button" variant="outline" onClick={onApplyDiscount}>
                     Aplicar
@@ -954,7 +954,7 @@ function SaleBuilderModal({
                 </div>
               ) : null}
 
-              <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-500">
+              <div className="mt-4 rounded-lg border border-stone-200 bg-white p-3 text-sm text-stone-500">
                 <p className="flex items-center gap-2">
                   <UserRound className="size-4" aria-hidden="true" />
                   {sale.operator}
@@ -967,7 +967,7 @@ function SaleBuilderModal({
           </div>
         </div>
 
-        <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
+        <div className="flex flex-col-reverse justify-end gap-2 border-t border-stone-200 px-5 py-4 sm:flex-row">
           <Button type="button" variant="outline" onClick={onClose}>
             Fechar
           </Button>
@@ -980,7 +980,7 @@ function SaleBuilderModal({
               <Button
                 type="button"
                 onClick={onFinishSale}
-                className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                className="bg-amber-400 text-stone-950 hover:bg-amber-300"
               >
                 <CheckCircle2 className="size-4" aria-hidden="true" />
                 Finalizar venda
@@ -1004,7 +1004,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-sm font-medium text-stone-700">
         {label}
       </span>
       {children}
@@ -1014,9 +1014,9 @@ function Field({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }
@@ -1024,8 +1024,8 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 function TotalRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="font-semibold text-slate-950">{value}</dd>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className="font-semibold text-stone-950">{value}</dd>
     </div>
   );
 }

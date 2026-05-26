@@ -216,13 +216,13 @@ export function PaymentsContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 xl:flex-row xl:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Transacoes
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Consulte por venda, cliente, autorizacao, metodo e status.
             </p>
           </div>
@@ -230,14 +230,14 @@ export function PaymentsContent() {
           <div className="grid gap-2 lg:grid-cols-[1fr_160px_160px]">
             <div className="relative">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar transacao"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
 
@@ -246,7 +246,7 @@ export function PaymentsContent() {
               onChange={(event) =>
                 setMethodFilter(event.target.value as "all" | PaymentMethod)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos metodos</option>
               {Object.entries(paymentMethodLabels).map(([method, label]) => (
@@ -263,7 +263,7 @@ export function PaymentsContent() {
                   event.target.value as "all" | PaymentTransactionStatus,
                 )
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos status</option>
               {Object.entries(paymentStatusLabels).map(([status, label]) => (
@@ -277,7 +277,7 @@ export function PaymentsContent() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1160px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Venda</th>
                 <th className="px-5 py-3 font-semibold">Cliente</th>
@@ -289,17 +289,17 @@ export function PaymentsContent() {
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredTransactions.map((transaction) => (
-                <tr key={transaction.id} className="text-slate-700">
+                <tr key={transaction.id} className="text-stone-700">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-slate-950">
+                    <p className="font-medium text-stone-950">
                       {transaction.saleCode}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {transaction.capturedAt}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {transaction.authorizationCode}
                     </p>
                   </td>
@@ -318,7 +318,7 @@ export function PaymentsContent() {
                   <td className="whitespace-nowrap px-5 py-4">
                     {formatCurrency(transaction.feeAmount)}
                   </td>
-                  <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-950">
+                  <td className="whitespace-nowrap px-5 py-4 font-semibold text-stone-950">
                     {formatCurrency(transaction.netAmount)}
                   </td>
                   <td className="whitespace-nowrap px-5 py-4">
@@ -327,7 +327,7 @@ export function PaymentsContent() {
                       tone={getStatusTone(transaction.status)}
                     />
                     {transaction.reconciledAt ? (
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         {transaction.reconciledAt}
                       </p>
                     ) : null}
@@ -384,12 +384,12 @@ export function PaymentsContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Metodos de pagamento
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Configure disponibilidade, provedor, prazo e taxa estimada.
           </p>
         </div>
@@ -398,18 +398,18 @@ export function PaymentsContent() {
           {methods.map((method) => (
             <article
               key={method.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              className="rounded-lg border border-stone-200 bg-stone-50 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-slate-950">{method.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="font-semibold text-stone-950">{method.label}</p>
+                  <p className="mt-1 text-xs text-stone-500">
                     {method.provider}
                   </p>
                 </div>
-                <CreditCard className="size-5 shrink-0 text-emerald-600" />
+                <CreditCard className="size-5 shrink-0 text-amber-600" />
               </div>
-              <div className="mt-4 space-y-2 text-sm text-slate-600">
+              <div className="mt-4 space-y-2 text-sm text-stone-600">
                 <p>Prazo D+{method.settlementDays}</p>
                 <p>Taxa {method.feePercent}%</p>
               </div>
@@ -432,9 +432,9 @@ export function PaymentsContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

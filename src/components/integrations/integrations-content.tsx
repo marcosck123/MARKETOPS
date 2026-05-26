@@ -208,13 +208,13 @@ export function IntegrationsContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 lg:flex-row lg:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Conectores
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Controle ativacao, saude, provedor e proximo passo.
             </p>
           </div>
@@ -223,7 +223,7 @@ export function IntegrationsContent() {
               type="button"
               variant={activeKind === "all" ? "default" : "outline"}
               onClick={() => setActiveKind("all")}
-              className={activeKind === "all" ? "bg-slate-950 text-white hover:bg-slate-800" : ""}
+              className={activeKind === "all" ? "bg-stone-950 text-white hover:bg-stone-800" : ""}
             >
               Todos
             </Button>
@@ -233,7 +233,7 @@ export function IntegrationsContent() {
                 type="button"
                 variant={activeKind === kind ? "default" : "outline"}
                 onClick={() => setActiveKind(kind)}
-                className={activeKind === kind ? "bg-slate-950 text-white hover:bg-slate-800" : ""}
+                className={activeKind === kind ? "bg-stone-950 text-white hover:bg-stone-800" : ""}
               >
                 {integrationKindLabels[kind]}
               </Button>
@@ -245,18 +245,18 @@ export function IntegrationsContent() {
           {filteredConnections.map((connection) => (
             <article
               key={connection.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              className="rounded-lg border border-stone-200 bg-stone-50 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex gap-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <div className="grid size-10 place-items-center rounded-lg bg-amber-100 text-amber-700">
                     {getIntegrationIcon(connection.kind)}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-950">
+                    <h3 className="font-semibold text-stone-950">
                       {connection.name}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {connection.provider} | {connection.storeName}
                     </p>
                   </div>
@@ -278,7 +278,7 @@ export function IntegrationsContent() {
                 />
               </div>
 
-              <div className="mt-4 space-y-2 text-sm text-slate-600">
+              <div className="mt-4 space-y-2 text-sm text-stone-600">
                 <p>Ultima sync: {connection.lastSync}</p>
                 <p>Proximo passo: {connection.nextStep}</p>
               </div>
@@ -311,19 +311,19 @@ export function IntegrationsContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Eventos recentes
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Resultado dos testes e chamadas simuladas.
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Integracao</th>
                   <th className="px-5 py-3 font-semibold">Mensagem</th>
@@ -331,10 +331,10 @@ export function IntegrationsContent() {
                   <th className="px-5 py-3 font-semibold">Data</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-100">
                 {events.map((event) => (
-                  <tr key={event.id} className="text-slate-700">
-                    <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-950">
+                  <tr key={event.id} className="text-stone-700">
+                    <td className="whitespace-nowrap px-5 py-4 font-medium text-stone-950">
                       {event.integrationName}
                     </td>
                     <td className="px-5 py-4">{event.message}</td>
@@ -354,12 +354,12 @@ export function IntegrationsContent() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Checklist de ativacao
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Requisitos antes de sair do modo teste.
             </p>
           </div>
@@ -367,14 +367,14 @@ export function IntegrationsContent() {
             {requirements.map((requirement) => (
               <article
                 key={requirement.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-950">
+                    <p className="font-semibold text-stone-950">
                       {requirement.title}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {integrationKindLabels[requirement.area]}
                     </p>
                   </div>
@@ -405,9 +405,9 @@ export function IntegrationsContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

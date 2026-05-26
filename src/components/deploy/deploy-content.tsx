@@ -194,7 +194,7 @@ export function DeployContent() {
           type="button"
           variant={environmentFilter === "all" ? "default" : "outline"}
           onClick={() => setEnvironmentFilter("all")}
-          className={environmentFilter === "all" ? "bg-slate-950 text-white hover:bg-slate-800" : ""}
+          className={environmentFilter === "all" ? "bg-stone-950 text-white hover:bg-stone-800" : ""}
         >
           Todos
         </Button>
@@ -206,7 +206,7 @@ export function DeployContent() {
             onClick={() => setEnvironmentFilter(environment)}
             className={
               environmentFilter === environment
-                ? "bg-slate-950 text-white hover:bg-slate-800"
+                ? "bg-stone-950 text-white hover:bg-stone-800"
                 : ""
             }
           >
@@ -216,18 +216,18 @@ export function DeployContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Checklist de deploy
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Itens obrigatorios para preview e producao.
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Item</th>
                   <th className="px-5 py-3 font-semibold">Ambiente</th>
@@ -235,12 +235,12 @@ export function DeployContent() {
                   <th className="px-5 py-3 font-semibold">Acoes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-100">
                 {filteredChecklist.map((item) => (
-                  <tr key={item.id} className="text-slate-700">
+                  <tr key={item.id} className="text-stone-700">
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">{item.title}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="font-medium text-stone-950">{item.title}</p>
+                      <p className="mt-1 text-xs text-stone-500">
                         {item.owner} | {item.notes}
                       </p>
                     </td>
@@ -280,12 +280,12 @@ export function DeployContent() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Variaveis de ambiente
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Controle o que precisa ser configurado fora do repositorio.
             </p>
           </div>
@@ -293,18 +293,18 @@ export function DeployContent() {
             {filteredVariables.map((variable) => (
               <article
                 key={variable.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-mono text-sm font-semibold text-slate-950">
+                    <p className="font-mono text-sm font-semibold text-stone-950">
                       {variable.key}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                    <p className="mt-2 text-sm leading-6 text-stone-500">
                       {variable.description}
                     </p>
                   </div>
-                  <KeyRound className="size-5 shrink-0 text-emerald-600" />
+                  <KeyRound className="size-5 shrink-0 text-amber-600" />
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <StatusBadge
@@ -325,12 +325,12 @@ export function DeployContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Servicos
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Mapa dos servicos externos previstos para o deploy.
           </p>
         </div>
@@ -338,18 +338,18 @@ export function DeployContent() {
           {filteredServices.map((service) => (
             <article
               key={service.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              className="rounded-lg border border-stone-200 bg-stone-50 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex gap-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <div className="grid size-10 place-items-center rounded-lg bg-amber-100 text-amber-700">
                     {getServiceIcon(service.kind)}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-950">
+                    <p className="font-semibold text-stone-950">
                       {service.name}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {deployServiceKindLabels[service.kind]} | {service.provider}
                     </p>
                   </div>
@@ -359,7 +359,7 @@ export function DeployContent() {
                   tone={getStatusTone(service.status)}
                 />
               </div>
-              <p className="mt-4 text-sm text-slate-600">
+              <p className="mt-4 text-sm text-stone-600">
                 {deployEnvironmentLabels[service.environment]} | {service.url}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -388,9 +388,9 @@ export function DeployContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

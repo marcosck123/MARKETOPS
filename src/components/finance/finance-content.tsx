@@ -79,13 +79,13 @@ export function FinanceContent({
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
             Dashboard financeiro
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Financeiro</h1>
+          <h1 className="mt-1 text-2xl font-bold text-stone-900">Financeiro</h1>
         </div>
 
-        <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+        <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-1 shadow-sm">
           {(["today", "week", "month"] as Period[]).map((p) => (
             <Link
               key={p}
@@ -93,8 +93,8 @@ export function FinanceContent({
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition",
                 period === p
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                  ? "bg-stone-900 text-white"
+                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-900",
               )}
             >
               {periodLabels[p]}
@@ -130,20 +130,20 @@ export function FinanceContent({
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Payment breakdown */}
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Por metodo de pagamento
             </h2>
           </div>
           <div className="overflow-x-auto">
             {paymentBreakdown.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-slate-400">
+              <p className="px-5 py-6 text-sm text-stone-400">
                 Sem pagamentos no periodo.
               </p>
             ) : (
               <table className="w-full border-collapse text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                   <tr>
                     <th className="px-5 py-3 text-left font-semibold">
                       Metodo
@@ -154,16 +154,16 @@ export function FinanceContent({
                     <th className="px-5 py-3 text-right font-semibold">%</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-stone-100">
                   {paymentBreakdown.map((row) => (
-                    <tr key={row.method} className="text-slate-700">
+                    <tr key={row.method} className="text-stone-700">
                       <td className="px-5 py-3 font-medium">
                         {methodLabels[row.method] ?? row.method}
                       </td>
                       <td className="px-5 py-3 text-right tabular-nums">
                         {fmt(row.total)}
                       </td>
-                      <td className="px-5 py-3 text-right tabular-nums text-slate-400">
+                      <td className="px-5 py-3 text-right tabular-nums text-stone-400">
                         {fmtPct(row.total, summary.totalSales)}
                       </td>
                     </tr>
@@ -175,14 +175,14 @@ export function FinanceContent({
         </section>
 
         {/* DRE simplificado */}
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               DRE simplificado
             </h2>
           </div>
           <table className="w-full border-collapse text-sm">
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               <DreRow label="Receita Bruta" value={dre.receitaBruta} />
               <DreRow
                 label="Descontos"
@@ -206,10 +206,10 @@ export function FinanceContent({
                 highlight
               />
               <tr>
-                <td className="px-5 py-2 text-xs text-slate-400">
+                <td className="px-5 py-2 text-xs text-stone-400">
                   Margem %
                 </td>
-                <td className="px-5 py-2 text-right text-xs tabular-nums text-slate-400">
+                <td className="px-5 py-2 text-right text-xs tabular-nums text-stone-400">
                   {fmtPct(dre.margemBruta, dre.receitaLiquida)}
                 </td>
               </tr>
@@ -219,23 +219,23 @@ export function FinanceContent({
       </div>
 
       {/* Sessions */}
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Sessoes de caixa
           </h2>
-          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
             {totalOpenSessions} abertas
           </span>
         </div>
         <div className="overflow-x-auto">
           {sessions.length === 0 ? (
-            <p className="px-5 py-6 text-sm text-slate-400">
+            <p className="px-5 py-6 text-sm text-stone-400">
               Nenhuma sessao no periodo.
             </p>
           ) : (
             <table className="w-full min-w-[600px] border-collapse text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                 <tr>
                   <th className="px-5 py-3 text-left font-semibold">Caixa</th>
                   <th className="px-5 py-3 text-left font-semibold">
@@ -250,10 +250,10 @@ export function FinanceContent({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-100">
                 {sessions.map((s) => (
-                  <tr key={s.id} className="text-slate-700">
-                    <td className="px-5 py-3 font-medium text-slate-900">
+                  <tr key={s.id} className="text-stone-700">
+                    <td className="px-5 py-3 font-medium text-stone-900">
                       {s.cashRegisterName}
                     </td>
                     <td className="px-5 py-3">{s.operatorName}</td>
@@ -262,8 +262,8 @@ export function FinanceContent({
                         className={cn(
                           "rounded-full px-2 py-0.5 text-xs font-medium",
                           s.status === "open"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-100 text-slate-500",
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-stone-100 text-stone-500",
                         )}
                       >
                         {s.status === "open" ? "Aberta" : "Fechada"}
@@ -298,17 +298,17 @@ function SummaryCard({
   negative?: boolean;
 }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
       <p
         className={cn(
           "mt-2 text-2xl font-bold",
-          negative ? "text-red-600" : "text-slate-950",
+          negative ? "text-red-600" : "text-stone-950",
         )}
       >
         {value}
       </p>
-      <p className="mt-1 text-xs text-slate-400">{sub}</p>
+      <p className="mt-1 text-xs text-stone-400">{sub}</p>
     </article>
   );
 }
@@ -328,12 +328,12 @@ function DreRow({
 }) {
   return (
     <tr
-      className={cn(highlight && value >= 0 ? "bg-emerald-50" : highlight && value < 0 ? "bg-red-50" : "")}
+      className={cn(highlight && value >= 0 ? "bg-amber-50" : highlight && value < 0 ? "bg-red-50" : "")}
     >
       <td
         className={cn(
-          "px-5 py-3 text-slate-700",
-          bold && "font-semibold text-slate-900",
+          "px-5 py-3 text-stone-700",
+          bold && "font-semibold text-stone-900",
         )}
       >
         {label}
@@ -342,7 +342,7 @@ function DreRow({
         className={cn(
           "px-5 py-3 text-right tabular-nums",
           bold && "font-semibold",
-          negative ? "text-red-600" : highlight && value >= 0 ? "text-emerald-700" : "",
+          negative ? "text-red-600" : highlight && value >= 0 ? "text-amber-700" : "",
         )}
       >
         {fmt(Math.abs(value))}
@@ -350,7 +350,7 @@ function DreRow({
           <TrendingDown className="ml-1 inline size-3" aria-hidden="true" />
         )}
         {highlight && value > 0 && (
-          <TrendingUp className="ml-1 inline size-3 text-emerald-600" aria-hidden="true" />
+          <TrendingUp className="ml-1 inline size-3 text-amber-600" aria-hidden="true" />
         )}
       </td>
     </tr>
