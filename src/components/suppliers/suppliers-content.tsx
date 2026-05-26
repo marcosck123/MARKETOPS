@@ -158,7 +158,7 @@ export function SuppliersContent({
           <Button
             type="button"
             onClick={openNew}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
           >
             <Plus className="size-4" aria-hidden="true" />
             Novo fornecedor
@@ -183,33 +183,33 @@ export function SuppliersContent({
         <SummaryCard label="Total cadastrado" value={String(suppliers.length)} />
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 lg:flex-row lg:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Lista de fornecedores
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Busque por nome ou CNPJ.
             </p>
           </div>
           <div className="relative max-w-xs">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
               aria-hidden="true"
             />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar fornecedor"
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Fornecedor</th>
                 <th className="px-5 py-3 font-semibold">CNPJ</th>
@@ -219,23 +219,23 @@ export function SuppliersContent({
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filtered.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-5 py-8 text-center text-sm text-slate-400"
+                    className="px-5 py-8 text-center text-sm text-stone-400"
                   >
                     Nenhum fornecedor encontrado.
                   </td>
                 </tr>
               ) : (
                 filtered.map((s) => (
-                  <tr key={s.id} className="text-slate-700">
+                  <tr key={s.id} className="text-stone-700">
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">{s.name}</p>
+                      <p className="font-medium text-stone-950">{s.name}</p>
                       {s.contactName && (
-                        <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-stone-500">
                           <UserRound className="size-3" aria-hidden="true" />
                           {s.contactName}
                         </p>
@@ -248,7 +248,7 @@ export function SuppliersContent({
                       {s.phone ? (
                         <p className="flex items-center gap-1.5 text-xs">
                           <Phone
-                            className="size-3.5 text-slate-400"
+                            className="size-3.5 text-stone-400"
                             aria-hidden="true"
                           />
                           {s.phone}
@@ -261,7 +261,7 @@ export function SuppliersContent({
                       {s.email ? (
                         <p className="flex items-center gap-1.5 text-xs">
                           <Mail
-                            className="size-3.5 text-slate-400"
+                            className="size-3.5 text-stone-400"
                             aria-hidden="true"
                           />
                           {s.email}
@@ -326,18 +326,18 @@ function SupplierModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="supplier-modal-title"
     >
-      <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-lg border border-stone-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Truck className="size-5 text-emerald-600" aria-hidden="true" />
+            <Truck className="size-5 text-amber-600" aria-hidden="true" />
             <h2
               id="supplier-modal-title"
-              className="text-base font-semibold text-slate-950"
+              className="text-base font-semibold text-stone-950"
             >
               {isEditing ? "Editar fornecedor" : "Novo fornecedor"}
             </h2>
@@ -357,7 +357,7 @@ function SupplierModal({
                 placeholder="Ex.: Distribuidora Norte"
                 required
                 autoFocus
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -366,7 +366,7 @@ function SupplierModal({
                 value={formState.cnpj}
                 onChange={(e) => onUpdateForm("cnpj", e.target.value)}
                 placeholder="00.000.000/0000-00"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -375,7 +375,7 @@ function SupplierModal({
                 value={formState.phone}
                 onChange={(e) => onUpdateForm("phone", e.target.value)}
                 placeholder="(65) 3333-0000"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -384,7 +384,7 @@ function SupplierModal({
                 value={formState.email}
                 onChange={(e) => onUpdateForm("email", e.target.value)}
                 placeholder="comercial@fornecedor.com"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -393,7 +393,7 @@ function SupplierModal({
                 value={formState.contactName}
                 onChange={(e) => onUpdateForm("contactName", e.target.value)}
                 placeholder="Nome do contato comercial"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -403,7 +403,7 @@ function SupplierModal({
                 onChange={(e) => onUpdateForm("notes", e.target.value)}
                 rows={3}
                 placeholder="Condicoes comerciais, categorias atendidas ou observacoes internas"
-                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -412,14 +412,14 @@ function SupplierModal({
             )}
           </div>
 
-          <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
+          <div className="flex flex-col-reverse justify-end gap-2 border-t border-stone-200 px-5 py-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={saving}
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+              className="bg-amber-400 text-stone-950 hover:bg-amber-300 disabled:opacity-50"
             >
               <Save className="size-4" aria-hidden="true" />
               {saving
@@ -446,7 +446,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-sm font-medium text-stone-700">
         {label}
       </span>
       {children}
@@ -456,9 +456,9 @@ function Field({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

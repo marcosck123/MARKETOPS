@@ -283,16 +283,16 @@ export function SelfCheckoutContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800 px-5 py-4">
+    <main className="min-h-screen bg-stone-950 text-white">
+      <header className="border-b border-stone-800 px-5 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-lg bg-emerald-500 text-xl font-bold text-slate-950">
+            <div className="grid h-12 w-12 place-items-center rounded-lg bg-amber-400 text-xl font-bold text-stone-950">
               M
             </div>
             <div>
               <p className="text-xl font-semibold">MARKETOPS Self-checkout</p>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-stone-400">
                 {station.code} | {station.storeName}
               </p>
             </div>
@@ -307,7 +307,7 @@ export function SelfCheckoutContent() {
               type="button"
               variant="outline"
               onClick={() => requestAssistance("payment_help")}
-              className="border-slate-700 bg-slate-900 text-white hover:bg-slate-800"
+              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
             >
               <HelpCircle className="size-4" aria-hidden="true" />
               Chamar ajuda
@@ -315,7 +315,7 @@ export function SelfCheckoutContent() {
             <Button
               asChild
               variant="outline"
-              className="border-slate-700 bg-slate-900 text-white hover:bg-slate-800"
+              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
             >
               <Link href="/pdv">Modo operador</Link>
             </Button>
@@ -324,13 +324,13 @@ export function SelfCheckoutContent() {
       </header>
 
       <div className="grid min-h-[calc(100vh-81px)] gap-5 p-5 xl:grid-cols-[minmax(420px,1fr)_minmax(420px,0.95fr)_360px]">
-        <section className="flex min-h-0 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="border-b border-slate-800 p-5">
+        <section className="flex min-h-0 flex-col rounded-lg border border-stone-800 bg-stone-900">
+          <div className="border-b border-stone-800 p-5">
             <div className="flex items-center gap-3">
-              <Barcode className="size-6 text-emerald-400" aria-hidden="true" />
+              <Barcode className="size-6 text-amber-400" aria-hidden="true" />
               <div>
                 <h1 className="text-lg font-semibold">Passe seus produtos</h1>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-stone-400">
                   Use codigo de barras, SKU ou toque em um produto da lista.
                 </p>
               </div>
@@ -339,26 +339,26 @@ export function SelfCheckoutContent() {
             <form onSubmit={handleScanSubmit} className="mt-5 space-y-3">
               <div className="relative">
                 <Search
-                  className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500"
+                  className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-stone-500"
                   aria-hidden="true"
                 />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Leia ou digite o codigo"
-                  className="h-16 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 pl-12 text-lg text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="h-16 w-full rounded-lg border border-stone-700 bg-stone-950 px-4 pl-12 text-lg text-white outline-none transition placeholder:text-stone-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   autoFocus
                 />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-[150px_1fr]">
-                <div className="flex h-14 items-center justify-between rounded-lg border border-slate-700 bg-slate-950 px-2">
+                <div className="flex h-14 items-center justify-between rounded-lg border border-stone-700 bg-stone-950 px-2">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                    className="text-white hover:bg-slate-800"
+                    className="text-white hover:bg-stone-800"
                   >
                     <Minus className="size-4" aria-hidden="true" />
                     <span className="sr-only">Diminuir quantidade</span>
@@ -369,7 +369,7 @@ export function SelfCheckoutContent() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity((current) => current + 1)}
-                    className="text-white hover:bg-slate-800"
+                    className="text-white hover:bg-stone-800"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     <span className="sr-only">Aumentar quantidade</span>
@@ -378,7 +378,7 @@ export function SelfCheckoutContent() {
 
                 <Button
                   type="submit"
-                  className="h-14 bg-emerald-500 text-base text-slate-950 hover:bg-emerald-400"
+                  className="h-14 bg-amber-400 text-base text-stone-950 hover:bg-amber-300"
                 >
                   <Plus className="size-5" aria-hidden="true" />
                   Adicionar produto
@@ -394,22 +394,22 @@ export function SelfCheckoutContent() {
                   key={product.id}
                   type="button"
                   onClick={() => addProduct(product, 1)}
-                  className="rounded-lg border border-slate-800 bg-slate-950 p-4 text-left transition hover:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                  className="rounded-lg border border-stone-800 bg-stone-950 p-4 text-left transition hover:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-white">{product.name}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         {product.barcode}
                       </p>
                     </div>
-                    <Package className="size-5 shrink-0 text-emerald-400" />
+                    <Package className="size-5 shrink-0 text-amber-400" />
                   </div>
                   <div className="mt-4 flex items-end justify-between gap-3">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-stone-500">
                       Estoque {product.currentStock}
                     </p>
-                    <p className="text-xl font-semibold text-emerald-300">
+                    <p className="text-xl font-semibold text-amber-300">
                       {formatCurrency(getProductSalePrice(product, "retail"))}
                     </p>
                   </div>
@@ -419,11 +419,11 @@ export function SelfCheckoutContent() {
           </div>
         </section>
 
-        <section className="flex min-h-0 flex-col rounded-lg border border-slate-800 bg-white text-slate-950">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
+        <section className="flex min-h-0 flex-col rounded-lg border border-stone-800 bg-white text-stone-950">
+          <div className="flex items-center justify-between gap-3 border-b border-stone-200 p-5">
             <div>
               <h2 className="text-lg font-semibold">Sua compra</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500">
                 {sale.code} | {sale.items.length} item(ns)
               </p>
             </div>
@@ -437,17 +437,17 @@ export function SelfCheckoutContent() {
             {sale.items.length === 0 ? (
               <div className="grid h-full min-h-72 place-items-center p-8 text-center">
                 <div>
-                  <ShoppingCart className="mx-auto size-12 text-slate-300" />
-                  <p className="mt-4 text-lg font-semibold text-slate-700">
+                  <ShoppingCart className="mx-auto size-12 text-stone-300" />
+                  <p className="mt-4 text-lg font-semibold text-stone-700">
                     Carrinho vazio
                   </p>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <p className="mt-2 text-sm text-stone-500">
                     Passe o primeiro produto para iniciar.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-stone-100">
                 {sale.items.map((item) => {
                   const product = productById.get(item.productId);
 
@@ -455,10 +455,10 @@ export function SelfCheckoutContent() {
                     <article key={item.id} className="p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold text-slate-950">
+                          <p className="font-semibold text-stone-950">
                             {product?.name ?? "Produto removido"}
                           </p>
-                          <p className="mt-1 text-sm text-slate-500">
+                          <p className="mt-1 text-sm text-stone-500">
                             {formatCurrency(item.unitPrice)} cada
                           </p>
                         </div>
@@ -501,7 +501,7 @@ export function SelfCheckoutContent() {
                             <span className="sr-only">Aumentar item</span>
                           </Button>
                         </div>
-                        <p className="text-xl font-semibold text-slate-950">
+                        <p className="text-xl font-semibold text-stone-950">
                           {formatCurrency(item.total)}
                         </p>
                       </div>
@@ -526,13 +526,13 @@ export function SelfCheckoutContent() {
           ) : null}
         </section>
 
-        <aside className="flex min-h-0 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="border-b border-slate-800 p-5">
-            <p className="text-sm text-slate-400">Total da compra</p>
+        <aside className="flex min-h-0 flex-col rounded-lg border border-stone-800 bg-stone-900">
+          <div className="border-b border-stone-800 p-5">
+            <p className="text-sm text-stone-400">Total da compra</p>
             <p className="mt-2 text-5xl font-semibold text-white">
               {formatCurrency(sale.total)}
             </p>
-            <div className="mt-4 grid gap-2 text-sm text-slate-300">
+            <div className="mt-4 grid gap-2 text-sm text-stone-300">
               <TotalRow label="Pago" value={formatCurrency(paidAmount)} />
               <TotalRow label="Saldo" value={formatCurrency(balance)} />
             </div>
@@ -548,8 +548,8 @@ export function SelfCheckoutContent() {
                   onClick={() => simulatePayment(method)}
                   className={
                     paymentMethod === method
-                      ? "h-16 bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-                      : "h-16 border-slate-700 bg-slate-950 text-white hover:bg-slate-800"
+                      ? "h-16 bg-amber-400 text-stone-950 hover:bg-amber-300"
+                      : "h-16 border-stone-700 bg-stone-950 text-white hover:bg-stone-800"
                   }
                 >
                   {method === "pix" ? (
@@ -562,28 +562,28 @@ export function SelfCheckoutContent() {
               ))}
             </div>
 
-            <div className="rounded-lg border border-slate-800 bg-slate-950">
-              <div className="border-b border-slate-800 px-4 py-3">
+            <div className="rounded-lg border border-stone-800 bg-stone-950">
+              <div className="border-b border-stone-800 px-4 py-3">
                 <p className="text-sm font-semibold text-white">
                   Pagamentos simulados
                 </p>
               </div>
               <div className="max-h-44 overflow-y-auto">
                 {sale.payments.length === 0 ? (
-                  <p className="px-4 py-5 text-sm text-slate-500">
+                  <p className="px-4 py-5 text-sm text-stone-500">
                     Nenhum pagamento registrado.
                   </p>
                 ) : (
                   sale.payments.map((payment) => (
                     <div
                       key={payment.id}
-                      className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3 last:border-0"
+                      className="flex items-center justify-between gap-3 border-b border-stone-800 px-4 py-3 last:border-0"
                     >
                       <div>
                         <p className="text-sm font-semibold text-white">
                           {paymentMethodLabels[payment.method]}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-stone-400">
                           {formatCurrency(payment.amount)}
                         </p>
                       </div>
@@ -596,7 +596,7 @@ export function SelfCheckoutContent() {
                             removeSalePayment(current, payment.id),
                           )
                         }
-                        className="text-white hover:bg-slate-800"
+                        className="text-white hover:bg-stone-800"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                         <span className="sr-only">Remover pagamento</span>
@@ -625,9 +625,9 @@ export function SelfCheckoutContent() {
             ) : null}
           </div>
 
-          <div className="mt-auto space-y-3 border-t border-slate-800 p-5">
+          <div className="mt-auto space-y-3 border-t border-stone-800 p-5">
             {step === "finished" && finishedSale ? (
-              <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-emerald-900">
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
                 <p className="font-semibold">Compra finalizada</p>
                 <p className="mt-1 text-sm">
                   {finishedSale.code} | {formatCurrency(finishedSale.total)}
@@ -639,7 +639,7 @@ export function SelfCheckoutContent() {
               <Button
                 type="button"
                 onClick={startNewSale}
-                className="h-14 w-full bg-emerald-500 text-lg text-slate-950 hover:bg-emerald-400"
+                className="h-14 w-full bg-amber-400 text-lg text-stone-950 hover:bg-amber-300"
               >
                 <CheckCircle2 className="size-5" aria-hidden="true" />
                 Nova compra
@@ -648,7 +648,7 @@ export function SelfCheckoutContent() {
               <Button
                 type="button"
                 onClick={finishSelfCheckout}
-                className="h-14 w-full bg-emerald-500 text-lg text-slate-950 hover:bg-emerald-400"
+                className="h-14 w-full bg-amber-400 text-lg text-stone-950 hover:bg-amber-300"
               >
                 <CheckCircle2 className="size-5" aria-hidden="true" />
                 Confirmar compra
@@ -657,7 +657,7 @@ export function SelfCheckoutContent() {
               <Button
                 type="button"
                 onClick={() => setStep("payment")}
-                className="h-14 w-full bg-emerald-500 text-lg text-slate-950 hover:bg-emerald-400"
+                className="h-14 w-full bg-amber-400 text-lg text-stone-950 hover:bg-amber-300"
                 disabled={sale.items.length === 0}
               >
                 Ir para pagamento
@@ -668,13 +668,13 @@ export function SelfCheckoutContent() {
               type="button"
               variant="outline"
               onClick={() => requestAssistance("cancel_request")}
-              className="h-12 w-full border-slate-700 bg-slate-950 text-white hover:bg-slate-800"
+              className="h-12 w-full border-stone-700 bg-stone-950 text-white hover:bg-stone-800"
             >
               Cancelar com atendente
             </Button>
 
             {openRequests.length > 0 ? (
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-xs text-stone-500">
                 {openRequests.length} pedido(s) de ajuda em aberto
               </p>
             ) : null}

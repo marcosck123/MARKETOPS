@@ -49,7 +49,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950">
       <div className="w-full max-w-md px-4">
         <div className="mb-8 flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-500 text-lg font-bold text-slate-950">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-400 text-lg font-bold text-slate-950">
             M
           </div>
           <div>
@@ -74,7 +74,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
                 {registers.map((register) => (
                   <label
                     key={register.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 transition hover:border-emerald-500 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-950"
+                    className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 transition hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-950"
                   >
                     <input
                       type="radio"
@@ -82,7 +82,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
                       value={register.id}
                       checked={selectedRegisterId === register.id}
                       onChange={() => setSelectedRegisterId(register.id)}
-                      className="accent-emerald-500"
+                      className="accent-amber-400"
                     />
                     <span className="text-sm font-medium text-white">{register.name}</span>
                   </label>
@@ -99,7 +99,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
                 inputMode="decimal"
                 value={openingBalance}
                 onChange={(e) => setOpeningBalance(e.target.value)}
-                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
               />
             </label>
 
@@ -110,7 +110,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
             <Button
               type="submit"
               disabled={loading || registers.length === 0}
-              className="h-12 w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+              className="h-12 w-full bg-amber-400 text-slate-950 hover:bg-amber-300 disabled:opacity-50"
             >
               <LogIn className="size-4" aria-hidden="true" />
               {loading ? "Abrindo sessão..." : "Iniciar sessão"}

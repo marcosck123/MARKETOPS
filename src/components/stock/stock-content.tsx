@@ -220,7 +220,7 @@ export function StockContent({
             <Button
               type="button"
               onClick={() => openMovementModal()}
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              className="bg-amber-400 text-stone-950 hover:bg-amber-300"
             >
               <Plus className="size-4" aria-hidden="true" />
               Registrar movimento
@@ -261,33 +261,33 @@ export function StockContent({
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 xl:flex-row xl:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Saldo por produto
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Consulte saldo atual, minimo e alertas antes de movimentar.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[1fr_160px]">
             <div className="relative sm:col-span-2 xl:col-span-1">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar produto"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
             <select
               value={stockFilter}
               onChange={(event) => setStockFilter(event.target.value)}
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos</option>
               <option value="low">Estoque baixo</option>
@@ -296,16 +296,16 @@ export function StockContent({
           </div>
         </div>
 
-        <div className="border-b border-slate-200 px-5 py-4">
+        <div className="border-b border-stone-200 px-5 py-4">
           <div className="relative max-w-sm">
             <Filter
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
               aria-hidden="true"
             />
             <select
               value={sectionFilter}
               onChange={(event) => setSectionFilter(event.target.value)}
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todas as secoes</option>
               {sections.map((section) => (
@@ -319,7 +319,7 @@ export function StockContent({
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Produto</th>
                 <th className="px-5 py-3 font-semibold">Secao</th>
@@ -330,26 +330,26 @@ export function StockContent({
                 <th className="px-5 py-3 font-semibold">Acao</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredProducts.map((product) => {
                 const section = sectionById.get(product.sectionId);
                 const category = categoryById.get(product.categoryId);
                 const isLowStock = product.currentStock <= product.minimumStock;
 
                 return (
-                  <tr key={product.id} className="text-slate-700">
+                  <tr key={product.id} className="text-stone-700">
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">
+                      <p className="font-medium text-stone-950">
                         {product.name}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         {product.sku} | {category?.name ?? "Sem categoria"}
                       </p>
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
                       {section?.name ?? "Sem secao"}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-950">
+                    <td className="whitespace-nowrap px-5 py-4 font-semibold text-stone-950">
                       {product.currentStock}
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
@@ -382,19 +382,19 @@ export function StockContent({
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Historico de movimentacoes
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Ultimos eventos que alteraram o saldo dos produtos.
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Data</th>
                 <th className="px-5 py-3 font-semibold">Produto</th>
@@ -404,16 +404,16 @@ export function StockContent({
                 <th className="px-5 py-3 font-semibold">Motivo</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {initialMovements.map((movement) => {
                 const product = productById.get(movement.productId);
 
                 return (
-                  <tr key={movement.id} className="text-slate-700">
+                  <tr key={movement.id} className="text-stone-700">
                     <td className="whitespace-nowrap px-5 py-4">
                       {movement.createdAt}
                     </td>
-                    <td className="px-5 py-4 font-medium text-slate-950">
+                    <td className="px-5 py-4 font-medium text-stone-950">
                       {product?.name ?? "Produto removido"}
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
@@ -428,7 +428,7 @@ export function StockContent({
                     <td className="whitespace-nowrap px-5 py-4">
                       {movement.responsible ?? "—"}
                     </td>
-                    <td className="min-w-64 px-5 py-4 text-slate-500">
+                    <td className="min-w-64 px-5 py-4 text-stone-500">
                       {movement.reason ?? "—"}
                     </td>
                   </tr>
@@ -470,23 +470,23 @@ function StockMovementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="stock-modal-title"
     >
-      <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+      <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-stone-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <PackageCheck className="size-5 text-emerald-600" />
+            <PackageCheck className="size-5 text-amber-600" />
             <div>
               <h2
                 id="stock-modal-title"
-                className="text-base font-semibold text-slate-950"
+                className="text-base font-semibold text-stone-950"
               >
                 Registrar movimentacao
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500">
                 O saldo sera atualizado a partir deste evento.
               </p>
             </div>
@@ -505,7 +505,7 @@ function StockMovementModal({
                 onChange={(event) =>
                   onUpdateForm("productId", event.target.value)
                 }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
@@ -521,7 +521,7 @@ function StockMovementModal({
                 onChange={(event) =>
                   onUpdateForm("type", event.target.value as StockMovementType)
                 }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {Object.entries(movementTypeLabels).map(([type, label]) => (
                   <option key={type} value={type}>
@@ -537,7 +537,7 @@ function StockMovementModal({
                 onChange={(event) => onUpdateForm("quantity", event.target.value)}
                 inputMode="decimal"
                 placeholder="0"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -547,7 +547,7 @@ function StockMovementModal({
                 onChange={(event) =>
                   onUpdateForm("responsible", event.target.value)
                 }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
@@ -557,18 +557,18 @@ function StockMovementModal({
                 onChange={(event) => onUpdateForm("reason", event.target.value)}
                 rows={3}
                 placeholder="Ex.: entrada por compra, perda por avaria, ajuste de inventario"
-                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </Field>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 md:col-span-2">
-              <p className="text-sm font-medium text-slate-950">
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 md:col-span-2">
+              <p className="text-sm font-medium text-stone-950">
                 Saldo atual: {selectedProduct?.currentStock ?? 0}
               </p>
-              <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+              <p className="mt-1 flex items-center gap-2 text-sm text-stone-500">
                 {formState.type === "entrada" ? (
                   <>
-                    <ArrowUp className="size-4 text-emerald-600" aria-hidden="true" />
+                    <ArrowUp className="size-4 text-amber-600" aria-hidden="true" />
                     Este movimento soma ao estoque atual.
                   </>
                 ) : formState.type === "saida" ? (
@@ -586,13 +586,13 @@ function StockMovementModal({
             </div>
           </div>
 
-          <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row">
+          <div className="flex flex-col-reverse justify-end gap-2 border-t border-stone-200 px-5 py-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              className="bg-amber-400 text-stone-950 hover:bg-amber-300"
             >
               <Save className="size-4" aria-hidden="true" />
               Salvar movimento
@@ -615,7 +615,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      <span className="mb-1.5 block text-sm font-medium text-stone-700">
         {label}
       </span>
       {children}
@@ -625,9 +625,9 @@ function Field({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

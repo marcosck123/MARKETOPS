@@ -14,12 +14,19 @@ export function PageHeader({
   action,
 }: PageHeaderProps) {
   return (
-    <section className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-end">
+    <section className="flex flex-col justify-between gap-4 border-b border-stone-200 pb-5 dark:border-stone-800 md:flex-row md:items-end">
       <div>
-        <p className="text-sm font-medium text-emerald-700">{eyebrow}</p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-950">{title}</h1>
+        <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+          {eyebrow}
+        </p>
+        <h1
+          className="mt-1 text-2xl font-bold text-stone-900 dark:text-white"
+          style={{ fontFamily: "var(--font-syne)" }}
+        >
+          {title}
+        </h1>
         {description ? (
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500 dark:text-stone-400">
             {description}
           </p>
         ) : null}

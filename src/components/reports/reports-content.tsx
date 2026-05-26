@@ -124,7 +124,7 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
             type="button"
             onClick={handleExportCsv}
             disabled={sales.length === 0}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300 disabled:opacity-50"
           >
             <Download className="size-4" aria-hidden="true" />
             Exportar CSV
@@ -134,7 +134,7 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
 
       {/* Period filter */}
       <section className="flex flex-wrap items-end gap-3">
-        <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+        <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-1 shadow-sm">
           {(["today", "week", "month", "custom"] as const).map((p) => (
             <Link
               key={p}
@@ -146,8 +146,8 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition",
                 period === p
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                  ? "bg-stone-900 text-white"
+                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-900",
               )}
             >
               {periodLabels[p]}
@@ -158,32 +158,32 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
         {(period === "custom" || from || to) && (
           <div className="flex flex-wrap items-end gap-2">
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-slate-500">
+              <span className="mb-1 block text-xs font-medium text-stone-500">
                 De
               </span>
               <input
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                className="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
               />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-slate-500">
+              <span className="mb-1 block text-xs font-medium text-stone-500">
                 Ate
               </span>
               <input
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                className="h-9 rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
               />
             </label>
             <Button
               type="button"
               onClick={handleCustomFilter}
               disabled={!from || !to}
-              className="bg-slate-800 text-white hover:bg-slate-700 disabled:opacity-50"
+              className="bg-stone-800 text-white hover:bg-stone-700 disabled:opacity-50"
             >
               Filtrar
             </Button>
@@ -193,20 +193,20 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
 
       {/* Summary */}
       <section className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Vendas</p>
-          <p className="mt-2 text-2xl font-bold text-slate-950">
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-stone-500">Vendas</p>
+          <p className="mt-2 text-2xl font-bold text-stone-950">
             {sales.length}
           </p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Receita Total</p>
-          <p className="mt-2 text-2xl font-bold text-slate-950">
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-stone-500">Receita Total</p>
+          <p className="mt-2 text-2xl font-bold text-stone-950">
             {fmt(totalRevenue)}
           </p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Total Descontos</p>
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-stone-500">Total Descontos</p>
           <p className="mt-2 text-2xl font-bold text-red-600">
             {fmt(totalDiscount)}
           </p>
@@ -214,28 +214,28 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
       </section>
 
       {/* Table */}
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
           <div className="flex items-center gap-2">
             <FileBarChart2
-              className="size-4 text-slate-400"
+              className="size-4 text-stone-400"
               aria-hidden="true"
             />
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Tabela de vendas
             </h2>
           </div>
-          <p className="text-sm text-slate-500">{sales.length} registro(s)</p>
+          <p className="text-sm text-stone-500">{sales.length} registro(s)</p>
         </div>
 
         <div className="overflow-x-auto">
           {sales.length === 0 ? (
-            <p className="px-5 py-10 text-center text-sm text-slate-400">
+            <p className="px-5 py-10 text-center text-sm text-stone-400">
               Nenhuma venda no periodo selecionado.
             </p>
           ) : (
             <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Codigo</th>
                   <th className="px-5 py-3 font-semibold">Data</th>
@@ -252,13 +252,13 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
                   <th className="px-5 py-3 font-semibold">Pagamentos</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-100">
                 {sales.map((s) => (
-                  <tr key={s.id} className="text-slate-700">
-                    <td className="whitespace-nowrap px-5 py-2.5 font-mono text-xs font-semibold text-slate-900">
+                  <tr key={s.id} className="text-stone-700">
+                    <td className="whitespace-nowrap px-5 py-2.5 font-mono text-xs font-semibold text-stone-900">
                       {s.code}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-2.5 text-slate-500">
+                    <td className="whitespace-nowrap px-5 py-2.5 text-stone-500">
                       {fmtDate(s.finishedAt)}
                     </td>
                     <td className="px-5 py-2.5">{s.operatorName}</td>
@@ -282,7 +282,7 @@ export function ReportsContent({ period, dateFrom, dateTo, sales }: Props) {
                         {s.paymentMethods.map((m) => (
                           <span
                             key={m}
-                            className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600"
+                            className="rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600"
                           >
                             {methodLabels[m] ?? m}
                           </span>

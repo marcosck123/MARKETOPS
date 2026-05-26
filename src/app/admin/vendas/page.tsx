@@ -39,32 +39,32 @@ export default async function AdminVendasPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
             Leitura financeiro
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">
+          <h1 className="mt-1 text-2xl font-bold text-stone-900">
             Historico de vendas
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Todas as vendas finalizadas — somente leitura.
           </p>
         </div>
 
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <p className="text-sm text-slate-500">
+        <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <p className="text-sm text-stone-500">
               {sales.length} venda{sales.length !== 1 ? "s" : ""} registrada
               {sales.length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="overflow-x-auto">
             {sales.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-slate-400">
+              <p className="px-5 py-10 text-center text-sm text-stone-400">
                 Nenhuma venda finalizada.
               </p>
             ) : (
               <table className="w-full min-w-[750px] border-collapse text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Codigo</th>
                     <th className="px-5 py-3 font-semibold">Data/Hora</th>
@@ -76,17 +76,17 @@ export default async function AdminVendasPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-stone-100">
                   {sales.map((sale: (typeof sales)[number]) => {
                     const methods = [
                       ...new Set<string>(sale.payments.map((p: { method: string }) => p.method)),
                     ];
                     return (
-                      <tr key={sale.id} className="text-slate-700">
-                        <td className="whitespace-nowrap px-5 py-3 font-mono text-xs font-semibold text-slate-900">
+                      <tr key={sale.id} className="text-stone-700">
+                        <td className="whitespace-nowrap px-5 py-3 font-mono text-xs font-semibold text-stone-900">
                           {sale.code}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-3 text-slate-500">
+                        <td className="whitespace-nowrap px-5 py-3 text-stone-500">
                           {fmtDate(sale.finishedAt)}
                         </td>
                         <td className="px-5 py-3">{sale.operatorName}</td>
@@ -98,7 +98,7 @@ export default async function AdminVendasPage() {
                             {methods.map((m) => (
                               <span
                                 key={m}
-                                className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600"
+                                className="rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600"
                               >
                                 {methodLabels[m] ?? m}
                               </span>

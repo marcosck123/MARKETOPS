@@ -166,33 +166,33 @@ export function PrintContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_360px]">
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 lg:flex-row lg:items-center">
             <div>
-              <h2 className="text-base font-semibold text-slate-950">
+              <h2 className="text-base font-semibold text-stone-950">
                 Fila de impressao
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500">
                 Acompanhe comprovantes enviados pelo PDV, caixa e self-checkout.
               </p>
             </div>
             <div className="relative w-full max-w-sm">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar impressao"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Documento</th>
                   <th className="px-5 py-3 font-semibold">Dispositivo</th>
@@ -201,15 +201,15 @@ export function PrintContent() {
                   <th className="px-5 py-3 font-semibold">Acoes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-100">
                 {filteredJobs.map((job) => (
-                  <tr key={job.id} className="text-slate-700">
+                  <tr key={job.id} className="text-stone-700">
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-950">{job.code}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="font-medium text-stone-950">{job.code}</p>
+                      <p className="mt-1 text-xs text-stone-500">
                         {printDocumentKindLabels[job.documentKind]} | {job.origin}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         Solicitado por {job.requestedBy} em {job.requestedAt}
                       </p>
                     </td>
@@ -225,7 +225,7 @@ export function PrintContent() {
                         tone={getJobStatusTone(job.status)}
                       />
                       {job.printedAt ? (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-stone-500">
                           {job.printedAt}
                         </p>
                       ) : null}
@@ -286,12 +286,12 @@ export function PrintContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Dispositivos
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Impressoras fisicas e saidas virtuais preparadas para integracao.
             </p>
           </div>
@@ -300,12 +300,12 @@ export function PrintContent() {
             {devices.map((device) => (
               <article
                 key={device.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-950">{device.name}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="font-semibold text-stone-950">{device.name}</p>
+                    <p className="mt-1 text-xs text-stone-500">
                       {device.location} | {device.paperWidth}
                     </p>
                   </div>
@@ -314,7 +314,7 @@ export function PrintContent() {
                     tone={getDeviceStatusTone(device.status)}
                   />
                 </div>
-                <p className="mt-3 text-sm text-slate-600">
+                <p className="mt-3 text-sm text-stone-600">
                   {device.storeName} | {device.lastHeartbeat}
                 </p>
                 <Button
@@ -331,12 +331,12 @@ export function PrintContent() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Modelos
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Defina tipos de comprovante, copias e rodape.
             </p>
           </div>
@@ -344,14 +344,14 @@ export function PrintContent() {
             {templates.map((template) => (
               <article
                 key={template.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-950">
+                    <p className="font-semibold text-stone-950">
                       {template.name}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {printDocumentKindLabels[template.documentKind]}
                     </p>
                   </div>
@@ -360,7 +360,7 @@ export function PrintContent() {
                     tone={template.enabled ? "success" : "warning"}
                   />
                 </div>
-                <p className="mt-3 text-sm text-slate-600">
+                <p className="mt-3 text-sm text-stone-600">
                   {template.copies} copia(s) | {template.footer}
                 </p>
                 <Button
@@ -383,9 +383,9 @@ export function PrintContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }
@@ -400,27 +400,27 @@ function ReceiptPreview({
   selectedSale: typeof initialSales[number];
 }) {
   return (
-    <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <aside className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-emerald-700">Preview</p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-950">
+          <p className="text-sm font-medium text-amber-700">Preview</p>
+          <h2 className="mt-1 text-lg font-semibold text-stone-950">
             {selectedJob?.code ?? "Sem documento"}
           </h2>
         </div>
-        <FileText className="size-5 text-slate-400" aria-hidden="true" />
+        <FileText className="size-5 text-stone-400" aria-hidden="true" />
       </div>
 
-      <div className="mx-auto mt-5 max-w-xs rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-800">
+      <div className="mx-auto mt-5 max-w-xs rounded-lg border border-stone-200 bg-stone-50 p-4 font-mono text-xs text-stone-800">
         <div className="text-center">
           <p className="font-bold">MARKETOPS</p>
           <p>Controle total da operacao ao caixa</p>
           <p>{selectedSale.finishedAt}</p>
         </div>
-        <div className="my-3 border-t border-dashed border-slate-300" />
+        <div className="my-3 border-t border-dashed border-stone-300" />
         <p>Documento: {selectedJob?.origin ?? selectedSale.code}</p>
         <p>Operador: {selectedSale.operator}</p>
-        <div className="my-3 border-t border-dashed border-slate-300" />
+        <div className="my-3 border-t border-dashed border-stone-300" />
         <div className="space-y-2">
           {selectedSale.items.map((item) => (
             <div key={item.id}>
@@ -434,13 +434,13 @@ function ReceiptPreview({
             </div>
           ))}
         </div>
-        <div className="my-3 border-t border-dashed border-slate-300" />
+        <div className="my-3 border-t border-dashed border-stone-300" />
         <div className="space-y-1">
           <PreviewRow label="Subtotal" value={formatCurrency(selectedSale.subtotal)} />
           <PreviewRow label="Desconto" value={formatCurrency(selectedSale.discount)} />
           <PreviewRow label="Total" value={formatCurrency(selectedSale.total)} />
         </div>
-        <div className="my-3 border-t border-dashed border-slate-300" />
+        <div className="my-3 border-t border-dashed border-stone-300" />
         {selectedSale.payments.map((payment) => (
           <PreviewRow
             key={payment.id}

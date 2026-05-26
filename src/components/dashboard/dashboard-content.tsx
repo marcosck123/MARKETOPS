@@ -59,7 +59,7 @@ export function DashboardContent({
           value={faturamentoHoje}
           helper="Vendas finalizadas no dia"
           trend={pedidosHoje > 0 ? "Ativo" : "Sem vendas"}
-          tone="emerald"
+          tone="amber"
         />
         <MetricCard
           label="Pedidos hoje"
@@ -80,7 +80,7 @@ export function DashboardContent({
           value={String(caixasAbertos)}
           helper="Sessoes de caixa ativas agora"
           trend={caixasAbertos > 0 ? "Em operacao" : "Nenhum"}
-          tone="amber"
+          tone="green"
         />
       </section>
 
@@ -91,13 +91,13 @@ export function DashboardContent({
           data={salesByDay}
         />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-slate-950">
+              <h2 className="text-base font-semibold text-stone-900 dark:text-white">
                 Caixas ativos
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
                 Sessoes abertas agora
               </p>
             </div>
@@ -109,20 +109,20 @@ export function DashboardContent({
 
           <div className="mt-5 space-y-3">
             {activeSessions.length === 0 ? (
-              <p className="py-4 text-center text-sm text-slate-400">
+              <p className="py-4 text-center text-sm text-stone-400">
                 Nenhum caixa aberto no momento.
               </p>
             ) : (
               activeSessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-stone-200 px-4 py-3 dark:border-stone-700"
                 >
                   <div>
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-stone-900 dark:text-white">
                       {session.cashRegisterName}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {session.operatorName}
                     </p>
                   </div>
@@ -141,19 +141,19 @@ export function DashboardContent({
           rows={
             recentSales.length === 0
               ? [[
-                  <span key="empty" className="text-slate-400">
+                  <span key="empty" className="text-stone-400">
                     Nenhuma venda registrada.
                   </span>,
                   "", "", "", "",
                 ]]
               : recentSales.map((sale) => [
-                  <span key={sale.code} className="font-mono text-xs font-semibold text-slate-900">
+                  <span key={sale.code} className="font-mono text-xs font-semibold text-stone-900">
                     {sale.code}
                   </span>,
                   sale.operatorName,
                   sale.cashRegisterName,
                   sale.finishedAt,
-                  <span key={`total-${sale.code}`} className="font-semibold tabular-nums text-slate-900">
+                  <span key={`total-${sale.code}`} className="font-semibold tabular-nums text-stone-900">
                     {sale.total}
                   </span>,
                 ])
@@ -166,7 +166,7 @@ export function DashboardContent({
           rows={
             lowStockProducts.length === 0
               ? [[
-                  <span key="empty" className="text-slate-400">
+                  <span key="empty" className="text-stone-400">
                     Nenhum produto com estoque baixo.
                   </span>,
                   "", "", "", "",

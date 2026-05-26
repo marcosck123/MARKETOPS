@@ -244,7 +244,7 @@ export function SecurityContent() {
           <Button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
           >
             <Plus className="size-4" aria-hidden="true" />
             Novo usuario
@@ -275,13 +275,13 @@ export function SecurityContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 xl:flex-row xl:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Usuarios e acessos
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Controle status, cargo, MFA, tentativas de login e risco.
             </p>
           </div>
@@ -289,14 +289,14 @@ export function SecurityContent() {
           <div className="grid gap-2 lg:grid-cols-[1fr_150px_150px]">
             <div className="relative">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar usuario"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
 
@@ -305,7 +305,7 @@ export function SecurityContent() {
               onChange={(event) =>
                 setRoleFilter(event.target.value as "all" | SecurityRole)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos cargos</option>
               {roleOptions.map((role) => (
@@ -322,7 +322,7 @@ export function SecurityContent() {
                   event.target.value as "all" | SecurityUserStatus,
                 )
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos status</option>
               {statusOptions.map((status) => (
@@ -336,7 +336,7 @@ export function SecurityContent() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Usuario</th>
                 <th className="px-5 py-3 font-semibold">Cargo</th>
@@ -346,13 +346,13 @@ export function SecurityContent() {
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="text-slate-700">
+                <tr key={user.id} className="text-stone-700">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-slate-950">{user.name}</p>
-                    <p className="mt-1 text-xs text-slate-500">{user.email}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="font-medium text-stone-950">{user.name}</p>
+                    <p className="mt-1 text-xs text-stone-500">{user.email}</p>
+                    <p className="mt-1 text-xs text-stone-500">
                       {user.storeName} | Ultimo acesso: {user.lastAccess}
                     </p>
                   </td>
@@ -426,12 +426,12 @@ export function SecurityContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Politicas de protecao
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Ative regras de protecao que depois viram validacoes reais.
             </p>
           </div>
@@ -440,14 +440,14 @@ export function SecurityContent() {
             {policies.map((policy) => (
               <article
                 key={policy.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-slate-950">
+                    <h3 className="font-semibold text-stone-950">
                       {policy.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                    <p className="mt-2 text-sm leading-6 text-stone-500">
                       {policy.description}
                     </p>
                   </div>
@@ -475,12 +475,12 @@ export function SecurityContent() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
+        <div className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="text-base font-semibold text-stone-950">
               Sessoes ativas
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Monitore dispositivos e encerre acessos suspeitos.
             </p>
           </div>
@@ -489,14 +489,14 @@ export function SecurityContent() {
             {sessions.map((session) => (
               <article
                 key={session.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-stone-200 bg-stone-50 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-950">
+                    <p className="font-semibold text-stone-950">
                       {session.userName}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {session.device} | {session.ipAddress}
                     </p>
                   </div>
@@ -505,7 +505,7 @@ export function SecurityContent() {
                     tone={getSessionStatusTone(session.status)}
                   />
                 </div>
-                <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                <div className="mt-3 grid gap-2 text-sm text-stone-600">
                   <p>Loja: {session.storeName}</p>
                   <p>Inicio: {session.startedAt}</p>
                   <p>Ultima atividade: {session.lastActivity}</p>
@@ -527,19 +527,19 @@ export function SecurityContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Matriz de permissoes
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Base inicial dos papeis antes de gravar regras no banco.
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Cargo</th>
                 {permissionAreas.map((area) => (
@@ -549,10 +549,10 @@ export function SecurityContent() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {rolePermissions.map((rolePermission) => (
-                <tr key={rolePermission.role} className="text-slate-700">
-                  <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-950">
+                <tr key={rolePermission.role} className="text-stone-700">
+                  <td className="whitespace-nowrap px-5 py-4 font-medium text-stone-950">
                     {securityRoleLabels[rolePermission.role]}
                   </td>
                   {permissionAreas.map((area) => {
@@ -602,9 +602,9 @@ export function SecurityContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }
@@ -639,7 +639,7 @@ function SecurityUserModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 px-4 py-6">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-stone-950/50 px-4 py-6">
       <div
         role="dialog"
         aria-modal="true"
@@ -648,12 +648,12 @@ function SecurityUserModal({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-emerald-700">
+            <p className="text-sm font-medium text-amber-700">
               Convite de acesso
             </p>
             <h2
               id="security-user-modal-title"
-              className="mt-1 text-xl font-semibold text-slate-950"
+              className="mt-1 text-xl font-semibold text-stone-950"
             >
               Novo usuario
             </h2>
@@ -666,7 +666,7 @@ function SecurityUserModal({
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-1 text-sm font-medium text-slate-700">
+            <label className="space-y-1 text-sm font-medium text-stone-700">
               <span>Nome</span>
               <input
                 value={formState.name}
@@ -677,11 +677,11 @@ function SecurityUserModal({
                   }))
                 }
                 placeholder="Nome completo"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </label>
 
-            <label className="space-y-1 text-sm font-medium text-slate-700">
+            <label className="space-y-1 text-sm font-medium text-stone-700">
               <span>E-mail</span>
               <input
                 value={formState.email}
@@ -692,13 +692,13 @@ function SecurityUserModal({
                   }))
                 }
                 placeholder="usuario@empresa.com"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </label>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-1 text-sm font-medium text-slate-700">
+            <label className="space-y-1 text-sm font-medium text-stone-700">
               <span>Cargo</span>
               <select
                 value={formState.role}
@@ -708,7 +708,7 @@ function SecurityUserModal({
                     role: event.target.value as SecurityRole,
                   }))
                 }
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {roleOptions.map((role) => (
                   <option key={role} value={role}>
@@ -718,7 +718,7 @@ function SecurityUserModal({
               </select>
             </label>
 
-            <label className="space-y-1 text-sm font-medium text-slate-700">
+            <label className="space-y-1 text-sm font-medium text-stone-700">
               <span>Loja</span>
               <input
                 value={formState.storeName}
@@ -729,12 +729,12 @@ function SecurityUserModal({
                   }))
                 }
                 placeholder="Loja Matriz"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </label>
           </div>
 
-          <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700">
+          <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm font-medium text-stone-700">
             <input
               type="checkbox"
               checked={formState.mfaEnabled}
@@ -744,7 +744,7 @@ function SecurityUserModal({
                   mfaEnabled: event.target.checked,
                 }))
               }
-              className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="size-4 rounded border-stone-300 text-amber-600 focus:ring-amber-400"
             />
             Exigir MFA no primeiro acesso
           </label>
@@ -755,7 +755,7 @@ function SecurityUserModal({
             </Button>
             <Button
               type="submit"
-              className="bg-slate-950 text-white hover:bg-slate-800"
+              className="bg-stone-950 text-white hover:bg-stone-800"
             >
               <UserRoundPlus className="size-4" aria-hidden="true" />
               Enviar convite

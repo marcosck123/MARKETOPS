@@ -31,32 +31,32 @@ export default async function AdminCaixasPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
             Leitura financeiro
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">
+          <h1 className="mt-1 text-2xl font-bold text-stone-900">
             Sessoes de caixa
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Historico de sessoes por operador — somente leitura.
           </p>
         </div>
 
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <p className="text-sm text-slate-500">
+        <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <p className="text-sm text-stone-500">
               {sessions.length} sessao{sessions.length !== 1 ? "es" : ""}{" "}
               registrada{sessions.length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="overflow-x-auto">
             {sessions.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-slate-400">
+              <p className="px-5 py-10 text-center text-sm text-stone-400">
                 Nenhuma sessao registrada.
               </p>
             ) : (
               <table className="w-full min-w-[850px] border-collapse text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="bg-stone-50 text-xs uppercase text-stone-500">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Caixa</th>
                     <th className="px-5 py-3 font-semibold">Operador</th>
@@ -74,7 +74,7 @@ export default async function AdminCaixasPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-stone-100">
                   {sessions.map((session: (typeof sessions)[number]) => {
                     const totalSales = session.sales.reduce(
                       (sum: number, s: { total: number }) => sum + s.total,
@@ -82,8 +82,8 @@ export default async function AdminCaixasPage() {
                     );
                     const isOpen = session.status === "open";
                     return (
-                      <tr key={session.id} className="text-slate-700">
-                        <td className="whitespace-nowrap px-5 py-3 font-medium text-slate-900">
+                      <tr key={session.id} className="text-stone-700">
+                        <td className="whitespace-nowrap px-5 py-3 font-medium text-stone-900">
                           {session.cashRegister.name}
                         </td>
                         <td className="px-5 py-3">{session.operatorName}</td>
@@ -92,17 +92,17 @@ export default async function AdminCaixasPage() {
                             className={cn(
                               "rounded-full px-2 py-0.5 text-xs font-medium",
                               isOpen
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-slate-100 text-slate-500",
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-stone-100 text-stone-500",
                             )}
                           >
                             {isOpen ? "Aberta" : "Fechada"}
                           </span>
                         </td>
-                        <td className="whitespace-nowrap px-5 py-3 text-slate-500">
+                        <td className="whitespace-nowrap px-5 py-3 text-stone-500">
                           {fmtDate(session.openedAt)}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-3 text-slate-500">
+                        <td className="whitespace-nowrap px-5 py-3 text-stone-500">
                           {fmtDate(session.closedAt)}
                         </td>
                         <td className="whitespace-nowrap px-5 py-3 text-right tabular-nums">

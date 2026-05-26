@@ -158,7 +158,7 @@ export function TestsContent() {
           <Button
             type="button"
             onClick={runManualSuite}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
           >
             <Play className="size-4" aria-hidden="true" />
             Rodar suite manual
@@ -191,13 +191,13 @@ export function TestsContent() {
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 xl:flex-row xl:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 xl:flex-row xl:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Casos de teste
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Casos prioritarios para venda, estoque, PDV e operacao.
             </p>
           </div>
@@ -205,14 +205,14 @@ export function TestsContent() {
           <div className="grid gap-2 lg:grid-cols-[1fr_160px_160px]">
             <div className="relative">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Buscar teste"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
 
@@ -221,7 +221,7 @@ export function TestsContent() {
               onChange={(event) =>
                 setAreaFilter(event.target.value as "all" | TestArea)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todas areas</option>
               {areaOptions.map((area) => (
@@ -236,7 +236,7 @@ export function TestsContent() {
               onChange={(event) =>
                 setStatusFilter(event.target.value as "all" | TestCaseStatus)
               }
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
             >
               <option value="all">Todos status</option>
               {Object.entries(testCaseStatusLabels).map(([status, label]) => (
@@ -250,7 +250,7 @@ export function TestsContent() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Caso</th>
                 <th className="px-5 py-3 font-semibold">Area</th>
@@ -259,17 +259,17 @@ export function TestsContent() {
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredCases.map((testCase) => (
-                <tr key={testCase.id} className="text-slate-700">
+                <tr key={testCase.id} className="text-stone-700">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-slate-950">
+                    <p className="font-medium text-stone-950">
                       {testCase.code} | {testCase.title}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {testCase.command}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       Evidencia: {testCase.evidence}
                     </p>
                   </td>
@@ -326,12 +326,12 @@ export function TestsContent() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Execucoes
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Historico das validacoes feitas no projeto.
           </p>
         </div>
@@ -339,12 +339,12 @@ export function TestsContent() {
           {runs.map((run) => (
             <article
               key={run.id}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              className="rounded-lg border border-stone-200 bg-stone-50 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-slate-950">{run.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="font-semibold text-stone-950">{run.title}</p>
+                  <p className="mt-1 text-xs text-stone-500">
                     {run.startedAt} {run.finishedAt ? `| ${run.finishedAt}` : ""}
                   </p>
                 </div>
@@ -353,7 +353,7 @@ export function TestsContent() {
                   tone={getStatusTone(run.status)}
                 />
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-3 text-sm leading-6 text-stone-600">
                 {run.summary}
               </p>
             </article>
@@ -381,9 +381,9 @@ export function TestsContent() {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }

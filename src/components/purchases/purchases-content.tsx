@@ -244,7 +244,7 @@ export function PurchasesContent({
           <Button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
           >
             <Plus className="size-4" aria-hidden="true" />
             Nova NF
@@ -269,19 +269,19 @@ export function PurchasesContent({
         />
       )}
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 px-5 py-4">
+          <h2 className="text-base font-semibold text-stone-950">
             Recebimentos
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-stone-500">
             Clique em uma linha de rascunho para adicionar itens e confirmar.
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold" />
                 <th className="px-5 py-3 font-semibold">Codigo</th>
@@ -294,12 +294,12 @@ export function PurchasesContent({
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {receipts.length === 0 ? (
                 <tr>
                   <td
                     colSpan={9}
-                    className="px-5 py-10 text-center text-sm text-slate-400"
+                    className="px-5 py-10 text-center text-sm text-stone-400"
                   >
                     Nenhum recebimento registrado.
                   </td>
@@ -314,31 +314,31 @@ export function PurchasesContent({
                     <Fragment key={receipt.id}>
                       <tr
                         className={cn(
-                          "cursor-pointer text-slate-700 transition-colors",
+                          "cursor-pointer text-stone-700 transition-colors",
                           isDraft
-                            ? "hover:bg-slate-50"
+                            ? "hover:bg-stone-50"
                             : "cursor-default opacity-80",
                         )}
                         onClick={() => void handleToggleExpand(receipt.id)}
                       >
-                        <td className="px-3 py-4 text-slate-400">
+                        <td className="px-3 py-4 text-stone-400">
                           {isExpanded ? (
                             <ChevronDown className="size-4" />
                           ) : (
                             <ChevronRight className="size-4" />
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-slate-900">
+                        <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-stone-900">
                           {receipt.code}
                         </td>
                         <td className="px-5 py-4">
                           {receipt.supplierName ?? (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-stone-400">—</span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-5 py-4">
                           {receipt.invoiceNumber ?? (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-stone-400">—</span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-5 py-4">
@@ -347,13 +347,13 @@ export function PurchasesContent({
                             tone={statusTone[receipt.status as StockReceiptStatus]}
                           />
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                        <td className="whitespace-nowrap px-5 py-4 text-stone-500">
                           {receipt._count.items}
                         </td>
                         <td className="whitespace-nowrap px-5 py-4 font-medium">
                           {formatCurrency(receipt.totalCost)}
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4 text-slate-500">
+                        <td className="whitespace-nowrap px-5 py-4 text-stone-500">
                           {formatDate(receipt.createdAt)}
                         </td>
                         <td
@@ -373,7 +373,7 @@ export function PurchasesContent({
                               </Button>
                               <Button
                                 type="button"
-                                className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                                className="bg-amber-400 text-stone-950 hover:bg-amber-300"
                                 onClick={() => void handleConfirm(receipt.id)}
                               >
                                 <CheckCircle2
@@ -391,11 +391,11 @@ export function PurchasesContent({
                         <tr>
                           <td
                             colSpan={9}
-                            className="bg-slate-50 px-8 py-5"
+                            className="bg-stone-50 px-8 py-5"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {loadingItems === receipt.id ? (
-                              <p className="text-sm text-slate-400">
+                              <p className="text-sm text-stone-400">
                                 Carregando itens...
                               </p>
                             ) : (
@@ -407,12 +407,12 @@ export function PurchasesContent({
                                 )}
 
                                 {items.length === 0 ? (
-                                  <p className="text-sm text-slate-400">
+                                  <p className="text-sm text-stone-400">
                                     Nenhum item adicionado.
                                   </p>
                                 ) : (
                                   <table className="w-full border-collapse text-sm">
-                                    <thead className="text-xs uppercase text-slate-500">
+                                    <thead className="text-xs uppercase text-stone-500">
                                       <tr>
                                         <th className="py-1 pr-4 text-left font-semibold">
                                           Produto
@@ -431,10 +431,10 @@ export function PurchasesContent({
                                         )}
                                       </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-200">
+                                    <tbody className="divide-y divide-stone-200">
                                       {items.map((item) => (
                                         <tr key={item.id}>
-                                          <td className="py-2 pr-4 font-medium text-slate-900">
+                                          <td className="py-2 pr-4 font-medium text-stone-900">
                                             {item.productName}
                                           </td>
                                           <td className="py-2 pr-4 text-right tabular-nums">
@@ -457,7 +457,7 @@ export function PurchasesContent({
                                                     item.total,
                                                   )
                                                 }
-                                                className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                                                className="rounded p-1 text-stone-400 hover:bg-red-50 hover:text-red-500"
                                               >
                                                 <Trash2
                                                   className="size-4"
@@ -473,9 +473,9 @@ export function PurchasesContent({
                                 )}
 
                                 {isDraft && (
-                                  <div className="flex flex-wrap items-end gap-3 border-t border-slate-200 pt-4">
+                                  <div className="flex flex-wrap items-end gap-3 border-t border-stone-200 pt-4">
                                     <div className="min-w-[200px] flex-1">
-                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                      <label className="mb-1 block text-xs font-medium text-stone-600">
                                         Produto
                                       </label>
                                       <select
@@ -486,7 +486,7 @@ export function PurchasesContent({
                                             productId: e.target.value,
                                           }))
                                         }
-                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                        className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                                       >
                                         <option value="">
                                           Selecionar produto
@@ -499,7 +499,7 @@ export function PurchasesContent({
                                       </select>
                                     </div>
                                     <div className="w-24">
-                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                      <label className="mb-1 block text-xs font-medium text-stone-600">
                                         Qtd
                                       </label>
                                       <input
@@ -513,11 +513,11 @@ export function PurchasesContent({
                                             quantity: e.target.value,
                                           }))
                                         }
-                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                        className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                                       />
                                     </div>
                                     <div className="w-32">
-                                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                                      <label className="mb-1 block text-xs font-medium text-stone-600">
                                         Custo unit. (R$)
                                       </label>
                                       <input
@@ -532,7 +532,7 @@ export function PurchasesContent({
                                           }))
                                         }
                                         placeholder="0,00"
-                                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                        className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                                       />
                                     </div>
                                     <Button
@@ -545,7 +545,7 @@ export function PurchasesContent({
                                       onClick={() =>
                                         void handleAddItem(receipt.id)
                                       }
-                                      className="bg-slate-800 text-white hover:bg-slate-700 disabled:opacity-50"
+                                      className="bg-stone-800 text-white hover:bg-stone-700 disabled:opacity-50"
                                     >
                                       <Plus
                                         className="size-4"
@@ -596,15 +596,15 @@ function CreateModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4"
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <div className="w-full max-w-lg rounded-lg border border-stone-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
           <div className="flex items-center gap-2">
-            <FileText className="size-5 text-emerald-600" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-slate-950">
+            <FileText className="size-5 text-amber-600" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-stone-950">
               Nova NF de entrada
             </h2>
           </div>
@@ -616,13 +616,13 @@ function CreateModal({
         <form onSubmit={onSubmit}>
           <div className="space-y-3 px-5 py-5">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              <span className="mb-1.5 block text-sm font-medium text-stone-700">
                 Fornecedor (opcional)
               </span>
               <select
                 value={form.supplierId}
                 onChange={(e) => onChange("supplierId", e.target.value)}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 <option value="">Sem fornecedor</option>
                 {suppliers
@@ -636,40 +636,40 @@ function CreateModal({
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              <span className="mb-1.5 block text-sm font-medium text-stone-700">
                 Numero da NF (opcional)
               </span>
               <input
                 value={form.invoiceNumber}
                 onChange={(e) => onChange("invoiceNumber", e.target.value)}
                 placeholder="Ex.: 001234"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              <span className="mb-1.5 block text-sm font-medium text-stone-700">
                 Observacoes (opcional)
               </span>
               <textarea
                 value={form.notes}
                 onChange={(e) => onChange("notes", e.target.value)}
                 rows={2}
-                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </label>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
+          <div className="flex justify-end gap-2 border-t border-stone-200 px-5 py-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={creating}
-              className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+              className="bg-amber-400 text-stone-950 hover:bg-amber-300 disabled:opacity-50"
             >
               {creating ? "Criando..." : "Criar rascunho"}
             </Button>

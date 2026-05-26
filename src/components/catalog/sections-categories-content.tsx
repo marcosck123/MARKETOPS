@@ -180,11 +180,11 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
         <div className="space-y-4">
           <form
             onSubmit={handleAddSection}
-            className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
           >
             <div className="flex items-center gap-2">
-              <FolderPlus className="size-5 text-emerald-600" />
-              <h2 className="text-base font-semibold text-slate-950">
+              <FolderPlus className="size-5 text-amber-600" />
+              <h2 className="text-base font-semibold text-stone-950">
                 Nova secao
               </h2>
             </div>
@@ -193,18 +193,18 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                 value={sectionName}
                 onChange={(event) => setSectionName(event.target.value)}
                 placeholder="Ex.: Hortifruti"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
               <textarea
                 value={sectionDescription}
                 onChange={(event) => setSectionDescription(event.target.value)}
                 placeholder="Descricao curta da secao"
                 rows={3}
-                className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
               <Button
                 type="submit"
-                className="w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                className="w-full bg-amber-400 text-stone-950 hover:bg-amber-300"
               >
                 <Plus className="size-4" aria-hidden="true" />
                 Adicionar secao
@@ -214,11 +214,11 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
 
           <form
             onSubmit={handleAddCategory}
-            className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
           >
             <div className="flex items-center gap-2">
-              <Tags className="size-5 text-emerald-600" />
-              <h2 className="text-base font-semibold text-slate-950">
+              <Tags className="size-5 text-amber-600" />
+              <h2 className="text-base font-semibold text-stone-950">
                 Nova categoria
               </h2>
             </div>
@@ -227,12 +227,12 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                 value={categoryName}
                 onChange={(event) => setCategoryName(event.target.value)}
                 placeholder="Ex.: Verduras"
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
               <select
                 value={categorySectionId}
                 onChange={(event) => setCategorySectionId(event.target.value)}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               >
                 {sections.map((section) => (
                   <option key={section.id} value={section.id}>
@@ -242,7 +242,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
               </select>
               <Button
                 type="submit"
-                className="w-full bg-slate-950 text-white hover:bg-slate-800"
+                className="w-full bg-stone-950 text-white hover:bg-stone-800"
               >
                 <Plus className="size-4" aria-hidden="true" />
                 Adicionar categoria
@@ -251,13 +251,13 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
           </form>
         </div>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-slate-950">
+              <h2 className="text-base font-semibold text-stone-950">
                 Secoes cadastradas
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-stone-500">
                 Base para filtros, produtos e relatorios.
               </p>
             </div>
@@ -274,7 +274,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
               return (
                 <article
                   key={section.id}
-                  className="rounded-lg border border-slate-200 p-4"
+                  className="rounded-lg border border-stone-200 p-4"
                 >
                   {sectionDraft ? (
                     <div className="space-y-3">
@@ -286,7 +286,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                             name: event.target.value,
                           })
                         }
-                        className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        className="h-10 w-full rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                       />
                       <textarea
                         value={sectionDraft.description}
@@ -297,13 +297,13 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                           })
                         }
                         rows={3}
-                        className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        className="w-full resize-none rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                       />
                       <div className="flex gap-2">
                         <Button
                           type="button"
                           onClick={handleSaveSection}
-                          className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                          className="bg-amber-400 text-stone-950 hover:bg-amber-300"
                         >
                           <Save className="size-4" aria-hidden="true" />
                           Salvar
@@ -322,10 +322,10 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                     <>
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-semibold text-slate-950">
+                          <h3 className="font-semibold text-stone-950">
                             {section.name}
                           </h3>
-                          <p className="mt-1 text-sm leading-5 text-slate-500">
+                          <p className="mt-1 text-sm leading-5 text-stone-500">
                             {section.description}
                           </p>
                         </div>
@@ -334,7 +334,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                           tone={section.status === "active" ? "success" : "warning"}
                         />
                       </div>
-                      <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+                      <div className="mt-4 flex items-center justify-between text-sm text-stone-500">
                         <span>{sectionCategories.length} categorias</span>
                         <span>
                           {sectionCategories.reduce(
@@ -376,26 +376,26 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
         </section>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center">
+      <section className="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-stone-200 px-5 py-4 lg:flex-row lg:items-center">
           <div>
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-stone-950">
               Categorias
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               Consulte, filtre e altere categorias por secao.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative">
               <Filter
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
               <select
                 value={selectedSectionId}
                 onChange={(event) => setSelectedSectionId(event.target.value)}
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 pl-9 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 sm:w-56"
+                className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pl-9 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 sm:w-56"
               >
                 <option value="all">Todas as secoes</option>
                 {sections.map((section) => (
@@ -409,14 +409,14 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Buscar categoria"
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 sm:w-64"
+              className="h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100 sm:w-64"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-stone-50 text-xs uppercase text-stone-500">
               <tr>
                 <th className="px-5 py-3 font-semibold">Categoria</th>
                 <th className="px-5 py-3 font-semibold">Secao</th>
@@ -425,15 +425,15 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                 <th className="px-5 py-3 font-semibold">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-stone-100">
               {filteredCategories.map((category) => {
                 const section = sectionById.get(category.sectionId);
                 const categoryDraft =
                   editingCategory?.id === category.id ? editingCategory : null;
 
                 return (
-                  <tr key={category.id} className="text-slate-700">
-                    <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-950">
+                  <tr key={category.id} className="text-stone-700">
+                    <td className="whitespace-nowrap px-5 py-4 font-medium text-stone-950">
                       {categoryDraft ? (
                         <input
                           value={categoryDraft.name}
@@ -443,7 +443,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                               name: event.target.value,
                             })
                           }
-                          className="h-9 w-56 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          className="h-9 w-56 rounded-lg border border-stone-200 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                         />
                       ) : (
                         category.name
@@ -467,7 +467,7 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
                           <Button
                             type="button"
                             onClick={handleSaveCategory}
-                            className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                            className="bg-amber-400 text-stone-950 hover:bg-amber-300"
                           >
                             <Save className="size-4" aria-hidden="true" />
                             Salvar
@@ -519,9 +519,9 @@ export function SectionsCategoriesContent({ sections, categories }: Props) {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+    <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </article>
   );
 }
