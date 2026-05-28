@@ -372,7 +372,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             background: "#EF9F27", color: "#1A1917",
             display: "grid", placeItems: "center",
             fontSize: 10, fontWeight: 800,
-            fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+           
             flexShrink: 0,
           }}
         >
@@ -400,7 +400,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
 
         {/* Right: caixa info */}
         <div style={{ marginLeft: "auto", flexShrink: 0, textAlign: "right" }}>
-          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+          <p style={{ fontSize: 11, color: "#78716C", margin: 0, }}>
             {cashSession.cashRegisterName} · {currentTime}
           </p>
           <p style={{ fontSize: 11, color: "#57534E", margin: 0 }}>
@@ -452,7 +452,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               display: "flex", flexDirection: "column", alignItems: "center",
               paddingTop: 28, paddingInline: 24,
               background: "rgba(249,248,246,0.94)",
-              backdropFilter: "blur(6px)",
+              backdropFilter: "blur(1px)",
               animation: "fadeIn 150ms both",
             }}
             onClick={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}
@@ -484,7 +484,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 style={{
                   flex: 1, height: 52, border: "none", outline: "none",
                   fontSize: 15, background: "transparent", color: "#1A1917",
-                  fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
+                 
                 }}
               />
               <button
@@ -527,18 +527,18 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
+                        <p style={{ fontSize: 16, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
                           {product.name}
                         </p>
-                        <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
+                        <p style={{ fontSize: 11, color: "#A8A29E", margin: 0 }}>
                           {product.sku}
                         </p>
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "#1A1917", margin: 0 }}>
                           {fmt(price)}
                         </p>
-                        <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                        <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", }}>
                           {isZero ? "sem estoque" : `${product.currentStock} un.`}
                         </p>
                       </div>
@@ -579,25 +579,25 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     animation: `fadeUp ${180 + idx * 40}ms both`,
                   }}
                 >
-                  <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", flexShrink: 0 }}>
                     {idx + 1}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
+                    <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#1A1917" }} className="truncate">
                       {product?.name ?? "Produto removido"}
                     </p>
-                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", }}>
                       {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
                     </p>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                     <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
-                    <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                    <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", }}>
                       {item.quantity}
                     </span>
                     <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
                   </div>
-                  <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
+                  <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", flexShrink: 0 }}>
                     {fmt(item.total)}
                   </span>
                   <button
@@ -634,7 +634,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600, color: "#1A1917" }}>
               {cashSession.operatorName}
             </p>
-            <p style={{ margin: "1px 0 0", fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+            <p style={{ margin: "1px 0 0", fontSize: 11, color: "#A8A29E", }}>
               {cashSession.cashRegisterName}
             </p>
           </div>
@@ -645,14 +645,14 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               <span style={{ fontSize: 12, color: "#A8A29E" }}>
                 {sale.items.length} {sale.items.length === 1 ? "item" : "itens"}
               </span>
-              <span style={{ fontSize: 12, color: "#78716C", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+              <span style={{ fontSize: 12, color: "#78716C", }}>
                 {fmt(sale.subtotal)}
               </span>
             </div>
             {sale.discount > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "#A8A29E" }}>Desconto</span>
-                <span style={{ fontSize: 12, color: "#EF4444", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                <span style={{ fontSize: 12, color: "#EF4444", }}>
                   -{fmt(sale.discount)}
                 </span>
               </div>
@@ -694,7 +694,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 flex: 1, height: 34, borderRadius: 7, border: "1px solid #E4E2DC",
                 background: "#F9F8F6", padding: "0 10px", fontSize: 12,
                 color: "#78716C", outline: "none",
-                fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
+               
               }}
             />
             <button
@@ -743,7 +743,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     background: "#1A1917", color: "#FFFFFF",
                     border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+                   
                     transition: "background 150ms",
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
@@ -764,7 +764,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   color: "#1A1917", border: "none",
                   fontSize: 14, fontWeight: 700,
                   cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
-                  fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+                 
                   transition: "all 150ms",
                 }}
               >
@@ -779,7 +779,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       {/* ─── PAYMENT MODAL ─── */}
       {paymentOpen && (
         <div
-          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(26,25,23,.65)", backdropFilter: "blur(6px)", animation: "overlayIn 180ms both" }}
+          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(26,25,23,.65)", backdropFilter: "blur(1px)", animation: "overlayIn 180ms both" }}
           onClick={(e) => { if (e.target === e.currentTarget) closePaymentModal(); }}
         >
           <div style={{ background: "#FFFFFF", borderRadius: 14, width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", overflow: "hidden", animation: "sheetIn 220ms both", boxShadow: "0 24px 64px rgba(0,0,0,0.3)" }}>
@@ -789,8 +789,8 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               <>
                 <div style={{ padding: "16px 18px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5px solid #F0EEE9" }}>
                   <div>
-                    <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>Pagamento</p>
-                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#1A1917", }}>Pagamento</p>
+                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", }}>
                       {sheetPayments.length > 0 ? `Restante: ${fmt(sheetBalance)}` : `Total: ${fmt(sale.total)}`}
                     </p>
                   </div>
@@ -807,7 +807,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   >
                     <div style={{ textAlign: "left" }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A1917" }}>Inteiro</p>
-                      <p style={{ margin: 0, fontSize: 12, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(sheetBalance)}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#A8A29E", }}>{fmt(sheetBalance)}</p>
                     </div>
                     <span style={{ fontSize: 18, color: "#EF9F27" }}>→</span>
                   </button>
@@ -835,13 +835,13 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                         <div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: "#1A1917" }}>{p.label}</span>
                           {(p.cv || p.ref) && (
-                            <span style={{ fontSize: 10, color: "#A8A29E", marginLeft: 6, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                            <span style={{ fontSize: 10, color: "#A8A29E", marginLeft: 6, }}>
                               {p.cv ? `CV: ${p.cv}` : `Ref: ${p.ref}`}
                             </span>
                           )}
                         </div>
                         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          <span style={{ fontSize: 12, color: "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(p.amount)}</span>
+                          <span style={{ fontSize: 12, color: "#3B6D11", }}>{fmt(p.amount)}</span>
                           <button type="button" onClick={() => setSheetPayments((prev) => prev.filter((x) => x.id !== p.id))} style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer", padding: 2 }}>
                             <X size={12} />
                           </button>
@@ -851,7 +851,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     <button
                       type="button"
                       onClick={() => doConfirm(sheetPayments)}
-                      style={{ marginTop: 12, width: "100%", height: 40, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}
+                      style={{ marginTop: 12, width: "100%", height: 40, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", }}
                     >
                       Confirmar pagamento
                     </button>
@@ -867,7 +867,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   <button type="button" onClick={() => setPaymentStep("type")} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", flexShrink: 0 }}>
                     <ArrowLeft size={14} />
                   </button>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", }}>
                     Forma de pagamento
                   </p>
                   <button type="button" onClick={closePaymentModal} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", marginLeft: "auto", flexShrink: 0 }}>
@@ -900,7 +900,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     <ArrowLeft size={14} />
                   </button>
                   <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", }}>
                       {MODAL_METHODS.find((m) => m.method === modalMethod)?.label}
                     </p>
                     <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>
@@ -928,7 +928,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                         inputMode="decimal"
                         placeholder={fmt(sheetBalance).replace("R$ ", "")}
                         autoFocus
-                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 15, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 15, outline: "none", color: "#1A1917" }}
                       />
                     </div>
                   )}
@@ -941,7 +941,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                         value={modalCv}
                         onChange={(e) => setModalCv(e.target.value)}
                         placeholder="Código de verificação"
-                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, outline: "none", color: "#1A1917" }}
                       />
                     </div>
                   )}
@@ -954,7 +954,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                         value={modalRef}
                         onChange={(e) => setModalRef(e.target.value)}
                         placeholder="Referência ou código"
-                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, outline: "none", color: "#1A1917" }}
                       />
                     </div>
                   )}
@@ -962,7 +962,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   <button
                     type="button"
                     onClick={addModalPayment}
-                    style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif", transition: "background 150ms" }}
+                    style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "background 150ms" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "#1A1917"; }}
                   >
@@ -980,7 +980,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       {nfModalOpen && (
         <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(26,25,23,.75)", animation: "overlayIn 180ms both" }}>
           <div style={{ width: "100%", maxWidth: 360, background: "#1C1917", borderRadius: 16, padding: 24, animation: "sheetIn 200ms both" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#FFFFFF", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>Emitir NF-e</p>
+            <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#FFFFFF", }}>Emitir NF-e</p>
             <p style={{ margin: "0 0 20px", fontSize: 12, color: "#78716C" }}>Venda {pendingSale?.code} finalizada</p>
             <div style={{ marginBottom: 12 }}>
               <p style={{ margin: "0 0 6px", fontSize: 11, color: "#A8A29E" }}>CPF ou CNPJ</p>
@@ -1000,7 +1000,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             {nfLookupName === null && nfDocument && !nfLoading && <p style={{ fontSize: 12, color: "#78716C", margin: "0 0 12px" }}>Documento não cadastrado — NF sem vínculo.</p>}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <button type="button" onClick={() => { setNfModalOpen(false); setPendingSale(null); resetSale(); }} style={{ flex: 1, height: 40, borderRadius: 8, border: "1px solid #2C2C2A", background: "transparent", color: "#A8A29E", fontSize: 13, cursor: "pointer" }}>Sem NF</button>
-              <button type="button" disabled={nfLoading || !nfDocument.trim()} onClick={() => void handleRequestNfe()} style={{ flex: 1, height: 40, borderRadius: 8, background: "#EF9F27", color: "#1A1917", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+              <button type="button" disabled={nfLoading || !nfDocument.trim()} onClick={() => void handleRequestNfe()} style={{ flex: 1, height: 40, borderRadius: 8, background: "#EF9F27", color: "#1A1917", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", }}>
                 {nfLoading ? "Enviando..." : "Solicitar NF-e"}
               </button>
             </div>
