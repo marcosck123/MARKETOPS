@@ -18,9 +18,11 @@ type Props = {
 export function SessionGate({ registers, operatorId, operatorName }: Props) {
   const router = useRouter();
   const [selectedRegisterId, setSelectedRegisterId] = useState(registers[0]?.id ?? "");
-  const [openingBalance, setOpeningBalance] = useState("0");
+  const [openingBalance, setOpeningBalance] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const balanceFilled = openingBalance.trim() !== "";
 
   async function handleConfirm(e: FormEvent) {
     e.preventDefault();
@@ -28,9 +30,15 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
       setError("Selecione um caixa.");
       return;
     }
-    setLoading(true);
-    setError("");
-    const balance = parseFloat(openingBalance.replace(",", ".")) || 0;
+    if (!balanceFilled) {
+      setError("Informe o saldo de abertura antes de iniciar a sessão.");
+      return;
+    }
+    const balance = parseFloat(openingBalance.replace(",", "."));
+    if (Number.isNaN(balance) || balance < 0) {
+      setError("Saldo inválido. Use um número como 50 ou 50,00.");
+      return;
+    }
     const result = await openCashSession({
       cashRegisterId: selectedRegisterId,
       operatorId,
@@ -92,15 +100,20 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
 
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-slate-300">
-                Saldo de abertura (R$)
+                Saldo de abertura (R$) <span className="text-amber-400">*</span>
               </span>
               <input
                 type="text"
                 inputMode="decimal"
                 value={openingBalance}
                 onChange={(e) => setOpeningBalance(e.target.value)}
-                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                placeholder="Ex: 50,00"
+                required
+                className="h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
               />
+              <p className="mt-1.5 text-xs text-slate-500">
+                Obrigatório — informe o valor em caixa antes de iniciar.
+              </p>
             </label>
 
             {error && (
@@ -109,7 +122,7 @@ export function SessionGate({ registers, operatorId, operatorName }: Props) {
 
             <Button
               type="submit"
-              disabled={loading || registers.length === 0}
+              disabled={loading || registers.length === 0 || !balanceFilled}
               className="h-12 w-full bg-amber-400 text-slate-950 hover:bg-amber-300 disabled:opacity-50"
             >
               <LogIn className="size-4" aria-hidden="true" />
