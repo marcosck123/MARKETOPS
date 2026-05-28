@@ -307,7 +307,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             background: "#EF9F27", color: "#1A1917",
             display: "grid", placeItems: "center",
             fontSize: 10, fontWeight: 800,
-            fontFamily: "var(--font-syne)",
+            fontFamily: "\"Syne\", var(--font-syne), sans-serif",
             flexShrink: 0,
           }}
         >
@@ -365,7 +365,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 padding: "0 12px",
                 fontSize: 13,
                 outline: "none",
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
               }}
             />
           </div>
@@ -409,15 +409,15 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                       <p style={{ fontSize: 13, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
                         {product.name}
                       </p>
-                      <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "var(--font-dm-mono)", margin: 0 }}>
+                      <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
                         {product.sku}
                       </p>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)", margin: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
                         {fmt(price)}
                       </p>
-                      <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>
+                      <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
                         {isZero ? "sem estoque" : `${product.currentStock} un.`}
                       </p>
                     </div>
@@ -430,10 +430,10 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
 
         {/* Right: clock + total */}
         <div style={{ marginLeft: "auto", textAlign: "right", flexShrink: 0 }}>
-          <p style={{ fontSize: 22, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "var(--font-syne)" }}>
+          <p style={{ fontSize: 22, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
             {fmt(sale.total)}
           </p>
-          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "var(--font-dm-mono)" }}>
+          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
             {cashSession.cashRegisterName} · {currentTime}
           </p>
         </div>
@@ -500,7 +500,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 }}
               >
                 {/* Index */}
-                <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "var(--font-dm-mono)", flexShrink: 0 }}>
+                <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
                   {idx + 1}
                 </span>
 
@@ -509,7 +509,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
                     {product?.name ?? "Produto removido"}
                   </p>
-                  <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "var(--font-dm-mono)" }}>
+                  <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
                     {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
                   </p>
                 </div>
@@ -517,14 +517,14 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 {/* Qty controls */}
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                   <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
-                  <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)" }}>
+                  <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
                     {item.quantity}
                   </span>
                   <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
                 </div>
 
                 {/* Total */}
-                <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)", flexShrink: 0 }}>
+                <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
                   {fmt(item.total)}
                 </span>
 
@@ -567,7 +567,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               height: 36, borderRadius: 7, border: "1px solid #E4E2DC",
               background: "#F9F8F6", padding: "0 10px", fontSize: 12,
               color: "#78716C", outline: "none", width: 100,
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
             }}
           />
           <button
@@ -614,7 +614,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                 border: "none", padding: "0 24px",
                 fontSize: 14, fontWeight: 700, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 8,
-                fontFamily: "var(--font-syne)",
+                fontFamily: "\"Syne\", var(--font-syne), sans-serif",
                 transition: "background 150ms",
               }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
@@ -637,7 +637,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               fontSize: 14, fontWeight: 700,
               cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", gap: 8,
-              fontFamily: "var(--font-syne)",
+              fontFamily: "\"Syne\", var(--font-syne), sans-serif",
               transition: "all 150ms",
             }}
           >
@@ -674,7 +674,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "4px 16px 12px" }}>
               <div>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A1917", fontFamily: "var(--font-syne)" }}>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
                   {fmt(sheetBalance)} a pagar
                 </p>
                 <p style={{ margin: 0, fontSize: 12, color: "#A8A29E" }}>
@@ -722,13 +722,13 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   style={{
                     flex: 1, height: 44, borderRadius: 9, border: "1.5px solid #E4E2DC",
                     background: "#F9F8F6", padding: "0 14px", fontSize: 15,
-                    fontFamily: "var(--font-dm-mono)", outline: "none",
+                    fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none",
                   }}
                 />
                 <button
                   type="button"
                   onClick={addSheetPayment}
-                  style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-syne)" }}
+                  style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}
                 >
                   + Registrar
                 </button>
@@ -741,7 +741,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "0.5px solid #F0EEE9" }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: "#1A1917" }}>{paymentMethodLabels[p.method]}</span>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 13, color: "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>{fmt(p.amount)}</span>
+                        <span style={{ fontSize: 13, color: "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(p.amount)}</span>
                         <button type="button" onClick={() => setSheetPayments((prev) => prev.filter((x) => x.id !== p.id))} style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer" }}>
                           <X size={13} />
                         </button>
@@ -754,7 +754,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               {/* Balance indicator */}
               <div style={{ background: "#F9F8F6", borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
                 <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>Saldo restante</p>
-                <p style={{ margin: 0, fontSize: 24, fontWeight: 800, fontFamily: "var(--font-dm-mono)", color: sheetBalance === 0 ? "#3B6D11" : "#1A1917", transition: "color 300ms" }}>
+                <p style={{ margin: 0, fontSize: 24, fontWeight: 800, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", color: sheetBalance === 0 ? "#3B6D11" : "#1A1917", transition: "color 300ms" }}>
                   {fmt(sheetBalance)}
                 </p>
               </div>
@@ -771,7 +771,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   background: sheetPayments.length === 0 ? "#E4E2DC" : "#EF9F27",
                   color: "#1A1917", border: "none", fontSize: 15, fontWeight: 800,
                   cursor: sheetPayments.length === 0 ? "not-allowed" : "pointer",
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "\"Syne\", var(--font-syne), sans-serif",
                 }}
               >
                 Confirmar pagamento
@@ -785,7 +785,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       {nfModalOpen && (
         <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(26,25,23,.75)", animation: "overlayIn 180ms both" }}>
           <div style={{ width: "100%", maxWidth: 360, background: "#1C1917", borderRadius: 16, padding: 24, animation: "sheetIn 200ms both" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#FFFFFF", fontFamily: "var(--font-syne)" }}>Emitir NF-e</p>
+            <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#FFFFFF", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>Emitir NF-e</p>
             <p style={{ margin: "0 0 20px", fontSize: 12, color: "#78716C" }}>Venda {pendingSale?.code} finalizada</p>
             <div style={{ marginBottom: 12 }}>
               <p style={{ margin: "0 0 6px", fontSize: 11, color: "#A8A29E" }}>CPF ou CNPJ</p>
@@ -805,7 +805,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             {nfLookupName === null && nfDocument && !nfLoading && <p style={{ fontSize: 12, color: "#78716C", margin: "0 0 12px" }}>Documento não cadastrado — NF sem vínculo.</p>}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <button type="button" onClick={() => { setNfModalOpen(false); setPendingSale(null); resetSale(); }} style={{ flex: 1, height: 40, borderRadius: 8, border: "1px solid #2C2C2A", background: "transparent", color: "#A8A29E", fontSize: 13, cursor: "pointer" }}>Sem NF</button>
-              <button type="button" disabled={nfLoading || !nfDocument.trim()} onClick={() => void handleRequestNfe()} style={{ flex: 1, height: 40, borderRadius: 8, background: "#EF9F27", color: "#1A1917", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "var(--font-syne)" }}>
+              <button type="button" disabled={nfLoading || !nfDocument.trim()} onClick={() => void handleRequestNfe()} style={{ flex: 1, height: 40, borderRadius: 8, background: "#EF9F27", color: "#1A1917", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
                 {nfLoading ? "Enviando..." : "Solicitar NF-e"}
               </button>
             </div>
