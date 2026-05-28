@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import {
+  ArrowLeft,
   Banknote,
   Bell,
   CheckCircle2,
@@ -19,7 +20,7 @@ import {
   QrCode,
   Search,
   ShoppingCart,
-  Wallet,
+  Smartphone,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -42,13 +43,11 @@ import {
   getProductSalePrice,
   getSaleBalance,
   removeSaleItem,
-  removeSalePayment,
 } from "@/lib/sale-engine";
 import {
   type PaymentMethod,
   type Sale,
   type SaleItem,
-  paymentMethodLabels,
 } from "@/lib/sale-data";
 
 // ── helpers ──────────────────────────────────────────────────────────
@@ -86,12 +85,32 @@ function findProductByQuery(products: Product[], query: string) {
   );
 }
 
-const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
-  cash: <Banknote className="size-5" />,
-  pix: <QrCode className="size-5" />,
-  debit: <CreditCard className="size-5" />,
-  credit: <CreditCard className="size-5" />,
-  store_credit: <Wallet className="size-5" />,
+// ── payment modal types ───────────────────────────────────────────────
+type ModalMethod = "cash" | "debit_tef" | "debit_manual" | "pix_screen" | "pix_manual";
+
+const MODAL_METHODS: { method: ModalMethod; label: string; icon: React.ReactNode }[] = [
+  { method: "cash",         label: "Dinheiro",      icon: <Banknote size={17} /> },
+  { method: "debit_tef",    label: "Cartão TEF",    icon: <CreditCard size={17} /> },
+  { method: "debit_manual", label: "Cartão Manual", icon: <CreditCard size={17} /> },
+  { method: "pix_screen",   label: "Pix na Tela",   icon: <QrCode size={17} /> },
+  { method: "pix_manual",   label: "Pix Manual",    icon: <Smartphone size={17} /> },
+];
+
+const MODAL_TO_PAYMENT: Record<ModalMethod, PaymentMethod> = {
+  cash: "cash",
+  debit_tef: "debit",
+  debit_manual: "credit",
+  pix_screen: "pix",
+  pix_manual: "pix",
+};
+
+type SheetPayment = {
+  id: string;
+  method: PaymentMethod;
+  label: string;
+  amount: number;
+  cv?: string;
+  ref?: string;
 };
 
 type Props = { products: Product[]; cashSession: ActiveSession };
@@ -119,13 +138,19 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   const [nfLoading, setNfLoading] = useState(false);
   const [pendingSale, setPendingSale] = useState<{ id: string; code: string } | null>(null);
 
-  // ── new state ──
+  // ── search state ──
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ── payment modal state ──
   const [paymentOpen, setPaymentOpen] = useState(false);
-  const [sheetMethod, setSheetMethod] = useState<PaymentMethod>("pix");
-  const [sheetAmount, setSheetAmount] = useState("");
-  const [sheetPayments, setSheetPayments] = useState<{ id: string; method: PaymentMethod; amount: number }[]>([]);
+  const [paymentStep, setPaymentStep] = useState<"type" | "method" | "form">("type");
+  const [paymentType, setPaymentType] = useState<"full" | "partial">("full");
+  const [modalMethod, setModalMethod] = useState<ModalMethod>("cash");
+  const [modalAmount, setModalAmount] = useState("");
+  const [modalCv, setModalCv] = useState("");
+  const [modalRef, setModalRef] = useState("");
+  const [sheetPayments, setSheetPayments] = useState<SheetPayment[]>([]);
   const [discount, setDiscount] = useState("");
 
   // ── effects ──
@@ -163,7 +188,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   const sheetBalance = Math.max(0, sale.total - sheetPaid);
   const canFinish = balance === 0 && sale.items.length > 0;
 
-  // ── handlers (logic unchanged) ──
+  // ── cart handlers ──
   function addProduct(product: Product, qty = 1) {
     if (product.currentStock === 0) return;
     const next = addSaleItem({ sale, product, quantity: qty, priceMode: "retail" });
@@ -205,6 +230,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
     router.refresh();
   }
 
+  // ── sale handlers ──
   async function handleFinish() {
     const result = finishSale({ sale, products, finishedAt: new Date().toLocaleString("pt-BR") });
     if (!result.ok) { setErrors(result.errors); return; }
@@ -266,20 +292,59 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
     setHelpCountdown(60);
   }
 
-  function addSheetPayment() {
-    const amount = parseNumber(sheetAmount || String(sheetBalance));
-    if (amount <= 0) return;
-    const capped = Math.min(amount, sheetBalance);
-    setSheetPayments((p) => [...p, { id: `sp-${Date.now()}`, method: sheetMethod, amount: capped }]);
-    setSheetAmount("");
+  // ── payment modal handlers ──
+  function openPaymentModal() {
+    setSheetPayments([]);
+    setPaymentStep("type");
+    setModalAmount("");
+    setModalCv("");
+    setModalRef("");
+    setPaymentOpen(true);
   }
 
-  function confirmPayments() {
+  function closePaymentModal() {
+    setPaymentOpen(false);
+    setPaymentStep("type");
+    setModalAmount("");
+    setModalCv("");
+    setModalRef("");
+  }
+
+  function doConfirm(payments: SheetPayment[]) {
     let cur = sale;
-    for (const p of sheetPayments) cur = addSalePayment({ sale: cur, method: p.method, amount: p.amount });
+    for (const p of payments) cur = addSalePayment({ sale: cur, method: p.method, amount: p.amount });
     setSale(cur);
     setSheetPayments([]);
     setPaymentOpen(false);
+    setPaymentStep("type");
+  }
+
+  function addModalPayment() {
+    const amount = paymentType === "full"
+      ? sheetBalance
+      : Math.min(parseNumber(modalAmount), sheetBalance);
+    if (amount <= 0) return;
+    const found = MODAL_METHODS.find((m) => m.method === modalMethod)!;
+    const next: SheetPayment[] = [
+      ...sheetPayments,
+      {
+        id: `sp-${Date.now()}`,
+        method: MODAL_TO_PAYMENT[modalMethod],
+        label: found.label,
+        amount,
+        cv: modalCv || undefined,
+        ref: modalRef || undefined,
+      },
+    ];
+    const newPaid = next.reduce((s, p) => s + p.amount, 0);
+    const newBalance = Math.max(0, sale.total - newPaid);
+    setModalAmount(""); setModalCv(""); setModalRef("");
+    if (newBalance === 0) {
+      doConfirm(next);
+    } else {
+      setSheetPayments(next);
+      setPaymentStep("type");
+    }
   }
 
   // ── render ────────────────────────────────────────────────────────
@@ -441,7 +506,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           <button
             type="button"
             disabled={sale.items.length === 0}
-            onClick={() => { setSheetPayments([]); setSheetAmount(""); setPaymentOpen(true); }}
+            onClick={openPaymentModal}
             style={{
               height: 28, borderRadius: 99, paddingInline: 14,
               background: sale.items.length === 0 ? "#2C2C2A" : "#EF9F27",
@@ -517,12 +582,9 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   animation: `fadeUp ${180 + idx * 40}ms both`,
                 }}
               >
-                {/* Index */}
                 <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
                   {idx + 1}
                 </span>
-
-                {/* Name + SKU */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
                     {product?.name ?? "Produto removido"}
@@ -531,8 +593,6 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                     {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
                   </p>
                 </div>
-
-                {/* Qty controls */}
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                   <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
                   <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
@@ -540,13 +600,9 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   </span>
                   <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
                 </div>
-
-                {/* Total */}
                 <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
                   {fmt(item.total)}
                 </span>
-
-                {/* Remove */}
                 <button
                   type="button"
                   onClick={() => setSale((c) => removeSaleItem(c, item.id))}
@@ -574,7 +630,6 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           gap: 10,
         }}
       >
-        {/* Discount */}
         <div style={{ display: "flex", gap: 6, flex: 1 }}>
           <input
             value={discount}
@@ -596,8 +651,6 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             Aplicar
           </button>
         </div>
-
-        {/* Clear */}
         <button
           type="button"
           onClick={() => { setSale(createPosSale(saleSequence, cashSession)); setDiscount(""); setErrors([]); }}
@@ -605,8 +658,6 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         >
           Limpar
         </button>
-
-        {/* CTA — only visible when sale is fully paid */}
         {canFinish && (
           <div style={{ display: "flex", gap: 6 }}>
             <button
@@ -659,123 +710,204 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       {/* ─── PAYMENT MODAL ─── */}
       {paymentOpen && (
         <div
-          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(26,25,23,.6)", backdropFilter: "blur(4px)", animation: "overlayIn 180ms both" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setPaymentOpen(false); }}
+          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(26,25,23,.65)", backdropFilter: "blur(6px)", animation: "overlayIn 180ms both" }}
+          onClick={(e) => { if (e.target === e.currentTarget) closePaymentModal(); }}
         >
-          <div
-            style={{ background: "#FFFFFF", borderRadius: 16, width: "100%", maxWidth: 460, maxHeight: "85dvh", display: "flex", flexDirection: "column", overflow: "hidden", animation: "sheetIn 220ms both", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }}
-          >
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "18px 20px 14px", borderBottom: "0.5px solid #F0EEE9" }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
-                  {fmt(sheetBalance)} a pagar
-                </p>
-                <p style={{ margin: 0, fontSize: 12, color: "#A8A29E" }}>
-                  Total da venda: {fmt(sale.total)}
-                </p>
-              </div>
-              <button type="button" onClick={() => setPaymentOpen(false)} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 32, height: 32, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C" }}>
-                <X size={15} />
-              </button>
-            </div>
+          <div style={{ background: "#FFFFFF", borderRadius: 14, width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", overflow: "hidden", animation: "sheetIn 220ms both", boxShadow: "0 24px 64px rgba(0,0,0,0.3)" }}>
 
-            {/* Body */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
-              {/* Method grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 16 }}>
-                {(Object.entries(paymentMethodLabels) as [PaymentMethod, string][]).map(([method, label]) => {
-                  const active = sheetMethod === method;
-                  return (
+            {/* ── STEP 1: type ── */}
+            {paymentStep === "type" && (
+              <>
+                <div style={{ padding: "16px 18px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5px solid #F0EEE9" }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>Pagamento</p>
+                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                      {sheetPayments.length > 0 ? `Restante: ${fmt(sheetBalance)}` : `Total: ${fmt(sale.total)}`}
+                    </p>
+                  </div>
+                  <button type="button" onClick={closePaymentModal} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C" }}>
+                    <X size={13} />
+                  </button>
+                </div>
+
+                <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => { setPaymentType("full"); setPaymentStep("method"); }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 10, border: "1.5px solid #EF9F27", background: "#FFFBF0", cursor: "pointer", transition: "all 150ms" }}
+                  >
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A1917" }}>Inteiro</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(sheetBalance)}</p>
+                    </div>
+                    <span style={{ fontSize: 18, color: "#EF9F27" }}>→</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setPaymentType("partial"); setPaymentStep("method"); }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 10, border: "1.5px solid #E4E2DC", background: "#F9F8F6", cursor: "pointer", transition: "all 150ms" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#D6D4CE"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E4E2DC"; }}
+                  >
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A1917" }}>Parcial</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#A8A29E" }}>Valor personalizado</p>
+                    </div>
+                    <span style={{ fontSize: 18, color: "#A8A29E" }}>→</span>
+                  </button>
+                </div>
+
+                {/* Registered payments */}
+                {sheetPayments.length > 0 && (
+                  <div style={{ borderTop: "0.5px solid #F0EEE9", padding: "12px 18px 16px" }}>
+                    <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.06em" }}>Registrados</p>
+                    {sheetPayments.map((p) => (
+                      <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBlock: 6, borderBottom: "0.5px solid #F9F8F6" }}>
+                        <div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#1A1917" }}>{p.label}</span>
+                          {(p.cv || p.ref) && (
+                            <span style={{ fontSize: 10, color: "#A8A29E", marginLeft: 6, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                              {p.cv ? `CV: ${p.cv}` : `Ref: ${p.ref}`}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <span style={{ fontSize: 12, color: "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(p.amount)}</span>
+                          <button type="button" onClick={() => setSheetPayments((prev) => prev.filter((x) => x.id !== p.id))} style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer", padding: 2 }}>
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => doConfirm(sheetPayments)}
+                      style={{ marginTop: 12, width: "100%", height: 40, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}
+                    >
+                      Confirmar pagamento
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── STEP 2: method ── */}
+            {paymentStep === "method" && (
+              <>
+                <div style={{ padding: "14px 18px 12px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid #F0EEE9" }}>
+                  <button type="button" onClick={() => setPaymentStep("type")} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", flexShrink: 0 }}>
+                    <ArrowLeft size={14} />
+                  </button>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+                    Forma de pagamento
+                  </p>
+                  <button type="button" onClick={closePaymentModal} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", marginLeft: "auto", flexShrink: 0 }}>
+                    <X size={13} />
+                  </button>
+                </div>
+                <div style={{ padding: "14px 18px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {MODAL_METHODS.map(({ method, label, icon }) => (
                     <button
                       key={method}
                       type="button"
-                      onClick={() => setSheetMethod(method)}
-                      style={{
-                        height: 56, borderRadius: 10, border: active ? "2px solid #EF9F27" : "1.5px solid #E4E2DC",
-                        background: active ? "#FEF9EC" : "#F9F8F6",
-                        color: active ? "#1A1917" : "#78716C",
-                        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
-                        cursor: "pointer", transition: "all 150ms", fontWeight: active ? 700 : 500,
-                      }}
+                      onClick={() => { setModalMethod(method); setPaymentStep("form"); }}
+                      style={{ height: 64, borderRadius: 10, border: "1.5px solid #E4E2DC", background: "#F9F8F6", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, cursor: "pointer", transition: "all 150ms", fontSize: 11, fontWeight: 600, color: "#1A1917" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "#FEF9EC"; e.currentTarget.style.borderColor = "#EF9F27"; (e.currentTarget.querySelector("span") as HTMLElement | null)?.style.setProperty("color", "#EF9F27"); }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "#F9F8F6"; e.currentTarget.style.borderColor = "#E4E2DC"; (e.currentTarget.querySelector("span") as HTMLElement | null)?.style.setProperty("color", "#A8A29E"); }}
                     >
-                      {PAYMENT_ICONS[method]}
-                      <span style={{ fontSize: 9, lineHeight: 1 }}>{label}</span>
+                      <span style={{ color: "#A8A29E", transition: "color 150ms" }}>{icon}</span>
+                      {label}
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Amount */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                <input
-                  value={sheetAmount}
-                  onChange={(e) => setSheetAmount(e.target.value)}
-                  inputMode="decimal"
-                  placeholder={fmt(sheetBalance).replace("R$ ", "")}
-                  style={{
-                    flex: 1, height: 44, borderRadius: 9, border: "1.5px solid #E4E2DC",
-                    background: "#F9F8F6", padding: "0 14px", fontSize: 15,
-                    fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={addSheetPayment}
-                  style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}
-                >
-                  + Registrar
-                </button>
-              </div>
-
-              {/* Registered */}
-              {sheetPayments.length > 0 && (
-                <div style={{ border: "1px solid #E4E2DC", borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
-                  {sheetPayments.map((p) => (
-                    <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "0.5px solid #F0EEE9" }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1A1917" }}>{paymentMethodLabels[p.method]}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 13, color: "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(p.amount)}</span>
-                        <button type="button" onClick={() => setSheetPayments((prev) => prev.filter((x) => x.id !== p.id))} style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer" }}>
-                          <X size={13} />
-                        </button>
-                      </div>
-                    </div>
                   ))}
                 </div>
-              )}
+              </>
+            )}
 
-              {/* Balance indicator */}
-              <div style={{ background: "#F9F8F6", borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
-                <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>Saldo restante</p>
-                <p style={{ margin: 0, fontSize: 24, fontWeight: 800, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", color: sheetBalance === 0 ? "#3B6D11" : "#1A1917", transition: "color 300ms" }}>
-                  {fmt(sheetBalance)}
-                </p>
-              </div>
-            </div>
+            {/* ── STEP 3: form ── */}
+            {paymentStep === "form" && (
+              <>
+                <div style={{ padding: "14px 18px 12px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid #F0EEE9" }}>
+                  <button type="button" onClick={() => setPaymentStep("method")} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", flexShrink: 0 }}>
+                    <ArrowLeft size={14} />
+                  </button>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+                      {MODAL_METHODS.find((m) => m.method === modalMethod)?.label}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>
+                      {paymentType === "full" ? `Inteiro · ${fmt(sheetBalance)}` : "Valor parcial"}
+                    </p>
+                  </div>
+                  <button type="button" onClick={closePaymentModal} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 28, height: 28, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C", flexShrink: 0 }}>
+                    <X size={13} />
+                  </button>
+                </div>
 
-            {/* Confirm */}
-            <div style={{ padding: "12px 20px 20px", borderTop: "0.5px solid #F0EEE9" }}>
-              <button
-                type="button"
-                disabled={sheetPayments.length === 0}
-                onClick={confirmPayments}
-                style={{
-                  width: "100%", height: 48, borderRadius: 10,
-                  background: sheetPayments.length === 0 ? "#E4E2DC" : "#EF9F27",
-                  color: "#1A1917", border: "none", fontSize: 15, fontWeight: 800,
-                  cursor: sheetPayments.length === 0 ? "not-allowed" : "pointer",
-                  fontFamily: "\"Syne\", var(--font-syne), sans-serif",
-                }}
-              >
-                Confirmar pagamento
-              </button>
-            </div>
+                <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", gap: 11 }}>
+                  {/* Amount */}
+                  {paymentType === "full" ? (
+                    <div style={{ background: "#F9F8F6", borderRadius: 9, padding: "10px 14px" }}>
+                      <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>Valor integral</p>
+                      <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(sheetBalance)}</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p style={{ margin: "0 0 5px", fontSize: 11, color: "#A8A29E" }}>Valor</p>
+                      <input
+                        value={modalAmount}
+                        onChange={(e) => setModalAmount(e.target.value)}
+                        inputMode="decimal"
+                        placeholder={fmt(sheetBalance).replace("R$ ", "")}
+                        autoFocus
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 15, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                      />
+                    </div>
+                  )}
+
+                  {/* CV — cartão manual */}
+                  {modalMethod === "debit_manual" && (
+                    <div>
+                      <p style={{ margin: "0 0 5px", fontSize: 11, color: "#A8A29E" }}>CV</p>
+                      <input
+                        value={modalCv}
+                        onChange={(e) => setModalCv(e.target.value)}
+                        placeholder="Código de verificação"
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Ref/CV — pix manual */}
+                  {modalMethod === "pix_manual" && (
+                    <div>
+                      <p style={{ margin: "0 0 5px", fontSize: 11, color: "#A8A29E" }}>Ref / CV</p>
+                      <input
+                        value={modalRef}
+                        onChange={(e) => setModalRef(e.target.value)}
+                        placeholder="Referência ou código"
+                        style={{ width: "100%", height: 42, borderRadius: 8, border: "1.5px solid #E4E2DC", background: "#F9F8F6", padding: "0 14px", fontSize: 13, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", outline: "none", color: "#1A1917" }}
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={addModalPayment}
+                    style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "\"Syne\", var(--font-syne), sans-serif", transition: "background 150ms" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#1A1917"; }}
+                  >
+                    + Adicionar
+                  </button>
+                </div>
+              </>
+            )}
+
           </div>
         </div>
       )}
 
-      {/* ─── NF MODAL (preserved) ─── */}
+      {/* ─── NF MODAL ─── */}
       {nfModalOpen && (
         <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(26,25,23,.75)", animation: "overlayIn 180ms both" }}>
           <div style={{ width: "100%", maxWidth: 360, background: "#1C1917", borderRadius: 16, padding: 24, animation: "sheetIn 200ms both" }}>
