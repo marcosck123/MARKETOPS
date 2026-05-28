@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Lock, Mail, ShoppingCart, TrendingUp, Boxes, BadgeDollarSign } from "lucide-react";
@@ -66,16 +67,15 @@ export default function LoginPage() {
       {/* Left panel — dark brand */}
       <div className="hidden w-5/12 flex-col justify-between bg-stone-950 p-12 lg:flex">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 text-lg font-bold text-stone-950">
-            M
-          </div>
-          <span
-            className="text-lg font-bold tracking-wide text-white"
-            style={{ fontFamily: "var(--font-syne)" }}
-          >
-            MARKETOPS
-          </span>
+        <div>
+          <Image
+            src="/logo.png"
+            alt="MarketOps"
+            width={200}
+            height={54}
+            className="h-14 w-auto object-contain"
+            priority
+          />
         </div>
 
         {/* Feature carousel */}
@@ -122,16 +122,15 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center bg-stone-50 px-6 py-12 dark:bg-stone-900">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-amber-400 text-base font-bold text-stone-950">
-              M
-            </div>
-            <span
-              className="text-base font-bold tracking-wide text-stone-900 dark:text-white"
-              style={{ fontFamily: "var(--font-syne)" }}
-            >
-              MARKETOPS
-            </span>
+          <div className="mb-8 lg:hidden">
+            <Image
+              src="/logo.png"
+              alt="MarketOps"
+              width={160}
+              height={44}
+              className="h-11 w-auto object-contain"
+              priority
+            />
           </div>
 
           <h1

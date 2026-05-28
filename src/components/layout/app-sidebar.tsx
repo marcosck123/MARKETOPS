@@ -27,6 +27,7 @@ import {
   Users,
   Warehouse,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -97,34 +98,38 @@ export function AppSidebar() {
       }`}
     >
       {/* Logo */}
-      <div className={`flex items-center border-b border-stone-200 dark:border-stone-800 ${collapsed ? "justify-center px-3 py-5" : "justify-between px-4 py-5"}`}>
+      <div className={`flex items-center border-b border-stone-200 dark:border-stone-800 ${collapsed ? "justify-center px-3 py-4" : "justify-between px-4 py-3"}`}>
         {!collapsed && (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-amber-400 text-base font-bold text-stone-950">
-              M
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold tracking-wide text-stone-900 dark:text-white" style={{ fontFamily: "var(--font-syne)" }}>
-                MARKETOPS
-              </p>
-              <p className="truncate text-xs text-stone-500 dark:text-stone-400">Operacao ao caixa</p>
-            </div>
-          </div>
+          <>
+            <Image
+              src="/logo.png"
+              alt="MarketOps"
+              width={148}
+              height={40}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+            <button
+              type="button"
+              onClick={() => setCollapsed(true)}
+              className="shrink-0 rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-900 dark:hover:text-stone-300"
+              title="Recolher menu"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+          </>
         )}
         {collapsed && (
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400 text-base font-bold text-stone-950">
-            M
+          <div className="h-9 w-9 overflow-hidden rounded-lg">
+            <Image
+              src="/logo.png"
+              alt="MarketOps"
+              width={72}
+              height={36}
+              className="h-9 w-auto max-w-none object-cover object-left"
+              priority
+            />
           </div>
-        )}
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={() => setCollapsed(true)}
-            className="shrink-0 rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-900 dark:hover:text-stone-300"
-            title="Recolher menu"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
         )}
       </div>
 

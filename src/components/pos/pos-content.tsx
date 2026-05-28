@@ -23,6 +23,7 @@ import {
   Smartphone,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -366,18 +367,14 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         }}
       >
         {/* Logo mark */}
-        <div
-          style={{
-            width: 28, height: 28, borderRadius: 7,
-            background: "#EF9F27", color: "#1A1917",
-            display: "grid", placeItems: "center",
-            fontSize: 10, fontWeight: 800,
-           
-            flexShrink: 0,
-          }}
-        >
-          MO
-        </div>
+        <Image
+          src="/logo.png"
+          alt="MarketOps"
+          width={90}
+          height={28}
+          style={{ height: 28, width: "auto", flexShrink: 0, objectFit: "contain" }}
+          priority
+        />
 
         {/* Search icon */}
         <button
