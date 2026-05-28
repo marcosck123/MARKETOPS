@@ -493,32 +493,14 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           )}
         </div>
 
-        {/* Right: total + payment button (side by side) */}
-        <div style={{ marginLeft: "auto", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 28, fontWeight: 600, color: "#EF9F27", margin: 0, lineHeight: 1.1, fontFamily: "\"Cormorant Garamond\", var(--font-cormorant), serif", fontStyle: "italic" }}>
-              {fmt(sale.total)}
-            </p>
-            <p style={{ fontSize: 10, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
-              {cashSession.cashRegisterName} · {currentTime}
-            </p>
-          </div>
-          <button
-            type="button"
-            disabled={sale.items.length === 0}
-            onClick={openPaymentModal}
-            style={{
-              height: 32, borderRadius: 99, paddingInline: 16,
-              background: sale.items.length === 0 ? "#2C2C2A" : "#EF9F27",
-              color: sale.items.length === 0 ? "#57534E" : "#1A1917",
-              border: "none", fontSize: 12, fontWeight: 700,
-              cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
-              fontFamily: "\"Syne\", var(--font-syne), sans-serif",
-              transition: "all 150ms", flexShrink: 0,
-            }}
-          >
-            Pagamento
-          </button>
+        {/* Right: caixa info */}
+        <div style={{ marginLeft: "auto", flexShrink: 0, textAlign: "right" }}>
+          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+            {cashSession.cashRegisterName} · {currentTime}
+          </p>
+          <p style={{ fontSize: 11, color: "#57534E", margin: 0 }}>
+            {cashSession.operatorName}
+          </p>
         </div>
 
         {/* Supervisor + Close */}
@@ -554,158 +536,233 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         </div>
       </header>
 
-      {/* ─── CART LIST ─── */}
-      <div
-        style={{ flex: 1, overflowY: "auto", padding: "0 0 8px" }}
-        onClick={() => { if (searchOpen) setSearchOpen(false); }}
-      >
-        {sale.items.length === 0 ? (
-          <div style={{ height: "100%", minHeight: 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            <ShoppingCart size={40} color="#E4E2DC" />
-            <p style={{ fontSize: 13, color: "#C7C5BF", margin: 0 }}>Carrinho vazio</p>
-            <p style={{ fontSize: 12, color: "#D6D4CE", margin: 0 }}>Clique na lupa para adicionar produtos</p>
-          </div>
-        ) : (
-          sale.items.map((item, idx) => {
-            const product = productById.get(item.productId);
-            return (
-              <div
-                key={item.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderBottom: "0.5px solid #F0EEE9",
-                  background: item.id === lastAddedId ? "#FFFBF0" : "transparent",
-                  transition: "background 600ms",
-                  animation: `fadeUp ${180 + idx * 40}ms both`,
-                }}
-              >
-                <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
-                  {idx + 1}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
-                    {product?.name ?? "Produto removido"}
-                  </p>
-                  <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
-                    {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
-                  </p>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                  <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
-                  <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
-                    {item.quantity}
+      {/* ─── BODY (cart + sidebar) ─── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+        {/* Cart list */}
+        <div
+          style={{ flex: 1, overflowY: "auto", padding: "0 0 8px" }}
+          onClick={() => { if (searchOpen) setSearchOpen(false); }}
+        >
+          {sale.items.length === 0 ? (
+            <div style={{ height: "100%", minHeight: 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+              <ShoppingCart size={40} color="#E4E2DC" />
+              <p style={{ fontSize: 13, color: "#C7C5BF", margin: 0 }}>Carrinho vazio</p>
+              <p style={{ fontSize: 12, color: "#D6D4CE", margin: 0 }}>Clique na lupa para adicionar produtos</p>
+            </div>
+          ) : (
+            sale.items.map((item, idx) => {
+              const product = productById.get(item.productId);
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "12px 16px",
+                    borderBottom: "0.5px solid #F0EEE9",
+                    background: item.id === lastAddedId ? "#FFFBF0" : "transparent",
+                    transition: "background 600ms",
+                    animation: `fadeUp ${180 + idx * 40}ms both`,
+                  }}
+                >
+                  <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
+                    {idx + 1}
                   </span>
-                  <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
+                      {product?.name ?? "Produto removido"}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                      {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
+                    <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                      {item.quantity}
+                    </span>
+                    <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
+                  </div>
+                  <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
+                    {fmt(item.total)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSale((c) => removeSaleItem(c, item.id))}
+                    style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "#D6D4CE"; }}
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
-                <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", flexShrink: 0 }}>
-                  {fmt(item.total)}
+              );
+            })
+          )}
+        </div>
+
+        {/* ─── RIGHT SIDEBAR ─── */}
+        <aside
+          style={{
+            width: 264,
+            flexShrink: 0,
+            borderLeft: "0.5px solid #E4E2DC",
+            background: "#FFFFFF",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Sale info */}
+          <div style={{ padding: "16px 18px 12px", borderBottom: "0.5px solid #F0EEE9" }}>
+            <p style={{ margin: 0, fontSize: 10, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Venda {sale.code}
+            </p>
+            <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600, color: "#1A1917" }}>
+              {cashSession.operatorName}
+            </p>
+            <p style={{ margin: "1px 0 0", fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+              {cashSession.cashRegisterName}
+            </p>
+          </div>
+
+          {/* Totals */}
+          <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "#A8A29E" }}>
+                {sale.items.length} {sale.items.length === 1 ? "item" : "itens"}
+              </span>
+              <span style={{ fontSize: 12, color: "#78716C", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                {fmt(sale.subtotal)}
+              </span>
+            </div>
+            {sale.discount > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 12, color: "#A8A29E" }}>Desconto</span>
+                <span style={{ fontSize: 12, color: "#EF4444", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                  -{fmt(sale.discount)}
                 </span>
+              </div>
+            )}
+
+            {/* Total */}
+            <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "0.5px solid #F0EEE9" }}>
+              <p style={{ margin: "0 0 2px", fontSize: 10, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Total
+              </p>
+              <p style={{
+                margin: 0, fontSize: 36, fontWeight: 600, lineHeight: 1,
+                color: "#EF9F27",
+                fontFamily: "\"Cormorant Garamond\", var(--font-cormorant), serif",
+                fontStyle: "italic",
+              }}>
+                {fmt(sale.total)}
+              </p>
+            </div>
+          </div>
+
+          {/* Errors */}
+          {errors.length > 0 && (
+            <div style={{ padding: "0 18px 10px" }}>
+              {errors.map((e) => (
+                <p key={e} style={{ margin: 0, fontSize: 11, color: "#DC2626" }}>{e}</p>
+              ))}
+            </div>
+          )}
+
+          {/* Discount */}
+          <div style={{ padding: "0 18px 10px", display: "flex", gap: 6 }}>
+            <input
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+              inputMode="decimal"
+              placeholder="Desconto R$"
+              style={{
+                flex: 1, height: 34, borderRadius: 7, border: "1px solid #E4E2DC",
+                background: "#F9F8F6", padding: "0 10px", fontSize: 12,
+                color: "#78716C", outline: "none",
+                fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
+              }}
+            />
+            <button
+              type="button"
+              onClick={applyDiscount}
+              style={{ height: 34, borderRadius: 7, border: "1px solid #E4E2DC", background: "#F0EEE9", padding: "0 12px", fontSize: 12, color: "#78716C", cursor: "pointer" }}
+            >
+              Aplicar
+            </button>
+          </div>
+
+          {/* Limpar */}
+          <div style={{ padding: "0 18px 12px" }}>
+            <button
+              type="button"
+              onClick={() => { setSale(createPosSale(saleSequence, cashSession)); setDiscount(""); setErrors([]); }}
+              style={{ width: "100%", height: 34, borderRadius: 7, border: "1px solid #E4E2DC", background: "transparent", fontSize: 12, color: "#A8A29E", cursor: "pointer" }}
+            >
+              Limpar venda
+            </button>
+          </div>
+
+          {/* CTA */}
+          <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {canFinish ? (
+              <>
                 <button
                   type="button"
-                  onClick={() => setSale((c) => removeSaleItem(c, item.id))}
-                  style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "#D6D4CE"; }}
+                  disabled={persistLoading}
+                  onClick={() => void handleFinishWithNf()}
+                  style={{
+                    width: "100%", height: 40, borderRadius: 8,
+                    border: "1px solid #E4E2DC", background: "transparent",
+                    fontSize: 13, color: "#78716C", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  }}
                 >
-                  <X size={14} />
+                  <FileText size={14} /> Emitir NF
                 </button>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* ─── FOOTER ─── */}
-      <div
-        style={{
-          flexShrink: 0,
-          borderTop: "0.5px solid #E4E2DC",
-          background: "#FFFFFF",
-          padding: "10px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div style={{ display: "flex", gap: 6, flex: 1 }}>
-          <input
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
-            inputMode="decimal"
-            placeholder="Desconto R$"
-            style={{
-              height: 36, borderRadius: 7, border: "1px solid #E4E2DC",
-              background: "#F9F8F6", padding: "0 10px", fontSize: 12,
-              color: "#78716C", outline: "none", width: 100,
-              fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
-            }}
-          />
-          <button
-            type="button"
-            onClick={applyDiscount}
-            style={{ height: 36, borderRadius: 7, border: "1px solid #E4E2DC", background: "#F0EEE9", padding: "0 12px", fontSize: 12, color: "#78716C", cursor: "pointer" }}
-          >
-            Aplicar
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => { setSale(createPosSale(saleSequence, cashSession)); setDiscount(""); setErrors([]); }}
-          style={{ height: 36, borderRadius: 7, border: "1px solid #E4E2DC", background: "transparent", padding: "0 14px", fontSize: 12, color: "#A8A29E", cursor: "pointer" }}
-        >
-          Limpar
-        </button>
-        {canFinish && (
-          <div style={{ display: "flex", gap: 6 }}>
-            <button
-              type="button"
-              disabled={persistLoading}
-              onClick={() => void handleFinishWithNf()}
-              style={{
-                height: 44, borderRadius: 8, border: "1px solid #E4E2DC",
-                background: "transparent", padding: "0 16px",
-                fontSize: 13, color: "#78716C", cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-              }}
-            >
-              <FileText size={14} /> NF
-            </button>
-            <button
-              type="button"
-              disabled={persistLoading}
-              onClick={() => void handleFinish()}
-              style={{
-                height: 44, borderRadius: 8,
-                background: "#1A1917", color: "#FFFFFF",
-                border: "none", padding: "0 24px",
-                fontSize: 14, fontWeight: 700, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 8,
-                fontFamily: "\"Syne\", var(--font-syne), sans-serif",
-                transition: "background 150ms",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#1A1917"; }}
-            >
-              <CheckCircle2 size={16} />
-              {persistLoading ? "Salvando..." : "Finalizar"}
-            </button>
+                <button
+                  type="button"
+                  disabled={persistLoading}
+                  onClick={() => void handleFinish()}
+                  style={{
+                    width: "100%", height: 48, borderRadius: 8,
+                    background: "#1A1917", color: "#FFFFFF",
+                    border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+                    transition: "background 150ms",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#1A1917"; }}
+                >
+                  <CheckCircle2 size={16} />
+                  {persistLoading ? "Salvando..." : "Finalizar"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                disabled={sale.items.length === 0}
+                onClick={openPaymentModal}
+                style={{
+                  width: "100%", height: 48, borderRadius: 8,
+                  background: sale.items.length === 0 ? "#E4E2DC" : "#EF9F27",
+                  color: "#1A1917", border: "none",
+                  fontSize: 14, fontWeight: 700,
+                  cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
+                  fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+                  transition: "all 150ms",
+                }}
+              >
+                Pagamento
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        </aside>
 
-      {/* Errors */}
-      {errors.length > 0 && (
-        <div style={{ position: "absolute", bottom: 70, left: 16, right: 16, zIndex: 90 }}>
-          <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px" }}>
-            {errors.map((e) => (
-              <p key={e} style={{ margin: 0, fontSize: 12, color: "#DC2626" }}>{e}</p>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>{/* end BODY */}
 
       {/* ─── PAYMENT MODAL ─── */}
       {paymentOpen && (
