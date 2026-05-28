@@ -188,11 +188,12 @@ async function main() {
   });
 
   const users = [
-    { email: "admin@marketops.local",      name: "Admin",      role: "admin",      password: "admin123" },
-    { email: "operador@marketops.local",   name: "Operador",   role: "operator",   password: "operador123" },
-    { email: "supervisor@marketops.local", name: "Supervisor", role: "supervisor", password: "supervisor123" },
-    { email: "estoque@marketops.local",    name: "Estoque",    role: "estoque",    password: "estoque123" },
-    { email: "financeiro@marketops.local", name: "Financeiro", role: "financeiro", password: "financeiro123" },
+    { email: "admin@marketops.local",      name: "Admin",             role: "admin",      password: "admin123" },
+    { email: "operador@marketops.local",   name: "Operador",          role: "operator",   password: "operador123" },
+    { email: "caixa@marketops.local",      name: "Funcionario Caixa", role: "operator",   password: "caixa123" },
+    { email: "supervisor@marketops.local", name: "Supervisor",        role: "supervisor", password: "supervisor123" },
+    { email: "estoque@marketops.local",    name: "Estoque",           role: "estoque",    password: "estoque123" },
+    { email: "financeiro@marketops.local", name: "Financeiro",        role: "financeiro", password: "financeiro123" },
   ];
 
   for (const u of users) {
