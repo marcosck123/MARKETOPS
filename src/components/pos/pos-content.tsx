@@ -493,13 +493,13 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           )}
         </div>
 
-        {/* Right: total + payment button */}
-        <div style={{ marginLeft: "auto", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+        {/* Right: total + payment button (side by side) */}
+        <div style={{ marginLeft: "auto", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 34, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+            <p style={{ fontSize: 26, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1.1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
               {fmt(sale.total)}
             </p>
-            <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+            <p style={{ fontSize: 10, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
               {cashSession.cashRegisterName} · {currentTime}
             </p>
           </div>
@@ -508,13 +508,13 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             disabled={sale.items.length === 0}
             onClick={openPaymentModal}
             style={{
-              height: 28, borderRadius: 99, paddingInline: 14,
+              height: 32, borderRadius: 99, paddingInline: 16,
               background: sale.items.length === 0 ? "#2C2C2A" : "#EF9F27",
               color: sale.items.length === 0 ? "#57534E" : "#1A1917",
-              border: "none", fontSize: 11, fontWeight: 700,
+              border: "none", fontSize: 12, fontWeight: 700,
               cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
               fontFamily: "\"Syne\", var(--font-syne), sans-serif",
-              transition: "all 150ms",
+              transition: "all 150ms", flexShrink: 0,
             }}
           >
             Pagamento
