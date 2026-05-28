@@ -428,14 +428,32 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           )}
         </div>
 
-        {/* Right: clock + total */}
-        <div style={{ marginLeft: "auto", textAlign: "right", flexShrink: 0 }}>
-          <p style={{ fontSize: 22, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
-            {fmt(sale.total)}
-          </p>
-          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
-            {cashSession.cashRegisterName} · {currentTime}
-          </p>
+        {/* Right: total + payment button */}
+        <div style={{ marginLeft: "auto", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ fontSize: 34, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+              {fmt(sale.total)}
+            </p>
+            <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+              {cashSession.cashRegisterName} · {currentTime}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={sale.items.length === 0}
+            onClick={() => { setSheetPayments([]); setSheetAmount(""); setPaymentOpen(true); }}
+            style={{
+              height: 28, borderRadius: 99, paddingInline: 14,
+              background: sale.items.length === 0 ? "#2C2C2A" : "#EF9F27",
+              color: sale.items.length === 0 ? "#57534E" : "#1A1917",
+              border: "none", fontSize: 11, fontWeight: 700,
+              cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
+              fontFamily: "\"Syne\", var(--font-syne), sans-serif",
+              transition: "all 150ms",
+            }}
+          >
+            Pagamento
+          </button>
         </div>
 
         {/* Supervisor + Close */}
@@ -588,8 +606,8 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           Limpar
         </button>
 
-        {/* CTA */}
-        {canFinish ? (
+        {/* CTA — only visible when sale is fully paid */}
+        {canFinish && (
           <div style={{ display: "flex", gap: 6 }}>
             <button
               type="button"
@@ -624,25 +642,6 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
               {persistLoading ? "Salvando..." : "Finalizar"}
             </button>
           </div>
-        ) : (
-          <button
-            type="button"
-            disabled={sale.items.length === 0}
-            onClick={() => { setSheetPayments([]); setSheetAmount(""); setPaymentOpen(true); }}
-            style={{
-              height: 44, borderRadius: 8,
-              background: sale.items.length === 0 ? "#E4E2DC" : "#EF9F27",
-              color: "#1A1917", border: "none",
-              padding: "0 24px",
-              fontSize: 14, fontWeight: 700,
-              cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", gap: 8,
-              fontFamily: "\"Syne\", var(--font-syne), sans-serif",
-              transition: "all 150ms",
-            }}
-          >
-            Pagar {sale.items.length > 0 && fmt(balance > 0 ? balance : sale.total)}
-          </button>
         )}
       </div>
 
@@ -657,22 +656,17 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         </div>
       )}
 
-      {/* ─── PAYMENT SHEET ─── */}
+      {/* ─── PAYMENT MODAL ─── */}
       {paymentOpen && (
         <div
-          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end", background: "rgba(26,25,23,.55)", backdropFilter: "blur(3px)", animation: "overlayIn 180ms both" }}
+          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(26,25,23,.6)", backdropFilter: "blur(4px)", animation: "overlayIn 180ms both" }}
           onClick={(e) => { if (e.target === e.currentTarget) setPaymentOpen(false); }}
         >
           <div
-            style={{ background: "#FFFFFF", borderRadius: "14px 14px 0 0", maxHeight: "80dvh", display: "flex", flexDirection: "column", animation: "sheetIn 220ms both" }}
+            style={{ background: "#FFFFFF", borderRadius: 16, width: "100%", maxWidth: 460, maxHeight: "85dvh", display: "flex", flexDirection: "column", overflow: "hidden", animation: "sheetIn 220ms both", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }}
           >
-            {/* Handle */}
-            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
-              <div style={{ width: 36, height: 3, borderRadius: 99, background: "#E4E2DC" }} />
-            </div>
-
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "4px 16px 12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "18px 20px 14px", borderBottom: "0.5px solid #F0EEE9" }}>
               <div>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A1917", fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
                   {fmt(sheetBalance)} a pagar
@@ -687,7 +681,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             </div>
 
             {/* Body */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 16px" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
               {/* Method grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 16 }}>
                 {(Object.entries(paymentMethodLabels) as [PaymentMethod, string][]).map(([method, label]) => {
@@ -761,7 +755,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
             </div>
 
             {/* Confirm */}
-            <div style={{ padding: "0 16px 16px" }}>
+            <div style={{ padding: "12px 20px 20px", borderTop: "0.5px solid #F0EEE9" }}>
               <button
                 type="button"
                 disabled={sheetPayments.length === 0}
