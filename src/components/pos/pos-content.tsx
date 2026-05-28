@@ -1,6 +1,12 @@
 "use client";
 
-import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Banknote,
   Bell,
@@ -9,12 +15,10 @@ import {
   CreditCard,
   FileText,
   Minus,
-  Package,
   Plus,
   QrCode,
   Search,
   ShoppingCart,
-  Trash2,
   Wallet,
   X,
 } from "lucide-react";
@@ -47,37 +51,13 @@ import {
   paymentMethodLabels,
 } from "@/lib/sale-data";
 
-// ─── types ──────────────────────────────────────────────────────────
-type PosFormState = {
-  query: string;
-  quantity: string;
-  priceMode: "retail" | "wholesale";
-  paymentMethod: PaymentMethod;
-  paymentAmount: string;
-  discount: string;
-};
-
-const defaultFormState: PosFormState = {
-  query: "",
-  quantity: "1",
-  priceMode: "retail",
-  paymentMethod: "pix",
-  paymentAmount: "",
-  discount: "",
-};
-
-type Props = {
-  products: Product[];
-  cashSession: ActiveSession;
-};
-
-// ─── helpers ────────────────────────────────────────────────────────
-function parseNumber(value: string) {
-  const parsed = Number(value.replace(",", ".").trim());
-  return Number.isFinite(parsed) ? parsed : 0;
+// ── helpers ──────────────────────────────────────────────────────────
+function parseNumber(v: string) {
+  const n = Number(v.replace(",", ".").trim());
+  return Number.isFinite(n) ? n : 0;
 }
 
-function formatCurrency(value: number) {
+function fmt(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
@@ -85,27 +65,23 @@ function formatTime() {
   return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function createPosSale(sequence: number, cashSession: ActiveSession): Sale {
+function createPosSale(seq: number, s: ActiveSession): Sale {
   return createSale({
-    sequence,
+    sequence: seq,
     customerId: "",
-    cashSessionId: cashSession.id,
-    operator: cashSession.operatorName,
+    cashSessionId: s.id,
+    operator: s.operatorName,
     notes: "Venda registrada no PDV.",
     createdAt: new Date().toLocaleString("pt-BR"),
   });
 }
 
 function findProductByQuery(products: Product[], query: string) {
-  const search = query.trim().toLowerCase();
-  if (!search) return null;
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
   return (
-    products.find(
-      (p) => p.barcode === search || p.sku.toLowerCase() === search || p.name.toLowerCase() === search,
-    ) ??
-    products.find(
-      (p) => p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search) || p.barcode.includes(search),
-    ) ??
+    products.find((p) => p.barcode === q || p.sku.toLowerCase() === q || p.name.toLowerCase() === q) ??
+    products.find((p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || p.barcode.includes(q)) ??
     null
   );
 }
@@ -118,19 +94,20 @@ const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
   store_credit: <Wallet className="size-5" />,
 };
 
-// ─── component ──────────────────────────────────────────────────────
+type Props = { products: Product[]; cashSession: ActiveSession };
+
+// ── component ────────────────────────────────────────────────────────
 export function PosContent({ products: propProducts, cashSession }: Props) {
   const router = useRouter();
-  const barcodeRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // ── existing state (unchanged) ──
+  // ── existing state ──
   const [products, setProducts] = useState<Product[]>(propProducts);
-  const [formState, setFormState] = useState<PosFormState>(defaultFormState);
   const [saleSequence, setSaleSequence] = useState(3001);
   const [sale, setSale] = useState<Sale>(() => createPosSale(3001, cashSession));
   const [errors, setErrors] = useState<string[]>([]);
   const [lastFinishedSale, setLastFinishedSale] = useState<Sale | null>(null);
-  const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
+  const [lastAddedId, setLastAddedId] = useState<string | null>(null);
   const [persistLoading, setPersistLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(formatTime);
   const [helpCountdown, setHelpCountdown] = useState(0);
@@ -142,158 +119,115 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   const [nfLoading, setNfLoading] = useState(false);
   const [pendingSale, setPendingSale] = useState<{ id: string; code: string } | null>(null);
 
-  // ── new state for sheets ──
-  const [searchSheetOpen, setSearchSheetOpen] = useState(false);
-  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [sheetQuery, setSheetQuery] = useState("");
-  const [sheetQuantity, setSheetQuantity] = useState("1");
-  const [sheetPaymentMethod, setSheetPaymentMethod] = useState<PaymentMethod>("pix");
-  const [sheetPaymentAmount, setSheetPaymentAmount] = useState("");
-  const [sheetPayments, setSheetPayments] = useState<Array<{ id: string; method: PaymentMethod; amount: number }>>([]);
+  // ── new state ──
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [sheetMethod, setSheetMethod] = useState<PaymentMethod>("pix");
+  const [sheetAmount, setSheetAmount] = useState("");
+  const [sheetPayments, setSheetPayments] = useState<{ id: string; method: PaymentMethod; amount: number }[]>([]);
+  const [discount, setDiscount] = useState("");
 
-  // ── existing effects (unchanged) ──
+  // ── effects ──
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(formatTime()), 30_000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCurrentTime(formatTime()), 30_000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
     if (helpCountdown <= 0) return;
-    const timer = setTimeout(() => setHelpCountdown((c) => Math.max(0, c - 1)), 1000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setHelpCountdown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearTimeout(t);
   }, [helpCountdown]);
 
+  useEffect(() => {
+    if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 50);
+    else setSearchQuery("");
+  }, [searchOpen]);
+
+  // ── memos ──
   const activeProducts = useMemo(() => products.filter((p) => p.status === "active"), [products]);
   const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
-  const filteredProducts = useMemo(() => {
-    const search = formState.query.trim().toLowerCase();
-    if (!search) return activeProducts.slice(0, 12);
+  const dropdownProducts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
     return activeProducts
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(search) ||
-          p.sku.toLowerCase().includes(search) ||
-          p.barcode.includes(search),
-      )
-      .slice(0, 20);
-  }, [activeProducts, formState.query]);
-
-  const sheetFilteredProducts = useMemo(() => {
-    const search = sheetQuery.trim().toLowerCase();
-    if (!search) return activeProducts.slice(0, 30);
-    return activeProducts
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(search) ||
-          p.sku.toLowerCase().includes(search) ||
-          p.barcode.includes(search),
-      )
-      .slice(0, 30);
-  }, [activeProducts, sheetQuery]);
+      .filter((p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || p.barcode.includes(q))
+      .slice(0, 8);
+  }, [activeProducts, searchQuery]);
 
   const paidAmount = getPaidAmount(sale.payments);
   const balance = getSaleBalance(sale);
-
-  // sheet balance (using sheetPayments accumulation)
   const sheetPaid = sheetPayments.reduce((s, p) => s + p.amount, 0);
-  const sheetBalance = Math.max(0, sale.total - sale.discount - sheetPaid);
+  const sheetBalance = Math.max(0, sale.total - sheetPaid);
+  const canFinish = balance === 0 && sale.items.length > 0;
 
-  const selectedProduct = selectedProductId ? productById.get(selectedProductId) : null;
-
-  function updateForm<K extends keyof PosFormState>(key: K, value: PosFormState[K]) {
-    setFormState((c) => ({ ...c, [key]: value }));
-  }
-
-  // ── existing handlers (unchanged logic) ──
-  function addProductToSale(product: Product) {
+  // ── handlers (logic unchanged) ──
+  function addProduct(product: Product, qty = 1) {
     if (product.currentStock === 0) return;
-    const quantity = parseNumber(formState.quantity || "1");
-    if (quantity <= 0) return;
-    const nextSale = addSaleItem({ sale, product, quantity, priceMode: formState.priceMode });
-    setSale(nextSale);
-    const addedItem = nextSale.items.find((item) => item.productId === product.id);
-    if (addedItem) {
-      setLastAddedItemId(addedItem.id);
-      setTimeout(() => setLastAddedItemId(null), 600);
-    }
-    setFormState((c) => ({ ...c, query: "", quantity: "1" }));
+    const next = addSaleItem({ sale, product, quantity: qty, priceMode: "retail" });
+    setSale(next);
+    const added = next.items.find((i) => i.productId === product.id);
+    if (added) { setLastAddedId(added.id); setTimeout(() => setLastAddedId(null), 800); }
+    setSearchQuery("");
+    setSearchOpen(false);
     setErrors([]);
   }
 
-  function handleSubmitProduct(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const product = findProductByQuery(activeProducts, formState.query);
-    if (!product) {
-      setErrors(["Produto nao encontrado ou inativo."]);
-      return;
-    }
-    addProductToSale(product);
+  function decreaseItem(item: SaleItem) {
+    if (item.quantity <= 1) { setSale((c) => removeSaleItem(c, item.id)); return; }
+    setSale((c) => {
+      const u = { ...item, quantity: item.quantity - 1, total: item.unitPrice * (item.quantity - 1) };
+      const items = c.items.map((i) => (i.id === item.id ? u : i));
+      const sub = items.reduce((s, i) => s + i.total, 0);
+      return { ...c, items, subtotal: sub, total: Math.max(0, sub - c.discount) };
+    });
   }
 
-  function handleApplyDiscount() {
-    setSale((c) => applySaleDiscount(c, parseNumber(formState.discount)));
-    setErrors([]);
+  function increaseItem(item: SaleItem) {
+    const p = productById.get(item.productId);
+    if (!p) return;
+    setSale((c) => addSaleItem({ sale: c, product: p, quantity: 1, priceMode: "retail" }));
   }
 
-  function handleAddPayment(method: PaymentMethod) {
-    const amount = parseNumber(formState.paymentAmount || String(balance));
-    if (amount <= 0) return;
-    setSale((c) =>
-      addSalePayment({ sale: c, method, amount: Math.min(amount, getSaleBalance(c)) }),
-    );
-    setFormState((c) => ({ ...c, paymentAmount: "", paymentMethod: method }));
-    setErrors([]);
+  function applyDiscount() {
+    setSale((c) => applySaleDiscount(c, parseNumber(discount)));
   }
 
-  function resetToNewSale() {
-    const nextSequence = saleSequence + 1;
-    setSaleSequence(nextSequence);
-    setSale(createPosSale(nextSequence, cashSession));
-    setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
+  function resetSale() {
+    const seq = saleSequence + 1;
+    setSaleSequence(seq);
+    setSale(createPosSale(seq, cashSession));
     setSheetPayments([]);
+    setDiscount("");
     setErrors([]);
     router.refresh();
   }
 
-  async function handleFinishSale() {
+  async function handleFinish() {
     const result = finishSale({ sale, products, finishedAt: new Date().toLocaleString("pt-BR") });
-    if (!result.ok) {
-      setErrors(result.errors);
-      return;
-    }
+    if (!result.ok) { setErrors(result.errors); return; }
     setProducts(result.products);
     setLastFinishedSale(result.sale);
     setPersistLoading(true);
-    const persistResult = await persistFinishedSale(result.sale);
+    const res = await persistFinishedSale(result.sale);
     setPersistLoading(false);
-    if (!persistResult.success) {
-      setErrors([persistResult.error]);
-      return;
-    }
-    resetToNewSale();
+    if (!res.success) { setErrors([res.error]); return; }
+    resetSale();
   }
 
   async function handleFinishWithNf() {
     const result = finishSale({ sale, products, finishedAt: new Date().toLocaleString("pt-BR") });
-    if (!result.ok) {
-      setErrors(result.errors);
-      return;
-    }
+    if (!result.ok) { setErrors(result.errors); return; }
     setProducts(result.products);
     setLastFinishedSale(result.sale);
     setPersistLoading(true);
-    const persistResult = await persistFinishedSale(result.sale);
+    const res = await persistFinishedSale(result.sale);
     setPersistLoading(false);
-    if (!persistResult.success) {
-      setErrors([persistResult.error]);
-      return;
-    }
-    setPendingSale(persistResult.data);
-    setNfDocument("");
-    setNfLookupName(null);
-    setNfLookupId(null);
+    if (!res.success) { setErrors([res.error]); return; }
+    setPendingSale(res.data);
+    setNfDocument(""); setNfLookupName(null); setNfLookupId(null);
     setNfModalOpen(true);
   }
 
@@ -302,957 +236,578 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
     setNfLoading(true);
     const found = await findCustomerByDocument(nfDocument);
     setNfLoading(false);
-    if (found) {
-      setNfLookupName(found.name);
-      setNfLookupId(found.id);
-    } else {
-      setNfLookupName(null);
-      setNfLookupId(null);
-    }
+    if (found) { setNfLookupName(found.name); setNfLookupId(found.id); }
+    else { setNfLookupName(null); setNfLookupId(null); }
   }
 
   async function handleRequestNfe() {
     if (!pendingSale || !nfDocument.trim()) return;
     setNfLoading(true);
-    const result = await createFiscalRequest({
-      saleId: pendingSale.id,
-      saleCode: pendingSale.code,
-      document: nfDocument,
-      customerId: nfLookupId ?? undefined,
-      customerName: nfLookupName ?? undefined,
-      operatorId: cashSession.operatorId,
+    const res = await createFiscalRequest({
+      saleId: pendingSale.id, saleCode: pendingSale.code,
+      document: nfDocument, customerId: nfLookupId ?? undefined,
+      customerName: nfLookupName ?? undefined, operatorId: cashSession.operatorId,
     });
     setNfLoading(false);
-    if (!result.success) setErrors([result.error]);
-    setNfModalOpen(false);
-    setPendingSale(null);
-    resetToNewSale();
-  }
-
-  function handleSkipNf() {
-    setNfModalOpen(false);
-    setPendingSale(null);
-    resetToNewSale();
-  }
-
-  function handleClearSale() {
-    setSale(createPosSale(saleSequence, cashSession));
-    setFormState((c) => ({ ...c, query: "", quantity: "1", discount: "", paymentAmount: "" }));
-    setSheetPayments([]);
-    setErrors([]);
+    if (!res.success) setErrors([res.error]);
+    setNfModalOpen(false); setPendingSale(null); resetSale();
   }
 
   async function handleCallSupervisor() {
     setHelpLoading(true);
-    const result = await createHelpRequest({
+    const res = await createHelpRequest({
       cashRegisterId: cashSession.cashRegisterId,
       operatorId: cashSession.operatorId,
       operatorName: cashSession.operatorName,
       cashRegisterName: cashSession.cashRegisterName,
     });
     setHelpLoading(false);
-    if (!result.success) {
-      setErrors([result.error]);
-      return;
-    }
+    if (!res.success) { setErrors([res.error]); return; }
     setHelpCountdown(60);
   }
 
-  // ── new handlers ──
-  function handleBarcodeKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    const product = findProductByQuery(activeProducts, formState.query);
-    if (product) {
-      addProductToSale(product);
-    } else if (formState.query.trim()) {
-      setErrors(["Produto não encontrado."]);
-    }
-  }
-
-  function decreaseCartItem(item: SaleItem) {
-    if (item.quantity <= 1) {
-      setSale((c) => removeSaleItem(c, item.id));
-      return;
-    }
-    setSale((c) => {
-      const updated = { ...item, quantity: item.quantity - 1, total: item.unitPrice * (item.quantity - 1) };
-      const newItems = c.items.map((i) => (i.id === item.id ? updated : i));
-      const newSubtotal = newItems.reduce((s, i) => s + i.total, 0);
-      const newTotal = Math.max(0, newSubtotal - c.discount);
-      return { ...c, items: newItems, subtotal: newSubtotal, total: newTotal };
-    });
-  }
-
-  function increaseCartItem(item: SaleItem) {
-    const product = productById.get(item.productId);
-    if (!product) return;
-    setSale((c) => addSaleItem({ sale: c, product, quantity: 1, priceMode: formState.priceMode }));
-  }
-
-  function addFromSheet() {
-    if (!selectedProduct) return;
-    const qty = parseNumber(sheetQuantity || "1");
-    if (qty <= 0) return;
-    const nextSale = addSaleItem({ sale, product: selectedProduct, quantity: qty, priceMode: formState.priceMode });
-    setSale(nextSale);
-    const added = nextSale.items.find((i) => i.productId === selectedProduct.id);
-    if (added) {
-      setLastAddedItemId(added.id);
-      setTimeout(() => setLastAddedItemId(null), 600);
-    }
-    setSearchSheetOpen(false);
-    setSelectedProductId(null);
-    setSheetQuery("");
-    setSheetQuantity("1");
-    setErrors([]);
-  }
-
   function addSheetPayment() {
-    const amount = parseNumber(sheetPaymentAmount || String(sheetBalance));
+    const amount = parseNumber(sheetAmount || String(sheetBalance));
     if (amount <= 0) return;
     const capped = Math.min(amount, sheetBalance);
-    setSheetPayments((prev) => [
-      ...prev,
-      { id: `sp-${Date.now()}`, method: sheetPaymentMethod, amount: capped },
-    ]);
-    setSheetPaymentAmount("");
+    setSheetPayments((p) => [...p, { id: `sp-${Date.now()}`, method: sheetMethod, amount: capped }]);
+    setSheetAmount("");
   }
 
-  function removeSheetPayment(id: string) {
-    setSheetPayments((prev) => prev.filter((p) => p.id !== id));
-  }
-
-  function confirmSheetPayments() {
-    let current = sale;
-    for (const p of sheetPayments) {
-      current = addSalePayment({ sale: current, method: p.method, amount: p.amount });
-    }
-    setSale(current);
+  function confirmPayments() {
+    let cur = sale;
+    for (const p of sheetPayments) cur = addSalePayment({ sale: cur, method: p.method, amount: p.amount });
+    setSale(cur);
     setSheetPayments([]);
-    setPaymentSheetOpen(false);
+    setPaymentOpen(false);
   }
 
-  function openPaymentSheet() {
-    setSheetPayments([]);
-    setSheetPaymentAmount("");
-    setPaymentSheetOpen(true);
-  }
-
-  // ────────────────────────────────────────────────────────────────
+  // ── render ────────────────────────────────────────────────────────
   return (
     <main
       className="relative overflow-hidden"
-      style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#FAFAF9" }}
+      style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#F9F8F6" }}
     >
-      {/* ── HEADER ── */}
+      {/* ─── HEADER ─── */}
       <header
-        className="shrink-0 flex items-center gap-3 px-4"
         style={{
-          height: 52,
+          height: 56,
           background: "#1A1917",
-          borderBottom: "0.5px solid #2C2C2A",
-          animation: "slideDown 300ms 50ms both",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: 12,
+          flexShrink: 0,
         }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div
-            className="grid place-items-center rounded-md font-bold text-xs"
-            style={{ width: 26, height: 26, background: "#EF9F27", color: "#1A1917", fontFamily: "var(--font-syne)" }}
-          >
-            MO
-          </div>
-          <span
-            className="text-xs font-bold uppercase tracking-widest text-white"
-            style={{ fontFamily: "var(--font-syne)" }}
-          >
-            PDV
-          </span>
+        {/* Logo mark */}
+        <div
+          style={{
+            width: 28, height: 28, borderRadius: 7,
+            background: "#EF9F27", color: "#1A1917",
+            display: "grid", placeItems: "center",
+            fontSize: 10, fontWeight: 800,
+            fontFamily: "var(--font-syne)",
+            flexShrink: 0,
+          }}
+        >
+          MO
         </div>
 
-        {/* Separator */}
-        <div className="shrink-0 self-stretch" style={{ width: "0.5px", background: "#2C2C2A" }} />
-
-        {/* Barcode input */}
-        <form onSubmit={handleSubmitProduct} className="flex-1 max-w-[360px]">
-          <input
-            ref={barcodeRef}
-            value={formState.query}
-            onChange={(e) => updateForm("query", e.target.value)}
-            onKeyDown={handleBarcodeKeyDown}
-            placeholder="Código de barras ou SKU..."
-            autoFocus
-            className="w-full h-8 rounded-md px-3 text-sm outline-none transition"
-            style={{
-              background: "#111110",
-              border: "1px solid #2C2C2A",
-              color: "#F6F4EF",
-              fontFamily: "var(--font-dm-mono)",
-            }}
-          />
-        </form>
-
-        {/* Right side */}
-        <div className="ml-auto flex items-center gap-3">
-          <div className="hidden sm:block text-right">
-            <p className="text-xs text-stone-400">{cashSession.cashRegisterName}</p>
-            <p
-              className="text-xs"
-              style={{ color: "#EF9F27", fontFamily: "var(--font-dm-mono)" }}
-            >
-              {currentTime}
-            </p>
-          </div>
-
+        {/* Search — expandable */}
+        <div className="relative flex items-center" style={{ flex: 1 }}>
           <button
             type="button"
-            disabled={helpCountdown > 0 || helpLoading}
-            onClick={() => void handleCallSupervisor()}
-            className="h-8 rounded-md px-3 text-xs font-medium transition"
+            onClick={() => setSearchOpen((o) => !o)}
             style={{
+              width: 36, height: 36, borderRadius: 8,
               border: "1px solid #2C2C2A",
-              background: "transparent",
-              color: helpCountdown > 0 ? "#EF9F27" : "#A8A29E",
+              background: searchOpen ? "#EF9F27" : "transparent",
+              color: searchOpen ? "#1A1917" : "#78716C",
+              display: "grid", placeItems: "center",
+              flexShrink: 0,
+              transition: "all 200ms",
+              cursor: "pointer",
             }}
+            title="Buscar produto"
           >
-            <Bell className="inline size-3.5 mr-1" />
-            {helpLoading ? "Chamando..." : helpCountdown > 0 ? `${helpCountdown}s` : "Supervisor"}
+            <Search size={15} />
           </button>
 
-          <Link
-            href="/caixas"
-            className="h-8 rounded-md px-3 text-xs font-bold flex items-center gap-1.5 transition hover:brightness-110"
+          {/* Expanding input */}
+          <div
             style={{
-              background: "#EF9F27",
-              color: "#1A1917",
-              fontFamily: "var(--font-syne)",
+              overflow: "hidden",
+              width: searchOpen ? 320 : 0,
+              opacity: searchOpen ? 1 : 0,
+              transition: "width 280ms cubic-bezier(0.4,0,0.2,1), opacity 200ms",
+              marginLeft: searchOpen ? 8 : 0,
             }}
           >
-            <ChevronLeft className="size-3.5" />
-            Fechar caixa
-          </Link>
-        </div>
-      </header>
-
-      {/* ── BODY ── */}
-      <div className="flex-1 overflow-hidden" style={{ display: "grid", gridTemplateColumns: "1fr 280px" }}>
-
-        {/* ── LEFT: CART ── */}
-        <section
-          className="flex flex-col overflow-hidden"
-          style={{ borderRight: "0.5px solid #E4E2DC", background: "#FFFFFF" }}
-        >
-          {/* Cart top bar */}
-          <div
-            className="shrink-0 flex items-center gap-3 px-4"
-            style={{ height: 40, borderBottom: "0.5px solid #F0EEE9", background: "#FFFFFF" }}
-          >
-            <h2
-              className="text-xs font-bold uppercase tracking-widest text-stone-900"
-              style={{ fontFamily: "var(--font-syne)" }}
-            >
-              Carrinho
-            </h2>
-            <span
-              className="rounded px-1.5 py-0.5 text-xs font-bold"
-              style={
-                sale.items.length > 0
-                  ? { background: "#1A1917", color: "#EF9F27" }
-                  : { background: "#EFEDE7", color: "#5F5E5A" }
-              }
-            >
-              {sale.items.length}
-            </span>
-            <div className="ml-auto flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleClearSale}
-                className="rounded px-2 py-1 text-xs text-stone-400 transition hover:bg-red-50 hover:text-red-600"
-              >
-                Limpar
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSheetQuery(""); setSelectedProductId(null); setSearchSheetOpen(true); }}
-                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
-                style={{ background: "#EFEDE7", color: "#5F5E5A" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#EF9F27"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#EFEDE7"; e.currentTarget.style.color = "#5F5E5A"; }}
-              >
-                <Search className="size-3" />
-                Buscar produto
-              </button>
-            </div>
-          </div>
-
-          {/* Cart items */}
-          <div className="flex-1 overflow-y-auto">
-            {sale.items.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-6">
-                <ShoppingCart className="size-10" style={{ color: "#E4E2DC" }} />
-                <p className="text-sm font-medium" style={{ color: "#A8A29E" }}>Carrinho vazio</p>
-                <p className="text-xs" style={{ color: "#C7C5BF" }}>
-                  Use o campo no topo ou "Buscar produto" para adicionar itens
-                </p>
-              </div>
-            ) : (
-              <div>
-                {sale.items.map((item, idx) => {
-                  const product = productById.get(item.productId);
-                  return (
-                    <CartItem
-                      key={item.id}
-                      item={item}
-                      index={idx}
-                      productName={product?.name ?? "Produto removido"}
-                      productSku={product?.sku ?? ""}
-                      highlighted={item.id === lastAddedItemId}
-                      onIncrease={() => increaseCartItem(item)}
-                      onDecrease={() => decreaseCartItem(item)}
-                      onRemove={() => setSale((c) => removeSaleItem(c, item.id))}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Cart footer — discount */}
-          <div
-            className="shrink-0 flex items-center gap-2 px-3 py-2.5"
-            style={{ borderTop: "0.5px solid #F0EEE9" }}
-          >
-            <div className="relative flex-1">
-              <span
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs"
-                style={{ color: "#A8A29E" }}
-              >
-                %
-              </span>
-              <input
-                value={formState.discount}
-                onChange={(e) => updateForm("discount", e.target.value)}
-                inputMode="decimal"
-                placeholder="Desconto (R$)"
-                className="h-8 w-full rounded-md pl-7 pr-3 text-sm outline-none transition"
-                style={{
-                  background: "#F6F4EF",
-                  border: "1px solid #E4E2DC",
-                  fontFamily: "var(--font-dm-mono)",
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleApplyDiscount}
-              className="h-8 rounded-md px-3 text-xs font-medium transition hover:brightness-95"
-              style={{ background: "#EFEDE7", color: "#5F5E5A" }}
-            >
-              Aplicar
-            </button>
-          </div>
-
-          {/* Errors */}
-          {errors.length > 0 && (
-            <div className="shrink-0 px-3 pb-2">
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2">
-                {errors.map((e) => (
-                  <p key={e} className="text-xs text-red-700">{e}</p>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ── RIGHT: TOTALS ── */}
-        <aside
-          className="flex flex-col overflow-hidden"
-          style={{ background: "#F6F4EF" }}
-        >
-          {/* Total block */}
-          <div
-            className="shrink-0 px-4 pt-4 pb-3"
-            style={{ animation: "fadeUp 250ms both" }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest"
-              style={{ color: "#A8A29E", fontFamily: "var(--font-dm-mono)" }}
-            >
-              Total
-            </p>
-            <p
-              className="mt-1 leading-none"
-              style={{
-                fontSize: 28,
-                fontWeight: 800,
-                color: "#EF9F27",
-                fontFamily: "var(--font-syne)",
-              }}
-            >
-              {formatCurrency(sale.total)}
-            </p>
-          </div>
-
-          {/* DL summary */}
-          <dl
-            className="px-4 space-y-1.5 text-xs"
-            style={{ animation: "fadeUp 350ms both" }}
-          >
-            <SummaryRow label="Subtotal" value={formatCurrency(sale.subtotal)} />
-            <SummaryRow label="Desconto" value={formatCurrency(sale.discount)} />
-            <div style={{ height: "0.5px", background: "#E4E2DC", margin: "6px 0" }} />
-            <SummaryRow label="Pago" value={formatCurrency(paidAmount)} valueColor="#3B6D11" />
-            <SummaryRow
-              label="Saldo"
-              value={formatCurrency(balance)}
-              bold
-              valueColor={balance > 0 && sale.items.length > 0 ? "#C0392B" : undefined}
-            />
-          </dl>
-
-          {/* Payments registered */}
-          <div
-            className="mx-3 mt-3 rounded-lg overflow-hidden shrink-0"
-            style={{ border: "1px solid #E4E2DC", animation: "fadeUp 450ms both" }}
-          >
-            <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-xs font-semibold" style={{ color: "#5F5E5A" }}>Pagamentos</span>
-              <span
-                className="rounded px-1.5 py-0.5 text-xs font-bold"
-                style={
-                  sale.payments.length > 0
-                    ? { background: "#1A1917", color: "#EF9F27" }
-                    : { background: "#EFEDE7", color: "#A8A29E" }
+            <input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Escape") setSearchOpen(false);
+                if (e.key === "Enter") {
+                  const p = findProductByQuery(activeProducts, searchQuery);
+                  if (p) addProduct(p);
+                  else if (searchQuery.trim()) setErrors(["Produto não encontrado."]);
                 }
-              >
-                {sale.payments.length}
-              </span>
-            </div>
-            <div className="max-h-28 overflow-y-auto">
-              {sale.payments.length === 0 ? (
-                <p className="px-3 pb-3 text-xs" style={{ color: "#A8A29E" }}>Nenhum pagamento</p>
-              ) : (
-                sale.payments.map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between px-3 py-1.5"
-                    style={{ borderTop: "0.5px solid #F0EEE9" }}
-                  >
-                    <span className="text-xs font-medium" style={{ color: "#3D3C39" }}>
-                      {paymentMethodLabels[payment.method]}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium" style={{ color: "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>
-                        {formatCurrency(payment.amount)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setSale((c) => removeSalePayment(c, payment.id))}
-                        className="rounded p-0.5 transition hover:text-red-500"
-                        style={{ color: "#C7C5BF" }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Footer buttons */}
-          <div
-            className="shrink-0 flex flex-col gap-1.5 p-3"
-            style={{ animation: "fadeUp 550ms both" }}
-          >
-            {lastFinishedSale && (
-              <div className="rounded-md px-3 py-2 text-xs" style={{ background: "#EFEDE7" }}>
-                <span className="font-semibold" style={{ color: "#1A1917" }}>{lastFinishedSale.code}</span>
-                <span className="ml-1" style={{ color: "#78716C" }}>finalizada · {formatCurrency(lastFinishedSale.total)}</span>
-              </div>
-            )}
-            <button
-              type="button"
-              disabled={sale.items.length === 0}
-              onClick={openPaymentSheet}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg font-bold text-sm transition disabled:opacity-40"
-              style={{
-                background: "#EF9F27",
-                color: "#1A1917",
-                fontFamily: "var(--font-syne)",
               }}
-              onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-            >
-              Registrar pagamento
-            </button>
-            <button
-              type="button"
-              disabled={balance !== 0 || sale.items.length === 0 || persistLoading}
-              onClick={() => void handleFinishSale()}
-              className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition hover:enabled:bg-stone-900 hover:enabled:text-white disabled:opacity-40"
-              style={{ border: "1px solid #E4E2DC", color: "#888780" }}
-            >
-              <CheckCircle2 className="size-3.5" />
-              {persistLoading ? "Salvando..." : "Finalizar venda"}
-            </button>
-            {balance === 0 && sale.items.length > 0 && (
-              <button
-                type="button"
-                disabled={persistLoading}
-                onClick={() => void handleFinishWithNf()}
-                className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition hover:enabled:bg-stone-900 hover:enabled:text-white disabled:opacity-40"
-                style={{ border: "1px solid #E4E2DC", color: "#888780" }}
-              >
-                <FileText className="size-3.5" />
-                Finalizar com NF
-              </button>
-            )}
+              placeholder="Nome, SKU ou código de barras..."
+              style={{
+                height: 36, width: "100%", borderRadius: 8,
+                border: "1px solid #2C2C2A",
+                background: "#111110",
+                color: "#F6F4EF",
+                padding: "0 12px",
+                fontSize: 13,
+                outline: "none",
+                fontFamily: "var(--font-dm-mono)",
+              }}
+            />
           </div>
-        </aside>
-      </div>
 
-      {/* ── SHEET: PRODUCT SEARCH ── */}
-      {searchSheetOpen && (
-        <div
-          className="absolute inset-0 z-50 flex flex-col justify-end"
-          style={{ background: "rgba(26,25,23,.6)", backdropFilter: "blur(2px)", animation: "overlayIn 200ms both" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSearchSheetOpen(false); }}
-        >
-          <div
-            className="flex flex-col overflow-hidden"
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "12px 12px 0 0",
-              maxHeight: "85dvh",
-              animation: "sheetIn 250ms both",
-            }}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div style={{ width: 36, height: 3, borderRadius: 99, background: "#E4E2DC" }} />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-start justify-between px-4 pb-3 shrink-0">
-              <div>
-                <p className="text-sm font-bold" style={{ fontFamily: "var(--font-syne)", color: "#1A1917" }}>
-                  Buscar produto
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "#A8A29E" }}>
-                  Selecione e defina a quantidade
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSearchSheetOpen(false)}
-                className="rounded-lg p-1.5 transition"
-                style={{ background: "#F0EEE9", color: "#5F5E5A" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#F0EEE9"; e.currentTarget.style.color = "#5F5E5A"; }}
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            {/* Search input */}
-            <div className="px-4 pb-3 shrink-0">
-              <div className="relative flex items-center">
-                <Search className="pointer-events-none absolute left-3 size-4" style={{ color: "#A8A29E" }} />
-                <input
-                  autoFocus
-                  value={sheetQuery}
-                  onChange={(e) => setSheetQuery(e.target.value)}
-                  placeholder="Nome ou SKU..."
-                  className="h-10 w-full rounded-lg pl-9 pr-24 text-sm outline-none transition"
-                  style={{
-                    border: "1px solid #E4E2DC",
-                    background: "#FAFAF9",
-                  }}
-                />
-                <span
-                  className="absolute right-3 rounded px-1.5 py-0.5 text-xs font-medium"
-                  style={{ background: "#EFEDE7", color: "#78716C" }}
-                >
-                  {sheetFilteredProducts.length} produtos
-                </span>
-              </div>
-            </div>
-
-            {/* Product list */}
-            <div className="flex-1 overflow-y-auto px-4">
-              {sheetFilteredProducts.map((product, idx) => {
-                const isSelected = product.id === selectedProductId;
-                const isLowStock = product.currentStock > 0 && product.currentStock <= product.minimumStock;
+          {/* Dropdown */}
+          {searchOpen && dropdownProducts.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: 44,
+                left: 0,
+                width: 360,
+                background: "#FFFFFF",
+                borderRadius: 10,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                border: "1px solid #E4E2DC",
+                zIndex: 100,
+                overflow: "hidden",
+                animation: "fadeUp 150ms both",
+              }}
+            >
+              {dropdownProducts.map((product, idx) => {
+                const price = getProductSalePrice(product, "retail");
                 const isZero = product.currentStock === 0;
-                const price = getProductSalePrice(product, formState.priceMode);
-
+                const isLow = !isZero && product.currentStock <= product.minimumStock;
                 return (
                   <button
                     key={product.id}
                     type="button"
                     disabled={isZero}
-                    onClick={() => !isZero && setSelectedProductId(isSelected ? null : product.id)}
-                    className="flex w-full items-center gap-3 rounded-md py-2.5 px-3 text-left transition disabled:opacity-40"
+                    onClick={() => addProduct(product)}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition disabled:opacity-40"
                     style={{
-                      borderLeft: isSelected ? "3px solid #EF9F27" : "3px solid transparent",
-                      background: isSelected ? "#FEF9EC" : "transparent",
-                      animation: `fadeUp ${200 + idx * 30}ms both`,
+                      borderBottom: idx < dropdownProducts.length - 1 ? "0.5px solid #F0EEE9" : "none",
+                      background: "transparent",
                     }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected && !isZero) e.currentTarget.style.background = "#FAFAF8";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) e.currentTarget.style.background = "transparent";
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFAF8"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    <Package className="size-4 shrink-0" style={{ color: "#C7C5BF" }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-medium" style={{ color: "#1A1917" }}>{product.name}</p>
-                      <p className="text-xs" style={{ color: "#A8A29E", fontFamily: "var(--font-dm-mono)" }}>{product.sku}</p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm font-semibold" style={{ color: "#1A1917", fontFamily: "var(--font-dm-mono)" }}>
-                        {formatCurrency(price)}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
+                        {product.name}
                       </p>
-                      {isZero ? (
-                        <span className="text-xs font-medium text-red-500">Sem estoque</span>
-                      ) : isLowStock ? (
-                        <span className="text-xs font-medium" style={{ color: "#854F0B" }}>
-                          ⚠ estoque baixo
-                        </span>
-                      ) : (
-                        <span className="text-xs" style={{ color: "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>
-                          {product.currentStock} un.
-                        </span>
-                      )}
+                      <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "var(--font-dm-mono)", margin: 0 }}>
+                        {product.sku}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)", margin: 0 }}>
+                        {fmt(price)}
+                      </p>
+                      <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>
+                        {isZero ? "sem estoque" : `${product.currentStock} un.`}
+                      </p>
                     </div>
                   </button>
                 );
               })}
             </div>
+          )}
+        </div>
 
-            {/* Sheet footer */}
-            <div
-              className="shrink-0 flex items-center gap-3 px-4 py-3"
-              style={{ borderTop: "1px solid #F0EEE9", background: "#F6F4EF" }}
-            >
-              <label className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-medium" style={{ color: "#78716C" }}>Qtd.</span>
-                <input
-                  value={sheetQuantity}
-                  onChange={(e) => setSheetQuantity(e.target.value)}
-                  inputMode="decimal"
-                  className="h-9 rounded-md text-center text-sm font-medium outline-none transition"
-                  style={{
-                    width: 64,
-                    border: "1px solid #E4E2DC",
-                    background: "#FFFFFF",
-                    fontFamily: "var(--font-dm-mono)",
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                disabled={!selectedProduct}
-                onClick={addFromSheet}
-                className="flex-1 h-9 rounded-lg text-sm font-semibold transition disabled:opacity-40"
-                style={{ background: "#1A1917", color: "#FFFFFF", fontFamily: "var(--font-syne)" }}
+        {/* Right: clock + total */}
+        <div style={{ marginLeft: "auto", textAlign: "right", flexShrink: 0 }}>
+          <p style={{ fontSize: 22, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1, fontFamily: "var(--font-syne)" }}>
+            {fmt(sale.total)}
+          </p>
+          <p style={{ fontSize: 11, color: "#78716C", margin: 0, fontFamily: "var(--font-dm-mono)" }}>
+            {cashSession.cashRegisterName} · {currentTime}
+          </p>
+        </div>
+
+        {/* Supervisor + Close */}
+        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          <button
+            type="button"
+            disabled={helpCountdown > 0 || helpLoading}
+            onClick={() => void handleCallSupervisor()}
+            title="Chamar supervisor"
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              border: "1px solid #2C2C2A",
+              background: helpCountdown > 0 ? "rgba(239,159,39,.15)" : "transparent",
+              color: helpCountdown > 0 ? "#EF9F27" : "#78716C",
+              display: "grid", placeItems: "center", cursor: "pointer",
+            }}
+          >
+            <Bell size={15} />
+          </button>
+          <Link
+            href="/caixas"
+            title="Fechar caixa"
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              border: "1px solid #2C2C2A",
+              color: "#78716C",
+              display: "grid", placeItems: "center",
+              textDecoration: "none",
+            }}
+          >
+            <ChevronLeft size={15} />
+          </Link>
+        </div>
+      </header>
+
+      {/* ─── CART LIST ─── */}
+      <div
+        style={{ flex: 1, overflowY: "auto", padding: "0 0 8px" }}
+        onClick={() => { if (searchOpen) setSearchOpen(false); }}
+      >
+        {sale.items.length === 0 ? (
+          <div style={{ height: "100%", minHeight: 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <ShoppingCart size={40} color="#E4E2DC" />
+            <p style={{ fontSize: 13, color: "#C7C5BF", margin: 0 }}>Carrinho vazio</p>
+            <p style={{ fontSize: 12, color: "#D6D4CE", margin: 0 }}>Clique na lupa para adicionar produtos</p>
+          </div>
+        ) : (
+          sale.items.map((item, idx) => {
+            const product = productById.get(item.productId);
+            return (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 16px",
+                  borderBottom: "0.5px solid #F0EEE9",
+                  background: item.id === lastAddedId ? "#FFFBF0" : "transparent",
+                  transition: "background 600ms",
+                  animation: `fadeUp ${180 + idx * 40}ms both`,
+                }}
               >
-                Adicionar ao carrinho
-              </button>
-            </div>
+                {/* Index */}
+                <span style={{ width: 18, height: 18, borderRadius: 4, background: "#F0EEE9", fontSize: 9, color: "#C7C5BF", display: "grid", placeItems: "center", fontFamily: "var(--font-dm-mono)", flexShrink: 0 }}>
+                  {idx + 1}
+                </span>
+
+                {/* Name + SKU */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1A1917" }} className="truncate">
+                    {product?.name ?? "Produto removido"}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", fontFamily: "var(--font-dm-mono)" }}>
+                    {product?.sku ?? ""} · {fmt(item.unitPrice)} un.
+                  </p>
+                </div>
+
+                {/* Qty controls */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <QtyBtn onClick={() => decreaseItem(item)}><Minus size={10} /></QtyBtn>
+                  <span style={{ width: 28, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)" }}>
+                    {item.quantity}
+                  </span>
+                  <QtyBtn onClick={() => increaseItem(item)}><Plus size={10} /></QtyBtn>
+                </div>
+
+                {/* Total */}
+                <span style={{ minWidth: 64, textAlign: "right", fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "var(--font-dm-mono)", flexShrink: 0 }}>
+                  {fmt(item.total)}
+                </span>
+
+                {/* Remove */}
+                <button
+                  type="button"
+                  onClick={() => setSale((c) => removeSaleItem(c, item.id))}
+                  style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#D6D4CE"; }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ─── FOOTER ─── */}
+      <div
+        style={{
+          flexShrink: 0,
+          borderTop: "0.5px solid #E4E2DC",
+          background: "#FFFFFF",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        {/* Discount */}
+        <div style={{ display: "flex", gap: 6, flex: 1 }}>
+          <input
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            inputMode="decimal"
+            placeholder="Desconto R$"
+            style={{
+              height: 36, borderRadius: 7, border: "1px solid #E4E2DC",
+              background: "#F9F8F6", padding: "0 10px", fontSize: 12,
+              color: "#78716C", outline: "none", width: 100,
+              fontFamily: "var(--font-dm-mono)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={applyDiscount}
+            style={{ height: 36, borderRadius: 7, border: "1px solid #E4E2DC", background: "#F0EEE9", padding: "0 12px", fontSize: 12, color: "#78716C", cursor: "pointer" }}
+          >
+            Aplicar
+          </button>
+        </div>
+
+        {/* Clear */}
+        <button
+          type="button"
+          onClick={() => { setSale(createPosSale(saleSequence, cashSession)); setDiscount(""); setErrors([]); }}
+          style={{ height: 36, borderRadius: 7, border: "1px solid #E4E2DC", background: "transparent", padding: "0 14px", fontSize: 12, color: "#A8A29E", cursor: "pointer" }}
+        >
+          Limpar
+        </button>
+
+        {/* CTA */}
+        {canFinish ? (
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              disabled={persistLoading}
+              onClick={() => void handleFinishWithNf()}
+              style={{
+                height: 44, borderRadius: 8, border: "1px solid #E4E2DC",
+                background: "transparent", padding: "0 16px",
+                fontSize: 13, color: "#78716C", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <FileText size={14} /> NF
+            </button>
+            <button
+              type="button"
+              disabled={persistLoading}
+              onClick={() => void handleFinish()}
+              style={{
+                height: 44, borderRadius: 8,
+                background: "#1A1917", color: "#FFFFFF",
+                border: "none", padding: "0 24px",
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 8,
+                fontFamily: "var(--font-syne)",
+                transition: "background 150ms",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#2C2C2A"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#1A1917"; }}
+            >
+              <CheckCircle2 size={16} />
+              {persistLoading ? "Salvando..." : "Finalizar"}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={sale.items.length === 0}
+            onClick={() => { setSheetPayments([]); setSheetAmount(""); setPaymentOpen(true); }}
+            style={{
+              height: 44, borderRadius: 8,
+              background: sale.items.length === 0 ? "#E4E2DC" : "#EF9F27",
+              color: "#1A1917", border: "none",
+              padding: "0 24px",
+              fontSize: 14, fontWeight: 700,
+              cursor: sale.items.length === 0 ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", gap: 8,
+              fontFamily: "var(--font-syne)",
+              transition: "all 150ms",
+            }}
+          >
+            Pagar {sale.items.length > 0 && fmt(balance > 0 ? balance : sale.total)}
+          </button>
+        )}
+      </div>
+
+      {/* Errors */}
+      {errors.length > 0 && (
+        <div style={{ position: "absolute", bottom: 70, left: 16, right: 16, zIndex: 90 }}>
+          <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px" }}>
+            {errors.map((e) => (
+              <p key={e} style={{ margin: 0, fontSize: 12, color: "#DC2626" }}>{e}</p>
+            ))}
           </div>
         </div>
       )}
 
-      {/* ── SHEET: PAYMENT ── */}
-      {paymentSheetOpen && (
+      {/* ─── PAYMENT SHEET ─── */}
+      {paymentOpen && (
         <div
-          className="absolute inset-0 z-50 flex flex-col justify-end"
-          style={{ background: "rgba(26,25,23,.6)", backdropFilter: "blur(2px)", animation: "overlayIn 200ms both" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setPaymentSheetOpen(false); }}
+          style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end", background: "rgba(26,25,23,.55)", backdropFilter: "blur(3px)", animation: "overlayIn 180ms both" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setPaymentOpen(false); }}
         >
           <div
-            className="flex flex-col overflow-hidden"
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "12px 12px 0 0",
-              maxHeight: "90dvh",
-              animation: "sheetIn 250ms both",
-            }}
+            style={{ background: "#FFFFFF", borderRadius: "14px 14px 0 0", maxHeight: "80dvh", display: "flex", flexDirection: "column", animation: "sheetIn 220ms both" }}
           >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            {/* Handle */}
+            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
               <div style={{ width: 36, height: 3, borderRadius: 99, background: "#E4E2DC" }} />
             </div>
 
             {/* Header */}
-            <div className="flex items-start justify-between px-4 pb-3 shrink-0">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "4px 16px 12px" }}>
               <div>
-                <p className="text-sm font-bold" style={{ fontFamily: "var(--font-syne)", color: "#1A1917" }}>
-                  Pagamento
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1A1917", fontFamily: "var(--font-syne)" }}>
+                  {fmt(sheetBalance)} a pagar
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: "#A8A29E" }}>
-                  Registre um ou mais métodos de pagamento
+                <p style={{ margin: 0, fontSize: 12, color: "#A8A29E" }}>
+                  Total da venda: {fmt(sale.total)}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setPaymentSheetOpen(false)}
-                className="rounded-lg p-1.5 transition"
-                style={{ background: "#F0EEE9", color: "#5F5E5A" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#F0EEE9"; e.currentTarget.style.color = "#5F5E5A"; }}
-              >
-                <X className="size-4" />
+              <button type="button" onClick={() => setPaymentOpen(false)} style={{ background: "#F0EEE9", border: "none", borderRadius: 7, width: 32, height: 32, display: "grid", placeItems: "center", cursor: "pointer", color: "#78716C" }}>
+                <X size={15} />
               </button>
             </div>
 
-            {/* Total card */}
-            <div
-              className="mx-4 mb-3 rounded-lg flex items-center justify-between px-4 py-3 shrink-0"
-              style={{ background: "#1A1917" }}
-            >
-              <div>
-                <p className="text-xs" style={{ color: "#78716C" }}>Total da venda</p>
-                <p className="text-lg font-bold" style={{ color: "#EF9F27", fontFamily: "var(--font-dm-mono)" }}>
-                  {formatCurrency(sale.total)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs" style={{ color: "#78716C" }}>Saldo</p>
-                <p className="text-lg font-bold text-white" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                  {formatCurrency(sheetBalance)}
-                </p>
-              </div>
-            </div>
-
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-2">
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 16px" }}>
               {/* Method grid */}
-              <div>
-                <p className="text-xs font-semibold mb-2" style={{ color: "#5F5E5A" }}>Método</p>
-                <div className="grid grid-cols-5 gap-2">
-                  {(Object.entries(paymentMethodLabels) as [PaymentMethod, string][]).map(([method, label]) => {
-                    const active = sheetPaymentMethod === method;
-                    return (
-                      <button
-                        key={method}
-                        type="button"
-                        onClick={() => setSheetPaymentMethod(method)}
-                        className="flex h-13 flex-col items-center justify-center gap-1 rounded-lg text-xs font-medium transition"
-                        style={{
-                          height: 52,
-                          border: active ? "1.5px solid #EF9F27" : "1px solid #E4E2DC",
-                          background: active ? "#EF9F27" : "#F6F4EF",
-                          color: active ? "#1A1917" : "#78716C",
-                          fontWeight: active ? 700 : 500,
-                        }}
-                      >
-                        {PAYMENT_ICONS[method]}
-                        <span className="text-[10px]">{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Amount input */}
-              <div>
-                <p className="text-xs font-semibold mb-2" style={{ color: "#5F5E5A" }}>Valor</p>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <span
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs"
-                      style={{ color: "#A8A29E" }}
-                    >
-                      R$
-                    </span>
-                    <input
-                      value={sheetPaymentAmount}
-                      onChange={(e) => setSheetPaymentAmount(e.target.value)}
-                      inputMode="decimal"
-                      placeholder={formatCurrency(sheetBalance).replace("R$ ", "")}
-                      className="h-10 w-full rounded-lg pl-8 pr-3 text-sm outline-none transition"
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 16 }}>
+                {(Object.entries(paymentMethodLabels) as [PaymentMethod, string][]).map(([method, label]) => {
+                  const active = sheetMethod === method;
+                  return (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setSheetMethod(method)}
                       style={{
-                        border: "1px solid #E4E2DC",
-                        background: "#FAFAF9",
-                        fontFamily: "var(--font-dm-mono)",
+                        height: 56, borderRadius: 10, border: active ? "2px solid #EF9F27" : "1.5px solid #E4E2DC",
+                        background: active ? "#FEF9EC" : "#F9F8F6",
+                        color: active ? "#1A1917" : "#78716C",
+                        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
+                        cursor: "pointer", transition: "all 150ms", fontWeight: active ? 700 : 500,
                       }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={addSheetPayment}
-                    className="flex h-10 items-center gap-1 rounded-lg px-3 text-sm font-semibold transition"
-                    style={{ background: "#1A1917", color: "#FFFFFF" }}
-                  >
-                    <Plus className="size-4" />
-                    Registrar
-                  </button>
-                </div>
+                    >
+                      {PAYMENT_ICONS[method]}
+                      <span style={{ fontSize: 9, lineHeight: 1 }}>{label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Registered list */}
-              <div>
-                <div
-                  className="rounded-lg overflow-hidden"
-                  style={{ border: "1px solid #E4E2DC" }}
-                >
-                  <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: "0.5px solid #F0EEE9" }}>
-                    <span className="text-xs font-semibold" style={{ color: "#5F5E5A" }}>Registrados</span>
-                    {sheetPayments.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setSheetPayments([])}
-                        className="text-xs transition hover:text-red-500"
-                        style={{ color: "#A8A29E" }}
-                      >
-                        Limpar
-                      </button>
-                    )}
-                  </div>
-                  {sheetPayments.length === 0 ? (
-                    <p className="px-3 py-3 text-xs" style={{ color: "#A8A29E" }}>Nenhum pagamento registrado</p>
-                  ) : (
-                    sheetPayments.map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex items-center justify-between px-3 py-2"
-                        style={{ borderTop: "0.5px solid #F0EEE9" }}
-                      >
-                        <span className="text-xs font-semibold" style={{ color: "#1A1917" }}>
-                          {paymentMethodLabels[p.method]}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium" style={{ color: "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>
-                            {formatCurrency(p.amount)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeSheetPayment(p.id)}
-                            className="rounded p-0.5 transition hover:text-red-500"
-                            style={{ color: "#C7C5BF" }}
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Final balance box */}
-              <div
-                className="rounded-lg px-4 py-3 transition-colors"
-                style={{ background: "#F6F4EF" }}
-              >
-                <p className="text-xs" style={{ color: "#A8A29E" }}>Saldo restante</p>
-                <p
-                  className="text-2xl font-bold transition-colors"
+              {/* Amount */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                <input
+                  value={sheetAmount}
+                  onChange={(e) => setSheetAmount(e.target.value)}
+                  inputMode="decimal"
+                  placeholder={fmt(sheetBalance).replace("R$ ", "")}
                   style={{
-                    color: sheetBalance === 0 ? "#3B6D11" : "#1A1917",
-                    fontFamily: "var(--font-dm-mono)",
+                    flex: 1, height: 44, borderRadius: 9, border: "1.5px solid #E4E2DC",
+                    background: "#F9F8F6", padding: "0 14px", fontSize: 15,
+                    fontFamily: "var(--font-dm-mono)", outline: "none",
                   }}
+                />
+                <button
+                  type="button"
+                  onClick={addSheetPayment}
+                  style={{ height: 44, borderRadius: 9, background: "#1A1917", color: "#FFFFFF", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-syne)" }}
                 >
-                  {formatCurrency(sheetBalance)}
+                  + Registrar
+                </button>
+              </div>
+
+              {/* Registered */}
+              {sheetPayments.length > 0 && (
+                <div style={{ border: "1px solid #E4E2DC", borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
+                  {sheetPayments.map((p) => (
+                    <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "0.5px solid #F0EEE9" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1A1917" }}>{paymentMethodLabels[p.method]}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 13, color: "#3B6D11", fontFamily: "var(--font-dm-mono)" }}>{fmt(p.amount)}</span>
+                        <button type="button" onClick={() => setSheetPayments((prev) => prev.filter((x) => x.id !== p.id))} style={{ color: "#D6D4CE", background: "none", border: "none", cursor: "pointer" }}>
+                          <X size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Balance indicator */}
+              <div style={{ background: "#F9F8F6", borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
+                <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>Saldo restante</p>
+                <p style={{ margin: 0, fontSize: 24, fontWeight: 800, fontFamily: "var(--font-dm-mono)", color: sheetBalance === 0 ? "#3B6D11" : "#1A1917", transition: "color 300ms" }}>
+                  {fmt(sheetBalance)}
                 </p>
               </div>
             </div>
 
-            {/* Confirm button */}
-            <div className="shrink-0 px-4 py-3" style={{ borderTop: "0.5px solid #F0EEE9" }}>
+            {/* Confirm */}
+            <div style={{ padding: "0 16px 16px" }}>
               <button
                 type="button"
                 disabled={sheetPayments.length === 0}
-                onClick={confirmSheetPayments}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-lg font-bold text-sm transition disabled:opacity-40"
+                onClick={confirmPayments}
                 style={{
-                  background: "#EF9F27",
-                  color: "#1A1917",
+                  width: "100%", height: 48, borderRadius: 10,
+                  background: sheetPayments.length === 0 ? "#E4E2DC" : "#EF9F27",
+                  color: "#1A1917", border: "none", fontSize: 15, fontWeight: 800,
+                  cursor: sheetPayments.length === 0 ? "not-allowed" : "pointer",
                   fontFamily: "var(--font-syne)",
                 }}
               >
-                <CheckCircle2 className="size-4" />
-                Confirmar e aplicar
+                Confirmar pagamento
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── NF MODAL (logic preserved) ── */}
+      {/* ─── NF MODAL (preserved) ─── */}
       {nfModalOpen && (
-        <div
-          className="absolute inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ background: "rgba(26,25,23,.75)", animation: "overlayIn 200ms both" }}
-        >
-          <div
-            className="w-full max-w-sm rounded-xl p-6 shadow-2xl"
-            style={{ background: "#1C1917", animation: "sheetIn 200ms both" }}
-          >
-            <h2 className="text-base font-bold text-white" style={{ fontFamily: "var(--font-syne)" }}>
-              Emitir NF-e
-            </h2>
-            <p className="mt-1 text-xs" style={{ color: "#78716C" }}>Venda {pendingSale?.code} finalizada</p>
-
-            <div className="mt-5 space-y-3">
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium" style={{ color: "#A8A29E" }}>CPF ou CNPJ</span>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={nfDocument}
-                    onChange={(e) => { setNfDocument(e.target.value); setNfLookupName(null); setNfLookupId(null); }}
-                    placeholder="000.000.000-00"
-                    className="h-10 flex-1 rounded-lg px-3 text-sm text-white outline-none transition"
-                    style={{ border: "1px solid #2C2C2A", background: "#111110" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void handleLookupCustomer()}
-                    disabled={nfLoading || !nfDocument.trim()}
-                    className="rounded-lg px-3 transition disabled:opacity-50"
-                    style={{ border: "1px solid #2C2C2A", background: "#111110", color: "#78716C" }}
-                  >
-                    <Search className="size-4" />
-                  </button>
-                </div>
-              </label>
-              {nfLookupName && (
-                <p className="text-xs" style={{ color: "#EF9F27" }}>Cliente: {nfLookupName}</p>
-              )}
-              {nfLookupName === null && nfDocument && nfLookupId === null && !nfLoading && (
-                <p className="text-xs" style={{ color: "#78716C" }}>
-                  Documento não cadastrado — NF emitida sem vínculo.
-                </p>
-              )}
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={handleSkipNf}
-                  className="flex-1 h-10 rounded-lg text-sm font-medium transition"
-                  style={{ border: "1px solid #2C2C2A", color: "#A8A29E" }}
-                >
-                  Sem NF
-                </button>
-                <button
-                  type="button"
-                  disabled={nfLoading || !nfDocument.trim()}
-                  onClick={() => void handleRequestNfe()}
-                  className="flex-1 h-10 rounded-lg text-sm font-bold transition disabled:opacity-50"
-                  style={{ background: "#EF9F27", color: "#1A1917", fontFamily: "var(--font-syne)" }}
-                >
-                  {nfLoading ? "Enviando..." : "Solicitar NF-e"}
+        <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(26,25,23,.75)", animation: "overlayIn 180ms both" }}>
+          <div style={{ width: "100%", maxWidth: 360, background: "#1C1917", borderRadius: 16, padding: 24, animation: "sheetIn 200ms both" }}>
+            <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#FFFFFF", fontFamily: "var(--font-syne)" }}>Emitir NF-e</p>
+            <p style={{ margin: "0 0 20px", fontSize: 12, color: "#78716C" }}>Venda {pendingSale?.code} finalizada</p>
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 11, color: "#A8A29E" }}>CPF ou CNPJ</p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={nfDocument}
+                  onChange={(e) => { setNfDocument(e.target.value); setNfLookupName(null); setNfLookupId(null); }}
+                  placeholder="000.000.000-00"
+                  style={{ flex: 1, height: 40, borderRadius: 8, border: "1px solid #2C2C2A", background: "#111110", color: "#F6F4EF", padding: "0 12px", fontSize: 13, outline: "none" }}
+                />
+                <button type="button" onClick={() => void handleLookupCustomer()} disabled={nfLoading || !nfDocument.trim()} style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid #2C2C2A", background: "#111110", color: "#78716C", display: "grid", placeItems: "center", cursor: "pointer" }}>
+                  <Search size={15} />
                 </button>
               </div>
+            </div>
+            {nfLookupName && <p style={{ fontSize: 12, color: "#EF9F27", margin: "0 0 12px" }}>Cliente: {nfLookupName}</p>}
+            {nfLookupName === null && nfDocument && !nfLoading && <p style={{ fontSize: 12, color: "#78716C", margin: "0 0 12px" }}>Documento não cadastrado — NF sem vínculo.</p>}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button type="button" onClick={() => { setNfModalOpen(false); setPendingSale(null); resetSale(); }} style={{ flex: 1, height: 40, borderRadius: 8, border: "1px solid #2C2C2A", background: "transparent", color: "#A8A29E", fontSize: 13, cursor: "pointer" }}>Sem NF</button>
+              <button type="button" disabled={nfLoading || !nfDocument.trim()} onClick={() => void handleRequestNfe()} style={{ flex: 1, height: 40, borderRadius: 8, background: "#EF9F27", color: "#1A1917", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "var(--font-syne)" }}>
+                {nfLoading ? "Enviando..." : "Solicitar NF-e"}
+              </button>
             </div>
           </div>
         </div>
@@ -1261,124 +816,17 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
   );
 }
 
-// ─── sub-components ──────────────────────────────────────────────────
-function CartItem({
-  item, index, productName, productSku, highlighted,
-  onIncrease, onDecrease, onRemove,
-}: {
-  item: SaleItem;
-  index: number;
-  productName: string;
-  productSku: string;
-  highlighted: boolean;
-  onIncrease: () => void;
-  onDecrease: () => void;
-  onRemove: () => void;
-}) {
+// ── QtyBtn ────────────────────────────────────────────────────────────
+function QtyBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <div
-      className="flex items-center gap-3 px-3 py-2.5 transition-colors"
-      style={{
-        borderBottom: "0.5px solid #F6F4EF",
-        background: highlighted ? "#FFFBF0" : "transparent",
-        animation: `fadeUp ${200 + index * 40}ms both`,
-      }}
-      onMouseEnter={(e) => { if (!highlighted) (e.currentTarget as HTMLDivElement).style.background = "#FAFAF8"; }}
-      onMouseLeave={(e) => { if (!highlighted) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ width: 22, height: 22, borderRadius: 5, border: "1px solid #E4E2DC", background: "transparent", color: "#A8A29E", display: "grid", placeItems: "center", cursor: "pointer", transition: "all 120ms" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#FFFFFF"; e.currentTarget.style.borderColor = "#1A1917"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#A8A29E"; e.currentTarget.style.borderColor = "#E4E2DC"; }}
     >
-      {/* Seq number */}
-      <span
-        className="shrink-0 grid place-items-center rounded"
-        style={{
-          width: 18, height: 18,
-          background: "#F0EEE9",
-          color: "#A8A29E",
-          fontSize: 8,
-          fontFamily: "var(--font-dm-mono)",
-        }}
-      >
-        {index + 1}
-      </span>
-
-      {/* Name + SKU */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium" style={{ color: "#1A1917" }}>{productName}</p>
-        <p className="text-xs" style={{ color: "#A8A29E", fontFamily: "var(--font-dm-mono)" }}>{productSku}</p>
-      </div>
-
-      {/* Qty controls */}
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          type="button"
-          onClick={onDecrease}
-          className="grid place-items-center rounded transition"
-          style={{ width: 20, height: 20, border: "1px solid #E4E2DC", color: "#78716C" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#1A1917"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "#78716C"; e.currentTarget.style.borderColor = "#E4E2DC"; }}
-        >
-          <Minus className="size-2.5" />
-        </button>
-        <span
-          className="w-7 text-center text-xs font-semibold"
-          style={{ color: "#1A1917", fontFamily: "var(--font-dm-mono)" }}
-        >
-          {item.quantity}
-        </span>
-        <button
-          type="button"
-          onClick={onIncrease}
-          className="grid place-items-center rounded transition"
-          style={{ width: 20, height: 20, border: "1px solid #E4E2DC", color: "#78716C" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "#1A1917"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#1A1917"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "#78716C"; e.currentTarget.style.borderColor = "#E4E2DC"; }}
-        >
-          <Plus className="size-2.5" />
-        </button>
-      </div>
-
-      {/* Total */}
-      <span
-        className="shrink-0 text-right text-xs font-bold"
-        style={{ minWidth: 58, color: "#1A1917", fontFamily: "var(--font-dm-mono)" }}
-      >
-        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(item.total)}
-      </span>
-
-      {/* Remove */}
-      <button
-        type="button"
-        onClick={onRemove}
-        className="shrink-0 rounded p-0.5 transition"
-        style={{ color: "#C7C5BF" }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = "#C7C5BF"; }}
-      >
-        <X className="size-3.5" />
-      </button>
-    </div>
-  );
-}
-
-function SummaryRow({
-  label, value, bold, valueColor,
-}: {
-  label: string;
-  value: string;
-  bold?: boolean;
-  valueColor?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <dt style={{ color: "#A8A29E" }}>{label}</dt>
-      <dd
-        style={{
-          color: valueColor ?? "#3D3C39",
-          fontWeight: bold ? 700 : 500,
-          fontFamily: "var(--font-dm-mono)",
-        }}
-      >
-        {value}
-      </dd>
-    </div>
+      {children}
+    </button>
   );
 }
