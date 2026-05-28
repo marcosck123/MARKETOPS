@@ -496,7 +496,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
         {/* Right: total + payment button (side by side) */}
         <div style={{ marginLeft: "auto", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 26, fontWeight: 800, color: "#EF9F27", margin: 0, lineHeight: 1.1, fontFamily: "\"Syne\", var(--font-syne), sans-serif" }}>
+            <p style={{ fontSize: 28, fontWeight: 600, color: "#EF9F27", margin: 0, lineHeight: 1.1, fontFamily: "\"Cormorant Garamond\", var(--font-cormorant), serif", fontStyle: "italic" }}>
               {fmt(sale.total)}
             </p>
             <p style={{ fontSize: 10, color: "#78716C", margin: 0, fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
@@ -848,7 +848,7 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
                   {paymentType === "full" ? (
                     <div style={{ background: "#F9F8F6", borderRadius: 9, padding: "10px 14px" }}>
                       <p style={{ margin: 0, fontSize: 11, color: "#A8A29E" }}>Valor integral</p>
-                      <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>{fmt(sheetBalance)}</p>
+                      <p style={{ margin: 0, fontSize: 28, fontWeight: 600, color: "#1A1917", fontFamily: "\"Cormorant Garamond\", var(--font-cormorant), serif", fontStyle: "italic" }}>{fmt(sheetBalance)}</p>
                     </div>
                   ) : (
                     <div>

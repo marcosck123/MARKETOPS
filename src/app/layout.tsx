@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
-import { Inter, Syne, DM_Mono } from "next/font/google";
+import { Cormorant_Garamond, DM_Mono, Inter, Syne } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -22,6 +22,13 @@ const dmMono = DM_Mono({
   weight: ["400", "500"],
 });
 
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: "MARKETOPS",
   description: "Sistema empresarial para atacado, estoque, vendas e caixas.",
@@ -35,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${syne.variable} ${dmMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${syne.variable} ${dmMono.variable} ${cormorant.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
