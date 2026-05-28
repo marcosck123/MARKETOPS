@@ -379,119 +379,24 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
           MO
         </div>
 
-        {/* Search — expandable */}
-        <div className="relative flex items-center" style={{ flex: 1 }}>
-          <button
-            type="button"
-            onClick={() => setSearchOpen((o) => !o)}
-            style={{
-              width: 36, height: 36, borderRadius: 8,
-              border: "1px solid #2C2C2A",
-              background: searchOpen ? "#EF9F27" : "transparent",
-              color: searchOpen ? "#1A1917" : "#78716C",
-              display: "grid", placeItems: "center",
-              flexShrink: 0,
-              transition: "all 200ms",
-              cursor: "pointer",
-            }}
-            title="Buscar produto"
-          >
-            <Search size={15} />
-          </button>
-
-          {/* Expanding input */}
-          <div
-            style={{
-              overflow: "hidden",
-              width: searchOpen ? 320 : 0,
-              opacity: searchOpen ? 1 : 0,
-              transition: "width 280ms cubic-bezier(0.4,0,0.2,1), opacity 200ms",
-              marginLeft: searchOpen ? 8 : 0,
-            }}
-          >
-            <input
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Escape") setSearchOpen(false);
-                if (e.key === "Enter") {
-                  const p = findProductByQuery(activeProducts, searchQuery);
-                  if (p) addProduct(p);
-                  else if (searchQuery.trim()) setErrors(["Produto não encontrado."]);
-                }
-              }}
-              placeholder="Nome, SKU ou código de barras..."
-              style={{
-                height: 36, width: "100%", borderRadius: 8,
-                border: "1px solid #2C2C2A",
-                background: "#111110",
-                color: "#F6F4EF",
-                padding: "0 12px",
-                fontSize: 13,
-                outline: "none",
-                fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
-              }}
-            />
-          </div>
-
-          {/* Dropdown */}
-          {searchOpen && dropdownProducts.length > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                top: 44,
-                left: 0,
-                width: 360,
-                background: "#FFFFFF",
-                borderRadius: 10,
-                boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                border: "1px solid #E4E2DC",
-                zIndex: 100,
-                overflow: "hidden",
-                animation: "fadeUp 150ms both",
-              }}
-            >
-              {dropdownProducts.map((product, idx) => {
-                const price = getProductSalePrice(product, "retail");
-                const isZero = product.currentStock === 0;
-                const isLow = !isZero && product.currentStock <= product.minimumStock;
-                return (
-                  <button
-                    key={product.id}
-                    type="button"
-                    disabled={isZero}
-                    onClick={() => addProduct(product)}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition disabled:opacity-40"
-                    style={{
-                      borderBottom: idx < dropdownProducts.length - 1 ? "0.5px solid #F0EEE9" : "none",
-                      background: "transparent",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFAF8"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
-                        {product.name}
-                      </p>
-                      <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
-                        {product.sku}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
-                        {fmt(price)}
-                      </p>
-                      <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
-                        {isZero ? "sem estoque" : `${product.currentStock} un.`}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        {/* Search icon */}
+        <button
+          type="button"
+          onClick={() => setSearchOpen((o) => !o)}
+          style={{
+            width: 36, height: 36, borderRadius: 8,
+            border: "1px solid #2C2C2A",
+            background: searchOpen ? "#EF9F27" : "transparent",
+            color: searchOpen ? "#1A1917" : "#78716C",
+            display: "grid", placeItems: "center",
+            flexShrink: 0,
+            transition: "all 200ms",
+            cursor: "pointer",
+          }}
+          title="Buscar produto"
+        >
+          <Search size={15} />
+        </button>
 
         {/* Right: caixa info */}
         <div style={{ marginLeft: "auto", flexShrink: 0, textAlign: "right" }}>
@@ -537,13 +442,120 @@ export function PosContent({ products: propProducts, cashSession }: Props) {
       </header>
 
       {/* ─── BODY (cart + sidebar) ─── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+
+        {/* ── SEARCH OVERLAY ── */}
+        {searchOpen && (
+          <div
+            style={{
+              position: "absolute", inset: 0, zIndex: 40,
+              display: "flex", flexDirection: "column", alignItems: "center",
+              paddingTop: 28, paddingInline: 24,
+              background: "rgba(249,248,246,0.94)",
+              backdropFilter: "blur(6px)",
+              animation: "fadeIn 150ms both",
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}
+          >
+            {/* Input box */}
+            <div style={{
+              width: "100%", maxWidth: 540,
+              display: "flex", alignItems: "center", gap: 10,
+              background: "#FFFFFF",
+              border: "2px solid #EF9F27",
+              borderRadius: 14,
+              padding: "0 16px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}>
+              <Search size={18} color="#EF9F27" style={{ flexShrink: 0 }} />
+              <input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Escape") setSearchOpen(false);
+                  if (e.key === "Enter") {
+                    const p = findProductByQuery(activeProducts, searchQuery);
+                    if (p) addProduct(p);
+                    else if (searchQuery.trim()) setErrors(["Produto não encontrado."]);
+                  }
+                }}
+                placeholder="Nome, SKU ou código de barras..."
+                style={{
+                  flex: 1, height: 52, border: "none", outline: "none",
+                  fontSize: 15, background: "transparent", color: "#1A1917",
+                  fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#A8A29E", display: "grid", placeItems: "center", padding: 4 }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Results */}
+            {dropdownProducts.length > 0 && (
+              <div style={{
+                width: "100%", maxWidth: 540,
+                marginTop: 8,
+                background: "#FFFFFF",
+                borderRadius: 12,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                border: "1px solid #E4E2DC",
+                overflow: "hidden",
+                animation: "fadeUp 150ms both",
+              }}>
+                {dropdownProducts.map((product, idx) => {
+                  const price = getProductSalePrice(product, "retail");
+                  const isZero = product.currentStock === 0;
+                  const isLow = !isZero && product.currentStock <= product.minimumStock;
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      disabled={isZero}
+                      onClick={() => addProduct(product)}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left disabled:opacity-40"
+                      style={{
+                        borderBottom: idx < dropdownProducts.length - 1 ? "0.5px solid #F0EEE9" : "none",
+                        background: "transparent", transition: "background 100ms",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFAF8"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "#1A1917", margin: 0 }} className="truncate">
+                          {product.name}
+                        </p>
+                        <p style={{ fontSize: 11, color: "#A8A29E", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
+                          {product.sku}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "#1A1917", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace", margin: 0 }}>
+                          {fmt(price)}
+                        </p>
+                        <p style={{ fontSize: 11, margin: 0, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11", fontFamily: "\"DM Mono\", var(--font-dm-mono), monospace" }}>
+                          {isZero ? "sem estoque" : `${product.currentStock} un.`}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {searchQuery.trim() && dropdownProducts.length === 0 && (
+              <p style={{ marginTop: 20, fontSize: 13, color: "#A8A29E" }}>Nenhum produto encontrado</p>
+            )}
+          </div>
+        )}
 
         {/* Cart list */}
-        <div
-          style={{ flex: 1, overflowY: "auto", padding: "0 0 8px" }}
-          onClick={() => { if (searchOpen) setSearchOpen(false); }}
-        >
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 0 8px" }}>
           {sale.items.length === 0 ? (
             <div style={{ height: "100%", minHeight: 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
               <ShoppingCart size={40} color="#E4E2DC" />
