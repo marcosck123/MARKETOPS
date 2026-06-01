@@ -77,7 +77,7 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: "fixed", inset: 0, zIndex: 60,
-        background: "rgba(0,0,0,0.75)",
+        background: "rgba(0,0,0,0.3)",
         backdropFilter: "blur(2px)",
         display: "flex", flexDirection: "column",
         alignItems: "center", paddingTop: 80,
@@ -86,10 +86,10 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
       <div
         style={{
           width: "100%", maxWidth: 600,
-          background: "#111827",
+          background: "#FFFFFF",
           borderRadius: 14,
-          border: "1px solid #1F2937",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+          border: "1px solid #E4E2DC",
+          boxShadow: "0 16px 48px rgba(0,0,0,0.14)",
           overflow: "hidden",
           display: "flex", flexDirection: "column",
           maxHeight: "calc(100vh - 160px)",
@@ -100,11 +100,11 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
           style={{
             display: "flex", alignItems: "center", gap: 12,
             padding: "0 18px",
-            borderBottom: "1px solid #1F2937",
-            background: "#0D1117",
+            borderBottom: "1px solid #E4E2DC",
+            background: "#F8F7F4",
           }}
         >
-          <span style={{ fontSize: 16, color: "#4B5563", flexShrink: 0 }}>🔍</span>
+          <span style={{ fontSize: 16, color: "#C7C5BF", flexShrink: 0 }}>🔍</span>
           <input
             ref={inputRef}
             type="text"
@@ -115,14 +115,15 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
             style={{
               flex: 1, height: 52, background: "transparent",
               border: "none", outline: "none",
-              fontSize: 15, color: "#F9FAFB",
+              fontSize: 15, color: "#1A1917",
             }}
           />
           <kbd
             style={{
-              fontSize: 10, color: "#4B5563",
-              border: "1px solid #374151", borderRadius: 4,
+              fontSize: 10, color: "#A8A29E",
+              border: "1px solid #E4E2DC", borderRadius: 4,
               padding: "2px 6px", flexShrink: 0,
+              background: "#FFFFFF",
             }}
           >
             ESC
@@ -132,7 +133,7 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
         {/* Results */}
         <div ref={listRef} style={{ overflowY: "auto" }}>
           {filtered.length === 0 ? (
-            <p style={{ padding: "24px 20px", textAlign: "center", fontSize: 13, color: "#4B5563", margin: 0 }}>
+            <p style={{ padding: "24px 20px", textAlign: "center", fontSize: 13, color: "#A8A29E", margin: 0 }}>
               Nenhum produto encontrado
             </p>
           ) : (
@@ -151,27 +152,28 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
                     display: "flex", alignItems: "center",
                     width: "100%", padding: "10px 18px", gap: 12,
                     textAlign: "left", border: "none",
-                    background: isHighlighted ? "rgba(239,159,39,0.1)" : "transparent",
+                    background: isHighlighted ? "rgba(239,159,39,0.06)" : "#FFFFFF",
                     borderLeft: isHighlighted ? "2px solid #EF9F27" : "2px solid transparent",
-                    borderBottom: "1px solid #111827",
+                    borderBottom: "1px solid #F0EEE9",
+                    borderRight: "none", borderTop: "none",
                     cursor: isZero ? "not-allowed" : "pointer",
                     opacity: isZero ? 0.45 : 1,
                     transition: "background 80ms",
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#F9FAFB", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#1A1917", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {product.name}
                     </p>
-                    <p style={{ margin: 0, fontSize: 10, color: "#4B5563" }}>
+                    <p style={{ margin: 0, fontSize: 10, color: "#A8A29E" }}>
                       {product.sku} · {product.barcode}
                     </p>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F9FAFB" }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A1917" }}>
                       {fmt(product.salePrice)}
                     </p>
-                    <p style={{ margin: 0, fontSize: 10, color: isZero ? "#EF4444" : isLow ? "#F59E0B" : "#10B981" }}>
+                    <p style={{ margin: 0, fontSize: 10, color: isZero ? "#EF4444" : isLow ? "#854F0B" : "#3B6D11" }}>
                       {isZero ? "Sem estoque" : `${product.currentStock} ${product.unit}`}
                     </p>
                   </div>
@@ -184,13 +186,13 @@ export function SearchModal({ open, products, onAdd, onClose }: Props) {
         {/* Footer hint */}
         <div
           style={{
-            padding: "8px 18px", borderTop: "1px solid #1F2937",
-            display: "flex", gap: 16, background: "#0D1117",
+            padding: "8px 18px", borderTop: "1px solid #E4E2DC",
+            display: "flex", gap: 16, background: "#F8F7F4",
           }}
         >
           {[["↑↓", "Navegar"], ["↵", "Adicionar"], ["Esc", "Fechar"]].map(([key, label]) => (
-            <span key={key} style={{ fontSize: 10, color: "#4B5563", display: "flex", gap: 4, alignItems: "center" }}>
-              <kbd style={{ border: "1px solid #374151", borderRadius: 3, padding: "1px 5px", color: "#6B7280", fontSize: 10 }}>{key}</kbd>
+            <span key={key} style={{ fontSize: 10, color: "#A8A29E", display: "flex", gap: 4, alignItems: "center" }}>
+              <kbd style={{ border: "1px solid #E4E2DC", borderRadius: 3, padding: "1px 5px", color: "#78716C", fontSize: 10, background: "#FFFFFF" }}>{key}</kbd>
               {label}
             </span>
           ))}

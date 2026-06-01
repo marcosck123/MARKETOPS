@@ -23,10 +23,10 @@ type Props = {
 type ActiveModal = "search" | "payment" | "discount" | "close" | null;
 
 const SHORTCUTS = [
-  { key: "F1", label: "Buscar" },
-  { key: "F2", label: "Pagamento" },
-  { key: "F3", label: "Desconto" },
-  { key: "F4", label: "Remover" },
+  { key: "F1",  label: "Buscar" },
+  { key: "F2",  label: "Pagamento" },
+  { key: "F3",  label: "Desconto" },
+  { key: "F4",  label: "Remover" },
   { key: "F12", label: "Fechar caixa" },
 ];
 
@@ -35,16 +35,13 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
   const cart = useCart();
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
-  // Discount inline state
   const [discountInput, setDiscountInput] = useState("");
   const discountRef = useRef<HTMLInputElement>(null);
 
-  // Close session state
   const [closingBalance, setClosingBalance] = useState("");
   const [closeLoading, setCloseLoading] = useState(false);
   const [closeError, setCloseError] = useState("");
 
-  // Clock
   const [clock, setClock] = useState(() => new Date().toLocaleTimeString("pt-BR"));
   useEffect(() => {
     const t = setInterval(() => setClock(new Date().toLocaleTimeString("pt-BR")), 1000);
@@ -64,18 +61,13 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
     onArrowDown: () => cart.setSelectedIndex(Math.min(cart.items.length - 1, cart.selectedIndex + 1)),
   });
 
-  // Focus discount input when modal opens
   useEffect(() => {
-    if (activeModal === "discount") {
-      setTimeout(() => discountRef.current?.focus(), 60);
-    }
+    if (activeModal === "discount") setTimeout(() => discountRef.current?.focus(), 60);
   }, [activeModal]);
 
   function applyDiscount() {
     const val = parseFloat(discountInput.replace(",", "."));
-    if (!Number.isNaN(val) && val >= 0 && val <= 100) {
-      cart.setDiscountPct(val);
-    }
+    if (!Number.isNaN(val) && val >= 0 && val <= 100) cart.setDiscountPct(val);
     setActiveModal(null);
   }
 
@@ -88,10 +80,7 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
     setCloseLoading(true);
     const result = await closeCashSession({ sessionId: cashSession.id, closingBalance: balance });
     setCloseLoading(false);
-    if (!result.success) {
-      setCloseError(result.error ?? "Erro ao fechar o caixa.");
-      return;
-    }
+    if (!result.success) { setCloseError(result.error ?? "Erro ao fechar o caixa."); return; }
     router.refresh();
   }
 
@@ -101,36 +90,32 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
       <div style={{ display: "flex", height: "100dvh", overflow: "hidden" }}>
 
         {/* Left panel — promo / brand */}
-        <div style={{ width: "50%", flexShrink: 0, borderRight: "1px solid #1F2937" }}>
+        <div style={{ width: "50%", flexShrink: 0, borderRight: "1px solid #E4E2DC" }}>
           <PromoCarousel promotions={promotions} companyName={companyName} slogan={slogan} />
         </div>
 
         {/* Right panel — POS */}
-        <div
-          style={{
-            width: "50%", display: "flex", flexDirection: "column",
-            background: "#0D1117", overflow: "hidden",
-          }}
-        >
+        <div style={{ width: "50%", display: "flex", flexDirection: "column", background: "#FFFFFF", overflow: "hidden" }}>
+
           {/* Top bar: clock + session info */}
           <div
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "12px 20px",
-              borderBottom: "1px solid #1F2937",
-              background: "#111827",
+              borderBottom: "1px solid #E4E2DC",
+              background: "#F8F7F4",
               flexShrink: 0,
             }}
           >
             <div>
-              <p style={{ margin: 0, fontSize: 10, color: "#4B5563", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              <p style={{ margin: 0, fontSize: 10, color: "#A8A29E", letterSpacing: "0.1em", textTransform: "uppercase" }}>
                 {cashSession.cashRegisterName}
               </p>
-              <p style={{ margin: 0, fontSize: 12, color: "#6B7280" }}>{cashSession.operatorName}</p>
+              <p style={{ margin: 0, fontSize: 12, color: "#78716C" }}>{cashSession.operatorName}</p>
             </div>
             <span
               style={{
-                fontSize: 24, fontWeight: 800, color: "#F9FAFB",
+                fontSize: 24, fontWeight: 800, color: "#1A1917",
                 fontVariantNumeric: "tabular-nums",
                 letterSpacing: "0.04em",
               }}
@@ -148,13 +133,13 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
               padding: "10px 20px",
               background: "transparent",
               border: "none",
-              borderBottom: "1px solid #1F2937",
+              borderBottom: "1px solid #E4E2DC",
               cursor: "pointer",
               textAlign: "left",
               flexShrink: 0,
               transition: "background 120ms",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#111827"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#F8F7F4"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             <kbd
@@ -166,10 +151,10 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
             >
               F1
             </kbd>
-            <span style={{ fontSize: 12, color: "#6B7280" }}>Buscar produto por nome, código ou SKU</span>
+            <span style={{ fontSize: 12, color: "#A8A29E" }}>Buscar produto por nome, código ou SKU</span>
           </button>
 
-          {/* Cart — fills remaining height */}
+          {/* Cart */}
           <Cart
             items={cart.items}
             selectedIndex={cart.selectedIndex}
@@ -183,9 +168,9 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
           {/* Shortcut bar */}
           <div
             style={{
-              display: "flex", gap: 0,
-              borderTop: "1px solid #1F2937",
-              background: "#111827",
+              display: "flex",
+              borderTop: "1px solid #E4E2DC",
+              background: "#F8F7F4",
               flexShrink: 0,
             }}
           >
@@ -202,18 +187,17 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
                 }}
                 style={{
                   flex: 1, padding: "8px 0",
-                  background: "transparent",
-                  border: "none",
-                  borderRight: i < SHORTCUTS.length - 1 ? "1px solid #1F2937" : "none",
+                  background: "transparent", border: "none",
+                  borderRight: i < SHORTCUTS.length - 1 ? "1px solid #E4E2DC" : "none",
                   cursor: "pointer",
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
                   transition: "background 100ms",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#1F2937"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#F0EEE9"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
                 <span style={{ fontSize: 9, color: "#EF9F27", fontWeight: 700 }}>{key}</span>
-                <span style={{ fontSize: 9, color: "#4B5563", letterSpacing: "0.04em" }}>{label}</span>
+                <span style={{ fontSize: 9, color: "#A8A29E", letterSpacing: "0.04em" }}>{label}</span>
               </button>
             ))}
           </div>
@@ -247,23 +231,23 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
           onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
           style={{
             position: "fixed", inset: 0, zIndex: 60,
-            background: "rgba(0,0,0,0.75)", backdropFilter: "blur(2px)",
+            background: "rgba(0,0,0,0.25)", backdropFilter: "blur(2px)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
           <div
             style={{
-              width: 320, background: "#111827",
-              border: "1px solid #1F2937", borderRadius: 14,
-              padding: "24px", boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+              width: 320, background: "#FFFFFF",
+              border: "1px solid #E4E2DC", borderRadius: 14,
+              padding: "24px", boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") applyDiscount();
               if (e.key === "Escape") setActiveModal(null);
             }}
           >
-            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.1em" }}>Desconto</p>
-            <p style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 700, color: "#F9FAFB" }}>Aplicar desconto (%)</p>
+            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.1em" }}>Desconto</p>
+            <p style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 700, color: "#1A1917" }}>Aplicar desconto (%)</p>
             <input
               ref={discountRef}
               type="text"
@@ -273,9 +257,9 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
               placeholder="0"
               style={{
                 width: "100%", height: 44,
-                background: "#0D1117", border: "1px solid #374151",
+                background: "#F8F7F4", border: "1px solid #E4E2DC",
                 borderRadius: 8, padding: "0 14px",
-                fontSize: 18, fontWeight: 700, color: "#F9FAFB",
+                fontSize: 18, fontWeight: 700, color: "#1A1917",
                 outline: "none", boxSizing: "border-box",
               }}
               onFocus={(e) => e.target.select()}
@@ -286,7 +270,7 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
                 onClick={applyDiscount}
                 style={{
                   flex: 1, height: 40, borderRadius: 8,
-                  background: "#EF9F27", color: "#0D1117",
+                  background: "#EF9F27", color: "#1A1917",
                   fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer",
                 }}
               >
@@ -297,7 +281,7 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
                 onClick={() => setActiveModal(null)}
                 style={{
                   flex: 1, height: 40, borderRadius: 8,
-                  background: "#1F2937", color: "#6B7280",
+                  background: "#F0EEE9", color: "#78716C",
                   fontSize: 13, border: "none", cursor: "pointer",
                 }}
               >
@@ -314,26 +298,26 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
           onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
           style={{
             position: "fixed", inset: 0, zIndex: 60,
-            background: "rgba(0,0,0,0.8)", backdropFilter: "blur(3px)",
+            background: "rgba(0,0,0,0.3)", backdropFilter: "blur(3px)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
           <div
             style={{
-              width: 360, background: "#111827",
-              border: "1px solid #374151", borderRadius: 14,
+              width: 360, background: "#FFFFFF",
+              border: "1px solid #E4E2DC", borderRadius: 14,
               padding: "28px 24px",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
             }}
           >
             <p style={{ margin: "0 0 4px", fontSize: 10, color: "#EF4444", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700 }}>⚠ Atenção</p>
-            <p style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 700, color: "#F9FAFB" }}>Fechar caixa?</p>
-            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#6B7280", lineHeight: 1.5 }}>
-              Esta ação encerra sua sessão em <strong style={{ color: "#F9FAFB" }}>{cashSession.cashRegisterName}</strong>.
+            <p style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 700, color: "#1A1917" }}>Fechar caixa?</p>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#78716C", lineHeight: 1.5 }}>
+              Esta ação encerra sua sessão em <strong style={{ color: "#1A1917" }}>{cashSession.cashRegisterName}</strong>.
               Informe o saldo de fechamento.
             </p>
             <label>
-              <span style={{ display: "block", fontSize: 11, color: "#6B7280", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              <span style={{ display: "block", fontSize: 11, color: "#A8A29E", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 Saldo de fechamento (R$)
               </span>
               <input
@@ -345,9 +329,9 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
                 autoFocus
                 style={{
                   width: "100%", height: 44,
-                  background: "#0D1117", border: "1px solid #374151",
+                  background: "#F8F7F4", border: "1px solid #E4E2DC",
                   borderRadius: 8, padding: "0 14px",
-                  fontSize: 16, fontWeight: 700, color: "#F9FAFB",
+                  fontSize: 16, fontWeight: 700, color: "#1A1917",
                   outline: "none", boxSizing: "border-box", marginBottom: 8,
                 }}
               />
@@ -375,7 +359,7 @@ export function PdvClient({ products, cashSession, promotions, companyName, slog
                 onClick={() => setActiveModal(null)}
                 style={{
                   flex: 1, height: 42, borderRadius: 8,
-                  background: "#1F2937", color: "#6B7280",
+                  background: "#F0EEE9", color: "#78716C",
                   fontSize: 13, border: "none", cursor: "pointer",
                 }}
               >

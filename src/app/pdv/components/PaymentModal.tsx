@@ -20,10 +20,10 @@ type Props = {
 };
 
 const METHODS: { method: PaymentMethod; label: string; icon: string }[] = [
-  { method: "cash",  label: "Dinheiro", icon: "💵" },
-  { method: "pix",   label: "PIX",      icon: "📱" },
-  { method: "debit", label: "Débito",   icon: "💳" },
-  { method: "credit",label: "Crédito",  icon: "💳" },
+  { method: "cash",   label: "Dinheiro", icon: "💵" },
+  { method: "pix",    label: "PIX",      icon: "📱" },
+  { method: "debit",  label: "Débito",   icon: "💳" },
+  { method: "credit", label: "Crédito",  icon: "💳" },
 ];
 
 export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSessionId, operator, onSuccess, onClose }: Props) {
@@ -100,7 +100,7 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
       onKeyDown={onKeyDown}
       style={{
         position: "fixed", inset: 0, zIndex: 60,
-        background: "rgba(0,0,0,0.8)",
+        background: "rgba(0,0,0,0.3)",
         backdropFilter: "blur(3px)",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
@@ -108,23 +108,23 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
       <div
         style={{
           width: "100%", maxWidth: 380,
-          background: "#111827",
-          border: "1px solid #1F2937",
+          background: "#FFFFFF",
+          border: "1px solid #E4E2DC",
           borderRadius: 16,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
           overflow: "hidden",
         }}
       >
         {/* Header */}
-        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #1F2937" }}>
-          <p style={{ margin: 0, fontSize: 11, color: "#4B5563", letterSpacing: "0.12em", textTransform: "uppercase" }}>Pagamento</p>
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #E4E2DC", background: "#F8F7F4" }}>
+          <p style={{ margin: 0, fontSize: 11, color: "#A8A29E", letterSpacing: "0.12em", textTransform: "uppercase" }}>Pagamento</p>
           <p style={{ margin: "4px 0 0", fontSize: 28, fontWeight: 800, color: "#EF9F27" }}>{fmt(total)}</p>
         </div>
 
         <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Method selector */}
           <div>
-            <p style={{ margin: "0 0 8px", fontSize: 11, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.1em" }}>Forma de pagamento</p>
+            <p style={{ margin: "0 0 8px", fontSize: 11, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.1em" }}>Forma de pagamento</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {METHODS.map(({ method: m, label, icon }) => (
                 <button
@@ -135,9 +135,9 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
                     display: "flex", alignItems: "center", gap: 8,
                     padding: "10px 14px",
                     borderRadius: 8,
-                    border: m === method ? "1px solid #EF9F27" : "1px solid #1F2937",
-                    background: m === method ? "rgba(239,159,39,0.1)" : "#0D1117",
-                    color: m === method ? "#EF9F27" : "#9CA3AF",
+                    border: m === method ? "1px solid #EF9F27" : "1px solid #E4E2DC",
+                    background: m === method ? "rgba(239,159,39,0.08)" : "#F8F7F4",
+                    color: m === method ? "#B45309" : "#78716C",
                     fontSize: 13, fontWeight: m === method ? 600 : 400,
                     cursor: "pointer", transition: "all 120ms",
                   }}
@@ -151,7 +151,7 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
 
           {/* Amount input */}
           <div>
-            <p style={{ margin: "0 0 6px", fontSize: 11, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <p style={{ margin: "0 0 6px", fontSize: 11, color: "#A8A29E", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               {method === "cash" ? "Valor recebido (R$)" : "Valor (R$)"}
             </p>
             <input
@@ -162,11 +162,11 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
               onChange={(e) => setAmountStr(e.target.value)}
               style={{
                 width: "100%", height: 44,
-                background: "#0D1117",
-                border: "1px solid #374151",
+                background: "#F8F7F4",
+                border: "1px solid #E4E2DC",
                 borderRadius: 8, padding: "0 14px",
                 fontSize: 18, fontWeight: 700,
-                color: "#F9FAFB", outline: "none",
+                color: "#1A1917", outline: "none",
                 boxSizing: "border-box",
               }}
               onFocus={(e) => e.target.select()}
@@ -177,19 +177,19 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
           {method === "cash" && change > 0 && (
             <div
               style={{
-                background: "rgba(16,185,129,0.1)",
-                border: "1px solid rgba(16,185,129,0.3)",
+                background: "rgba(59,109,17,0.06)",
+                border: "1px solid rgba(59,109,17,0.2)",
                 borderRadius: 8, padding: "12px 16px",
                 display: "flex", justifyContent: "space-between",
               }}
             >
-              <span style={{ fontSize: 13, color: "#10B981" }}>Troco</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: "#10B981" }}>{fmt(change)}</span>
+              <span style={{ fontSize: 13, color: "#3B6D11" }}>Troco</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#3B6D11" }}>{fmt(change)}</span>
             </div>
           )}
 
           {error && (
-            <p style={{ margin: 0, fontSize: 12, color: "#EF4444", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "8px 12px" }}>
+            <p style={{ margin: 0, fontSize: 12, color: "#EF4444", background: "rgba(239,68,68,0.06)", borderRadius: 6, padding: "8px 12px" }}>
               {error}
             </p>
           )}
@@ -201,8 +201,8 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
             onClick={() => void handleConfirm()}
             style={{
               height: 48, borderRadius: 10,
-              background: canConfirm && !loading ? "#EF9F27" : "#1F2937",
-              color: canConfirm && !loading ? "#0D1117" : "#4B5563",
+              background: canConfirm && !loading ? "#EF9F27" : "#F0EEE9",
+              color: canConfirm && !loading ? "#1A1917" : "#A8A29E",
               fontWeight: 700, fontSize: 14, border: "none",
               cursor: canConfirm && !loading ? "pointer" : "not-allowed",
               transition: "all 150ms",
@@ -216,7 +216,7 @@ export function PaymentModal({ open, total, subtotal, discountAmt, items, cashSe
             onClick={onClose}
             style={{
               background: "none", border: "none",
-              fontSize: 12, color: "#4B5563",
+              fontSize: 12, color: "#A8A29E",
               cursor: "pointer", padding: "4px 0",
             }}
           >

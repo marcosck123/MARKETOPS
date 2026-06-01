@@ -39,9 +39,9 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        background: "#0f1923",
+        background: "#F5F3EF",
         backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",
+          "linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px)",
         backgroundSize: "40px 40px",
         padding: "32px 28px",
         position: "relative",
@@ -52,7 +52,8 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
       <div
         style={{
           position: "absolute", top: -120, left: -80, width: 340, height: 340,
-          borderRadius: "50%", background: "radial-gradient(circle,rgba(239,159,39,0.12) 0%,transparent 70%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle,rgba(239,159,39,0.18) 0%,transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -62,11 +63,11 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", color: "#EF9F27", margin: 0, textTransform: "uppercase" }}>
           PDV — FRENTE DE CAIXA
         </p>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", margin: "6px 0 0", letterSpacing: "0.04em" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1A1917", margin: "6px 0 0", letterSpacing: "0.04em" }}>
           {companyName || "MARKETOPS"}
         </h1>
         {slogan && (
-          <p style={{ fontSize: 12, color: "#6B7280", margin: "4px 0 0" }}>{slogan}</p>
+          <p style={{ fontSize: 12, color: "#78716C", margin: "4px 0 0" }}>{slogan}</p>
         )}
       </div>
 
@@ -86,7 +87,8 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
             display: "inline-block",
             fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
             color: "#EF9F27",
-            border: "1px solid rgba(239,159,39,0.4)",
+            border: "1px solid rgba(239,159,39,0.5)",
+            background: "rgba(239,159,39,0.08)",
             borderRadius: 4, padding: "3px 8px", marginBottom: 16,
             textTransform: "uppercase",
           }}
@@ -96,14 +98,14 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
 
         <h2
           style={{
-            fontSize: 32, fontWeight: 800, color: "#FFFFFF", margin: "0 0 12px",
+            fontSize: 32, fontWeight: 800, color: "#1A1917", margin: "0 0 12px",
             lineHeight: 1.15,
           }}
         >
           {item.title}
         </h2>
 
-        <p style={{ fontSize: 15, color: "#9CA3AF", margin: 0, lineHeight: 1.6, maxWidth: 320 }}>
+        <p style={{ fontSize: 15, color: "#78716C", margin: 0, lineHeight: 1.6, maxWidth: 320 }}>
           {item.description}
         </p>
       </div>
@@ -118,7 +120,7 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
             style={{
               height: 4, borderRadius: 2,
               width: i === current ? 24 : 8,
-              background: i === current ? "#EF9F27" : "rgba(255,255,255,0.2)",
+              background: i === current ? "#EF9F27" : "rgba(0,0,0,0.18)",
               border: "none", cursor: "pointer",
               transition: "all 300ms",
               padding: 0,
@@ -128,7 +130,7 @@ export function PromoCarousel({ promotions, companyName, slogan }: Props) {
       </div>
 
       {/* Footer slogan */}
-      <p style={{ fontSize: 11, color: "#374151", margin: "16px 0 0", letterSpacing: "0.08em" }}>
+      <p style={{ fontSize: 11, color: "#C7C5BF", margin: "16px 0 0", letterSpacing: "0.08em" }}>
         {slogan ?? "Otimizando sua operação"}
       </p>
     </div>
