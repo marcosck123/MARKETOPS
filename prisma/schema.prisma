@@ -383,3 +383,15 @@ model AuditLog {
   description  String
   createdAt    DateTime @default(now())
 }
+
+model Promotion {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  badge       String    @default("")
+  validUntil  DateTime?
+  active      Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
