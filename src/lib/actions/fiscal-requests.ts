@@ -140,3 +140,23 @@ export async function getPendingFiscalRequests(): Promise<FiscalRequestRow[]> {
 
   return rows as FiscalRequestRow[];
 }
+
+export async function getAllFiscalRequests(): Promise<FiscalRequestRow[]> {
+  const rows = await db.fiscalRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      saleId: true,
+      saleCode: true,
+      document: true,
+      customerName: true,
+      status: true,
+      nfeKey: true,
+      nfeNumber: true,
+      operatorId: true,
+      createdAt: true,
+    },
+  });
+
+  return rows as FiscalRequestRow[];
+}
